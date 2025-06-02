@@ -32,79 +32,136 @@
 body {
     font-family: var(--font-primary);
     margin: 0;
-    padding: 20px;
     background-color: var(--color-bg);
     color: var(--color-text-primary);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: calc(100vh - 40px); /* Чтобы футер не "прыгал" при малой высоте контента */
-    display: flex; /* Для центрирования .container, если он меньше высоты экрана */
-    flex-direction: column; /* Если будет футер */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0; /* Убираем padding с body, он будет у .container или оверлеев */
 }
 
-.container {
-    max-width: 600px;
+.full-screen-overlay, .container {
     width: 100%;
-    margin: auto; /* Центрирование по вертикали и горизонтали */
+    min-height: 100vh; /* Оверлеи на весь экран */
+    padding: 20px;
+    box-sizing: border-box; /* Чтобы padding не увеличивал размер */
+    opacity: 0; /* Все оверлеи и контейнер изначально невидимы (управляется JS) */
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
+    display: flex; /* Для центрирования содержимого */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.full-screen-overlay.visible, .container.visible { /* Класс для показа */
     opacity: 1;
+    visibility: visible;
     transition: opacity 0.5s ease-in-out;
 }
-.container.hidden {
-    opacity: 0;
-    pointer-events: none;
+/* Контейнер игры не должен быть flex по умолчанию, если его контент не требует этого */
+.container {
+    display: none; /* Изначально display:none, управляется JS */
+    opacity: 1; /* Когда .visible, он сразу виден */
+    visibility: hidden;
+    justify-content: flex-start; /* Для обычного потока контента игры */
+    align-items: stretch;
+}
+.container.visible {
+    display: block; /* Когда виден, становится block */
+    visibility: visible;
 }
 
 
 /* --- PRELOADER STYLES --- */
-#preloader {
+#preloader { /* Прелоадер виден по умолчанию, т.к. нет класса .visible */
     position: fixed;
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
     z-index: 9999;
     background-color: var(--color-bg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
     opacity: 1;
-    transition: opacity 0.5s ease-out, visibility 0s linear 0.5s; /* visibility после завершения opacity */
     visibility: visible;
 }
 
-#preloader.hidden {
+#preloader.hidden { /* Класс для скрытия прелоадера */
     opacity: 0;
     visibility: hidden;
+    transition: opacity 0.7s ease-out, visibility 0s linear 0.7s;
 }
 
-.spinner {
-    width: 50px; /* Уменьшил для более изящного вида */
-    height: 50px;
-    border: 5px solid rgba(var(--color-accent-primary-rgb), 0.2); /* Полупрозрачная рамка */
-    border-top-color: var(--color-accent-primary); /* Яркая часть */
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.pulsing-logo-placeholder {
+    width: 80px;
+    height: 80px;
+    background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary));
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    margin-bottom: 25px;
+    animation: pulse 2s infinite ease-in-out;
 }
 
-.loading-text-below-spinner {
-    margin-top: 20px;
-    font-size: 1em;
-    color: var(--color-text-secondary);
-    font-weight: 500;
-    letter-spacing: 0.5px;
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--color-accent-primary-rgb), 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(var(--color-accent-primary-rgb), 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--color-accent-primary-rgb), 0); }
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.loading-dots { display: flex; margin-bottom: 15px; }
+.loading-dots .dot { width: 10px; height: 10px; margin: 0 5px; background-color: var(--color-accent-primary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+.loading-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
 }
+
+.loader-text { font-size: 1.2em; color: var(--color-text-primary); font-weight: 600; letter-spacing: 1px; }
 /* --- END PRELOADER STYLES --- */
 
 
-header {
+/* --- THEME SELECTION SCREEN STYLES --- */
+.theme-selection-content {
+    background-color: var(--color-card-bg);
+    padding: 30px 40px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    max-width: 700px;
+    width: 90%;
+    text-align: center;
+}
+.theme-selection-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
+.theme-selection-content > p { color: var(--color-text-secondary); margin-bottom: 30px; font-size: 1em; }
+.themes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+.theme-card { background-color: rgba(var(--color-accent-primary-rgb), 0.1); padding: 20px; border-radius: var(--border-radius-md); border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3); cursor: pointer; transition: all 0.2s ease-in-out; text-align: left; }
+.theme-card:hover { transform: translateY(-5px); background-color: rgba(var(--color-accent-primary-rgb), 0.2); box-shadow: 0 5px 15px rgba(var(--color-accent-primary-rgb), 0.2); }
+.theme-icon { font-size: 2.5em; margin-bottom: 10px; text-align: center; }
+.theme-card h3 { color: var(--color-text-primary); font-size: 1.3em; margin-top: 0; margin-bottom: 10px; }
+.theme-card p { color: var(--color-text-secondary); font-size: 0.9em; line-height: 1.4; }
+/* --- END THEME SELECTION SCREEN STYLES --- */
+
+
+/* --- WELCOME SCREEN STYLES --- */
+.welcome-content { background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 500px; width: 90%; text-align: center;}
+.welcome-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
+.welcome-content p { color: var(--color-text-secondary); margin-bottom: 20px; font-size: 1em; }
+.user-info-display { margin: 25px 0; padding: 15px; border: 1px dashed rgba(var(--color-accent-primary-rgb), 0.3); border-radius: var(--border-radius-md); }
+.avatar-placeholder { width: 70px; height: 70px; border-radius: 50%; background-color: #4A5568; margin: 0 auto 15px auto; border: 3px solid var(--color-accent-primary); object-fit: cover; }
+#telegram-username-display { font-weight: bold; color: var(--color-accent-primary); }
+.small-note { font-size: 0.85em; color: var(--color-text-secondary); opacity: 0.7; margin-top: 25px; margin-bottom: 25px; }
+/* --- END WELCOME SCREEN STYLES --- */
+
+
+/* --- MAIN GAME CONTAINER STYLES --- */
+.container header { /* Стили для хедера внутри .container */
     text-align: center;
     margin-bottom: 30px;
     padding: 25px 20px;
@@ -112,40 +169,19 @@ header {
     border-radius: var(--border-radius-lg);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
+.container header h1 { margin: 0 0 15px 0; font-size: 2em; font-weight: 700; letter-spacing: 0.5px; color: #FFFFFF; }
+.container header p { margin: 10px 0; font-size: 1.1em; color: var(--color-text-secondary); }
+.container header p span { font-weight: 600; color: var(--color-text-primary); }
+.container #subscribers-count, .container #balance-count { color: var(--color-accent-primary); font-size: 1.2em; }
 
-header h1 {
-    margin: 0 0 15px 0;
-    font-size: 2em;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #FFFFFF;
-}
-
-header p {
-    margin: 10px 0;
-    font-size: 1.1em;
-    color: var(--color-text-secondary);
-}
-
-header p span {
-    font-weight: 600;
-    color: var(--color-text-primary);
-}
-#subscribers-count, #balance-count {
-    color: var(--color-accent-primary);
-    font-size: 1.2em;
-}
-
-
-.actions, .upgrades, .log {
+.container .actions, .container .upgrades, .container .log {
     margin-bottom: 30px;
     padding: 25px;
     background-color: var(--color-card-bg);
     border-radius: var(--border-radius-lg);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
-
-h2, .log h3 { /* Применил стиль h2 и для заголовка лога */
+.container h2, .container .log h3 {
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.6em;
@@ -155,7 +191,7 @@ h2, .log h3 { /* Применил стиль h2 и для заголовка л�
     padding-bottom: 10px;
 }
 
-button {
+button { /* Общие стили для всех кнопок, включая #start-game-button */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -168,86 +204,30 @@ button {
     color: #FFFFFF;
     cursor: pointer;
     font-size: 1.05em;
-    font-family: var(--font-primary); /* Явно указываем шрифт для кнопки */
+    font-family: var(--font-primary);
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     transition: all 0.25s ease-out;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
+button:hover { filter: brightness(1.15); box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb), 0.4); }
+button:active { transform: translateY(2px); filter: brightness(0.95); box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb), 0.3); }
+button:disabled { background-image: none; background-color: #3A3E4A; color: var(--color-text-secondary); cursor: not-allowed; box-shadow: none; text-transform: none; }
+button i { margin-right: 10px; font-size: 1.2em; }
 
-button:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb), 0.4);
-}
+#event-log { list-style: none; padding: 0; max-height: 180px; overflow-y: auto; border-radius: var(--border-radius-md); background-color: rgba(0,0,0,0.1); padding: 15px; }
+#event-log li { padding: 8px 0; font-size: 0.9em; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: var(--color-text-secondary); }
+#event-log li:last-child { border-bottom: none; }
+#event-log li.log-success { color: var(--color-success); font-weight: 500; }
+#event-log li.log-error { color: var(--color-error); font-weight: 500; }
+#event-log li.log-warning { color: var(--color-warning); font-weight: 500; }
+#event-log li.log-info { color: var(--color-text-secondary); }
 
-button:active {
-    transform: translateY(2px);
-    filter: brightness(0.95);
-    box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb), 0.3);
-}
-
-button:disabled {
-    background-image: none;
-    background-color: #3A3E4A;
-    color: var(--color-text-secondary);
-    cursor: not-allowed;
-    box-shadow: none;
-    text-transform: none;
-}
-
-button i {
-    margin-right: 10px;
-    font-size: 1.2em;
-}
-
-#event-log {
-    list-style: none;
-    padding: 0;
-    max-height: 180px;
-    overflow-y: auto;
-    border-radius: var(--border-radius-md);
-    background-color: rgba(0,0,0,0.1);
-    padding: 15px;
-}
-
-#event-log li {
-    padding: 8px 0;
-    font-size: 0.9em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--color-text-secondary);
-}
-#event-log li:last-child {
-    border-bottom: none;
-}
-
-#event-log li.log-success {
-    color: var(--color-success);
-    font-weight: 500;
-}
-#event-log li.log-error {
-    color: var(--color-error);
-    font-weight: 500;
-}
-#event-log li.log-warning {
-    color: var(--color-warning);
-    font-weight: 500;
-}
-/* Добавим класс для обычных info логов, если захотим их стилизовать отдельно */
-#event-log li.log-info {
-    color: var(--color-text-secondary); /* По умолчанию */
-}
-
-footer {
+.container footer { /* Стили для футера внутри .container */
     text-align: center;
-    padding: 20px 0 0 0; /* Отступ сверху от последнего блока */
-    margin-top: auto; /* Прижимает футер к низу, если контента мало */
+    padding: 20px 0 0 0;
+    margin-top: auto;
 }
-.footer-text {
-    font-size: 0.85em;
-    color: var(--color-text-secondary);
-}
-    <script прелоадера такой же, как основной фон игры */
-    display: flex;
-    flex-direction: column; /* src="script.js"></script>
-</body>
+.container .footer-text { font-size: 0.85em; color: var(--color-text-secondary); }
+/* --- END MAIN GAME CONTAINER STYLES --- */

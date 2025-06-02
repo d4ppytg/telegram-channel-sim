@@ -8,14 +8,18 @@
     --color-text-secondary: #A0A0A0; /* Второстепенный текст, подсказки */
     
     --color-accent-primary: #3B82F6; /* Ярко-синий */
-    --color-accent-primary-darker: #2563EB;
+    --color-accent-primary-rgb: 59, 130, 246; /* RGB для использования в rgba() */
     --color-accent-secondary: #8A2BE2; /* Фиолетовый для градиента или альтернативы */
+
+    --color-success: #4ADE80; /* Ярко-зеленый */
+    --color-warning: #FACC15; /* Ярко-желтый */
+    --color-error: #F87171; /* Ярко-красный */
 
     --border-radius-sm: 6px;
     --border-radius-md: 10px;
-    --border-radius-lg: 16px; /* Для крупных карточек */
+    --border-radius-lg: 16px;
 
-    /* Переменные Telegram для совместимости, если где-то понадобятся */
+    /* Переменные Telegram для совместимости */
     --tg-theme-bg-color: var(--color-bg);
     --tg-theme-text-color: var(--color-text-primary);
     --tg-theme-hint-color: var(--color-text-secondary);
@@ -28,18 +32,77 @@
 body {
     font-family: var(--font-primary);
     margin: 0;
-    padding: 20px; /* Увеличим общий padding */
+    padding: 20px;
     background-color: var(--color-bg);
     color: var(--color-text-primary);
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased; /* Для лучшего рендеринга шрифтов */
+    -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: calc(100vh - 40px); /* Чтобы футер не "прыгал" при малой высоте контента */
+    display: flex; /* Для центрирования .container, если он меньше высоты экрана */
+    flex-direction: column; /* Если будет футер */
 }
 
 .container {
     max-width: 600px;
-    margin: 0 auto;
+    width: 100%;
+    margin: auto; /* Центрирование по вертикали и горизонтали */
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
 }
+.container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* --- PRELOADER STYLES --- */
+#preloader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: var(--color-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 1;
+    transition: opacity 0.5s ease-out, visibility 0s linear 0.5s; /* visibility после завершения opacity */
+    visibility: visible;
+}
+
+#preloader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.spinner {
+    width: 50px; /* Уменьшил для более изящного вида */
+    height: 50px;
+    border: 5px solid rgba(var(--color-accent-primary-rgb), 0.2); /* Полупрозрачная рамка */
+    border-top-color: var(--color-accent-primary); /* Яркая часть */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text-below-spinner {
+    margin-top: 20px;
+    font-size: 1em;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* --- END PRELOADER STYLES --- */
+
 
 header {
     text-align: center;
@@ -47,15 +110,15 @@ header {
     padding: 25px 20px;
     background-color: var(--color-card-bg);
     border-radius: var(--border-radius-lg);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Более выраженная тень для темной темы */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 header h1 {
     margin: 0 0 15px 0;
-    font-size: 2em; /* Крупнее */
+    font-size: 2em;
     font-weight: 700;
     letter-spacing: 0.5px;
-    color: #FFFFFF; /* Белый для главного заголовка */
+    color: #FFFFFF;
 }
 
 header p {
@@ -66,11 +129,10 @@ header p {
 
 header p span {
     font-weight: 600;
-    color: var(--color-text-primary); /* Основной цвет текста для цифр */
+    color: var(--color-text-primary);
 }
-/* Акцент для важных цифр */
 #subscribers-count, #balance-count {
-    color: var(--color-accent-primary); /* Яркий акцент */
+    color: var(--color-accent-primary);
     font-size: 1.2em;
 }
 
@@ -83,13 +145,13 @@ header p span {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
-h2 {
+h2, .log h3 { /* Применил стиль h2 и для заголовка лога */
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.6em;
     font-weight: 600;
     color: #FFFFFF;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Разделитель */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
 }
 
@@ -97,45 +159,43 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 100%; /* Кнопки на всю ширину блока для мобильного вида */
+    width: 100%;
     padding: 15px 20px;
-    margin: 10px 0; /* Отступы по вертикали */
+    margin: 10px 0;
     border: none;
     border-radius: var(--border-radius-md);
-    /* Пример градиента для кнопок */
     background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary));
     color: #FFFFFF;
     cursor: pointer;
     font-size: 1.05em;
+    font-family: var(--font-primary); /* Явно указываем шрифт для кнопки */
     font-weight: 600;
     letter-spacing: 0.5px;
-    text-transform: uppercase; /* Заглавные буквы как в референсе */
+    text-transform: uppercase;
     transition: all 0.25s ease-out;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 button:hover {
-    /* Немного осветляем градиент или добавляем "свечение" */
     filter: brightness(1.15);
-    box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb, 59, 130, 246), 0.4); /* Тень в цвет кнопки */
+    box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb), 0.4);
 }
 
 button:active {
     transform: translateY(2px);
     filter: brightness(0.95);
-    box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb, 59, 130, 246), 0.3);
+    box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb), 0.3);
 }
 
 button:disabled {
     background-image: none;
-    background-color: #3A3E4A; /* Темно-серый для неактивных */
+    background-color: #3A3E4A;
     color: var(--color-text-secondary);
     cursor: not-allowed;
     box-shadow: none;
-    text-transform: none; /* Убираем uppercase для неактивных */
+    text-transform: none;
 }
 
-/* Иконки на кнопках (пока просто место) */
 button i {
     margin-right: 10px;
     font-size: 1.2em;
@@ -147,7 +207,7 @@ button i {
     max-height: 180px;
     overflow-y: auto;
     border-radius: var(--border-radius-md);
-    background-color: rgba(0,0,0,0.1); /* Полупрозрачный фон для лога */
+    background-color: rgba(0,0,0,0.1);
     padding: 15px;
 }
 
@@ -161,56 +221,32 @@ button i {
     border-bottom: none;
 }
 
-/* Стилизация лога для успеха/ошибки */
 #event-log li.log-success {
-    color: #4ADE80; /* Ярко-зеленый */
+    color: var(--color-success);
     font-weight: 500;
 }
 #event-log li.log-error {
-    color: #F87171; /* Ярко-красный */
+    color: var(--color-error);
     font-weight: 500;
 }
 #event-log li.log-warning {
-    color: #FACC15; /* Ярко-желтый */
+    color: var(--color-warning);
     font-weight: 500;
 }
-
-/* Если хотите добавить "неоновое свечение" к акцентным элементам (экспериментально) */
-.neon-text {
-    color: #fff;
-    text-shadow:
-        0 0 5px #fff,
-        0 0 10px #fff,
-        0 0 20px var(--color-accent-primary),
-        0 0 30px var(--color-accent-primary),
-        0 0 40px var(--color-accent-primary),
-        0 0 50px var(--color-accent-primary),
-        0 0 60px var(--color-accent-primary);
+/* Добавим класс для обычных info логов, если захотим их стилизовать отдельно */
+#event-log li.log-info {
+    color: var(--color-text-secondary); /* По умолчанию */
 }
-.neon-button-shadow { /* Добавить к кнопке в HTML если нужно */
-   box-shadow: 0 0 5px var(--color-accent-primary),
-               0 0 10px var(--color-accent-primary),
-               0 0 15px var(--color-accent-primary);
+
+footer {
+    text-align: center;
+    padding: 20px 0 0 0; /* Отступ сверху от последнего блока */
+    margin-top: auto; /* Прижимает футер к низу, если контента мало */
 }
-/* --- Preloader Styles --- */
-#preloader {
-    position: fixed; /* За-logo"> -->
-            <!-- <div id="lottie-animation"></div> -->
-        </div>
-    </div>
-
-нимает весь экран и перекрывает все */
-    left: 0;
-    top: 0;
-    <div class="container" style="display: none;"> <!-- Скрываем основной контент пока -->
-        <!--    width: 100%;
-    height: 100%;
-    z-index: 9999; /* Выше всех остальных элементов */
-    background-color: var(--color-bg); /* Фон ... весь ваш существующий контент игры ... -->
-    </div>
-
-    <!-- Скрипты -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+.footer-text {
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+}
     <script прелоадера такой же, как основной фон игры */
     display: flex;
     flex-direction: column; /* src="script.js"></script>

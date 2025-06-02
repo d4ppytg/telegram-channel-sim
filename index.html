@@ -1,38 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Канал Контроль SIM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <meta charset="UTF- হাফ">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Канал Контроль SIM</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-   div id="preloader">
-        <div class="loader-content">
-            <!-- Вариант 1: Просто текст -->
-            <!-- <div class="loading-text">За
-
-```html
-<body>
     <div id="preloader">
         <div class="spinner"></div>
-        <p>Загрузка игры...</p> <!-- Опциональный текст -->
+        <p class="loading-text-below-spinner">Загрузка игры...</p>
     </div>
 
-    <div classгрузка...</div> -->
-
-            <!-- Вариант 2: Простой CSS спиннер (пример) -->
-            <="container">
-        <!-- ... ваш текущий код .container ... -->
-    </div>
-
-    <!-- ... ваши скрипты ...div class="spinner"></div>
-            <p class="loading-text-below-spinner">Загрузка игры -->
-</body>
-    <div class="container">
+    <div class="container" style="display: none;"> <!-- Основной контент скрыт пока -->
         <header>
             <h1 id="channel-name">Мой Супер Канал</h1>
             <p>Подписчики: <span id="subscribers-count">0</span></p>
@@ -45,28 +28,28 @@
                 <h2>Действия:</h2>
                 <button id="post-text-button">Опубликовать Текстовый Пост</button>
                 <button id="post-meme-button">Опубликовать Мем (просто)</button>
-                <!-- Добавим позже другие типы постов и действия -->
+                <button id="post-video-button">Опубликовать Видеоролик</button>
             </div>
 
             <div class="upgrades">
                 <h2>Улучшения:</h2>
                 <button id="upgrade-content-quality" data-cost="50">Улучшить качество контента (Стоимость: $50)</button>
-                 <button id="post-video-button">Опубликовать Видеоролик</button> <!-- НАША НОВАЯ КНОПКА -->
-                <!-- Добавим позже другие улучшения -->
             </div>
 
             <div class="log">
                 <h3>Лог событий:</h3>
                 <ul id="event-log">
-                    <li>Игра началась!</li>
+                    <!-- Логи будут добавляться сюда через JS -->
                 </ul>
             </div>
         </main>
+
+        <footer>
+            <p class="footer-text">Игра в разработке <span id="game-version">v0.2</span></p>
+        </footer>
     </div>
 
-    <!-- Скрипт для интеграции с Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Наш основной скрипт игры -->
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,11 +1,39 @@
+/* Глобальные переменные для цветов и шрифтов */
+:root {
+    --font-primary: 'Montserrat', sans-serif;
+
+    --color-bg: #16181D; /* Основной фон */
+    --color-card-bg: #1F232D; /* Фон карточек */
+    --color-text-primary: #E0E0E0; /* Основной текст */
+    --color-text-secondary: #A0A0A0; /* Второстепенный текст, подсказки */
+    
+    --color-accent-primary: #3B82F6; /* Ярко-синий */
+    --color-accent-primary-darker: #2563EB;
+    --color-accent-secondary: #8A2BE2; /* Фиолетовый для градиента или альтернативы */
+
+    --border-radius-sm: 6px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 16px; /* Для крупных карточек */
+
+    /* Переменные Telegram для совместимости, если где-то понадобятся */
+    --tg-theme-bg-color: var(--color-bg);
+    --tg-theme-text-color: var(--color-text-primary);
+    --tg-theme-hint-color: var(--color-text-secondary);
+    --tg-theme-link-color: var(--color-accent-primary);
+    --tg-theme-button-color: var(--color-accent-primary);
+    --tg-theme-button-text-color: #FFFFFF;
+    --tg-theme-secondary-bg-color: var(--color-card-bg);
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Более системные шрифты */
+    font-family: var(--font-primary);
     margin: 0;
-    padding: 15px;
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
-    transition: background-color 0.3s, color 0.3s;
-    line-height: 1.5; /* Улучшает читаемость текста */
+    padding: 20px; /* Увеличим общий padding */
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased; /* Для лучшего рендеринга шрифтов */
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
@@ -15,114 +43,152 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 25px; /* Увеличим отступ */
-    padding: 15px; /* Увеличим внутренний отступ */
-    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    border-radius: 12px; /* Чуть больше скругление */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Легкая тень */
+    margin-bottom: 30px;
+    padding: 25px 20px;
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Более выраженная тень для темной темы */
 }
 
 header h1 {
-    margin: 0 0 10px 0;
-    font-size: 1.8em; /* Крупнее заголовок */
+    margin: 0 0 15px 0;
+    font-size: 2em; /* Крупнее */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #FFFFFF; /* Белый для главного заголовка */
 }
 
 header p {
-    margin: 8px 0; /* Увеличим отступы между строками */
+    margin: 10px 0;
     font-size: 1.1em;
+    color: var(--color-text-secondary);
 }
 
-header p span { /* Выделим цифры */
-    font-weight: bold;
-    color: var(--tg-theme-link-color, #007bff); /* Используем цвет ссылки для акцента */
+header p span {
+    font-weight: 600;
+    color: var(--color-text-primary); /* Основной цвет текста для цифр */
 }
+/* Акцент для важных цифр */
+#subscribers-count, #balance-count {
+    color: var(--color-accent-primary); /* Яркий акцент */
+    font-size: 1.2em;
+}
+
 
 .actions, .upgrades, .log {
-    margin-bottom: 25px; /* Увеличим отступ */
-    padding: 20px; /* Увеличим внутренний отступ */
-    background-color: var(--tg-theme-secondary-bg-color, #f9f9f9);
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    padding: 25px;
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.4em;
+    margin-bottom: 20px;
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #FFFFFF;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Разделитель */
+    padding-bottom: 10px;
 }
 
 button {
-    display: inline-flex; /* Для выравнивания иконок и текста */
-    align-items: center; /* Выравнивание иконки и текста по центру */
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    padding: 12px 20px; /* Увеличим кнопку */
-    margin: 8px 5px; /* Увеличим отступы между кнопками */
+    width: 100%; /* Кнопки на всю ширину блока для мобильного вида */
+    padding: 15px 20px;
+    margin: 10px 0; /* Отступы по вертикали */
     border: none;
-    border-radius: 8px;
-    background-color: var(--tg-theme-button-color, #007bff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    border-radius: var(--border-radius-md);
+    /* Пример градиента для кнопок */
+    background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary));
+    color: #FFFFFF;
     cursor: pointer;
-    font-size: 1em; /* Размер текста на кнопке */
-    font-weight: 500;
-    transition: background-color 0.2s, opacity 0.2s, transform 0.1s; /* Плавные переходы */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Легкая тень для кнопок */
+    font-size: 1.05em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase; /* Заглавные буквы как в референсе */
+    transition: all 0.25s ease-out;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 button:hover {
-    opacity: 0.85; /* Чуть сильнее затемнение при наведении */
+    /* Немного осветляем градиент или добавляем "свечение" */
+    filter: brightness(1.15);
+    box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb, 59, 130, 246), 0.4); /* Тень в цвет кнопки */
 }
 
-button:active { /* Эффект нажатия */
-    transform: translateY(1px);
-    box-shadow: none;
+button:active {
+    transform: translateY(2px);
+    filter: brightness(0.95);
+    box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb, 59, 130, 246), 0.3);
 }
 
 button:disabled {
-    background-color: var(--tg-theme-hint-color, #cccccc); /* Используем цвет подсказки для неактивной кнопки */
-    color: var(--tg-theme-secondary-bg-color, #a0a0a0);
+    background-image: none;
+    background-color: #3A3E4A; /* Темно-серый для неактивных */
+    color: var(--color-text-secondary);
     cursor: not-allowed;
     box-shadow: none;
+    text-transform: none; /* Убираем uppercase для неактивных */
 }
 
-/* Стили для кнопок действий, если захотите добавить иконки (пока без самих иконок) */
-.actions button i, .upgrades button i { /* Предполагается, что иконка будет внутри тега <i> */
-    margin-right: 8px; /* Отступ между иконкой и текстом */
-    font-size: 1.1em;
+/* Иконки на кнопках (пока просто место) */
+button i {
+    margin-right: 10px;
+    font-size: 1.2em;
 }
-
 
 #event-log {
     list-style: none;
     padding: 0;
-    max-height: 150px; /* Можно увеличить, если нужно */
+    max-height: 180px;
     overflow-y: auto;
-    border: 1px solid var(--tg-theme-hint-color, #eee); /* Граница в цвет подсказки */
-    padding: 10px 15px;
-    border-radius: 8px;
-    background-color: var(--tg-theme-bg-color, #fff); /* Фон лога такой же как у body */
+    border-radius: var(--border-radius-md);
+    background-color: rgba(0,0,0,0.1); /* Полупрозрачный фон для лога */
+    padding: 15px;
 }
 
 #event-log li {
-    padding: 6px 0; /* Увеличим отступы */
-    font-size: 0.95em;
-    border-bottom: 1px dashed var(--tg-theme-hint-color, #eee);
-    color: var(--tg-theme-text-color, #333); /* Цвет текста по умолчанию */
+    padding: 8px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--color-text-secondary);
 }
-
 #event-log li:last-child {
     border-bottom: none;
 }
 
-/* Пример стилизации для сообщений в логе (нужно будет добавлять классы в JS) */
+/* Стилизация лога для успеха/ошибки */
 #event-log li.log-success {
-    color: var(--tg-theme-link-color, green); /* Или другой зеленый */
-    font-weight: 500;
-}
-#event-log li.log-warning {
-    color: orange;
+    color: #4ADE80; /* Ярко-зеленый */
     font-weight: 500;
 }
 #event-log li.log-error {
-    color: var(--tg-theme-destructive-text-color, red); /* Цвет для "деструктивных" действий */
+    color: #F87171; /* Ярко-красный */
     font-weight: 500;
+}
+#event-log li.log-warning {
+    color: #FACC15; /* Ярко-желтый */
+    font-weight: 500;
+}
+
+/* Если хотите добавить "неоновое свечение" к акцентным элементам (экспериментально) */
+.neon-text {
+    color: #fff;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px var(--color-accent-primary),
+        0 0 30px var(--color-accent-primary),
+        0 0 40px var(--color-accent-primary),
+        0 0 50px var(--color-accent-primary),
+        0 0 60px var(--color-accent-primary);
+}
+.neon-button-shadow { /* Добавить к кнопке в HTML если нужно */
+   box-shadow: 0 0 5px var(--color-accent-primary),
+               0 0 10px var(--color-accent-primary),
+               0 0 15px var(--color-accent-primary);
 }

@@ -13,7 +13,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const postTextButton = document.getElementById('post-text-button');
     const postMemeButton = document.getElementById('post-meme-button');
+    const postVideoButton = document.getElementById('post-video-button');
     const upgradeContentQualityButton = document.getElementById('upgrade-content-quality');
+const baseSubGainMin = 8;
+    const baseSubGainMax = 20;
+    const baseMoneyGainMin = 7;
+    const baseMoneyGainMax = 18;
+    const baseErMin = 3; // в процентах
+    const baseErMax = 10; // в процентах
+
+    // Расчет с учетом случайности и множителя качества
+    const subGain = Math.floor((Math.random() * (baseSubGainMax - baseSubGainMin + 1) + baseSubGainMin) * gameState.contentQualityMultiplier);
+    const moneyGain = Math.floor((Math.random() * (baseMoneyGainMax - baseMoneyGainMin + 1) + baseMoneyGainMin) * gameState.contentQualityMultiplier);
+    
+    gameState.subscribers += subGain;
+    gameState.balance += moneyGain;
+    gameState.postsMade++;
+    // ER рассчитываем немного по-другому для разнообразия, но тоже с множителем
+    let newER = (Math.random() * (baseErMax - baseErMin) + baseErMin) * (gameState.contentQualityMultiplier / 1.5 + 0.5); // Множитель качества влияет, но чуть слабее чем на текст/мемы
+    newER = Math.min(Math.max(newER, 0), 100); // Ограничиваем ER от 0 до 100
+
+    // Можно сделать ER более зависимым от текущего количества подписчиков для реализма
+    // Например, если подписчиков мало, то и абсолютный ER от поста будет ниже
+    if (gameState.subscribers < 100) {
+        newER *= (gameState.subscribers / 100);
+    }
+    
+    gameState.engagementRate = parseFloat(newER.toFixed(1));
+
+
+    logEvent(`Опубликован видеоролик! +${subGain} подписчиков, +$${moneyGain}. ER: ${gameState.engagementRate}%`);
+    updateUI();
+    saveGame();
+    checkUpgradeButton(); // Проверяем доступность улучшений, т.к. баланс мог измениться
+    tg.HapticFeedback.notificationOccurred('success');
+});
 
     // Игровые переменные (состояние)
     let gameState = {

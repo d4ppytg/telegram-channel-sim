@@ -12,12 +12,9 @@
 <body>
     <div id="preloader">
         <div class="loader-container">
-            <div class="pulsing-logo-placeholder">
-            </div>
+            <div class="pulsing-logo-placeholder"></div>
             <div class="loading-dots">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
             </div>
             <p class="loader-text">Загрузка Канал Контроль...</p>
         </div>
@@ -28,26 +25,10 @@
             <h2>Выберите Тематику Канала!</h2>
             <p>От этого выбора будут зависеть ваши стартовые возможности и реакция аудитории.</p>
             <div class="themes-grid">
-                <div class="theme-card" data-theme="news">
-                    <div class="theme-icon">📰</div>
-                    <h3>Новости</h3>
-                    <p>Быстрый рост, высокий охват при попадании в тренд. Требует частого постинга.</p>
-                </div>
-                <div class="theme-card" data-theme="entertainment">
-                    <div class="theme-icon">😂</div>
-                    <h3>Развлечения</h3>
-                    <p>Мемы и юмор. Высокая виральность, но сложно удерживать качество. Аудитория активна.</p>
-                </div>
-                <div class="theme-card" data-theme="education">
-                    <div class="theme-icon">📚</div>
-                    <h3>Образование</h3>
-                    <p>Медленный, но стабильный рост лояльной аудитории. Качественный контент ценится.</p>
-                </div>
-                <div class="theme-card" data-theme="tech">
-                    <div class="theme-icon">💻</div>
-                    <h3>Технологии</h3>
-                    <p>Нишевая, но очень вовлеченная аудитория. Обзоры, гайды, новости IT.</p>
-                </div>
+                <div class="theme-card" data-theme="news"><div class="theme-icon">📰</div><h3>Новости</h3><p>Быстрый рост, высокий охват. Требует частого постинга.</p></div>
+                <div class="theme-card" data-theme="entertainment"><div class="theme-icon">😂</div><h3>Развлечения</h3><p>Мемы и юмор. Высокая виральность. Аудитория активна.</p></div>
+                <div class="theme-card" data-theme="education"><div class="theme-icon">📚</div><h3>Образование</h3><p>Медленный, но стабильный рост лояльной аудитории.</p></div>
+                <div class="theme-card" data-theme="tech"><div class="theme-icon">💻</div><h3>Технологии</h3><p>Нишевая, но очень вовлеченная аудитория.</p></div>
             </div>
         </div>
     </div>
@@ -55,14 +36,12 @@
     <div id="welcome-screen" class="full-screen-overlay" style="display: none;">
         <div class="welcome-content">
             <h2>Добро пожаловать в Канал Контроль!</h2>
-            <p>Чтобы персонализировать ваш опыт, мы используем ваш Telegram username.</p>
-            
+            <p>Мы используем ваш Telegram username для персонализации.</p>
             <div class="user-info-display">
                 <img id="user-photo" src="placeholder-avatar.png" alt="User Avatar" class="avatar-placeholder">
                 <p>Ваш Username: <span id="telegram-username-display">Загрузка...</span></p>
             </div>
-            
-            <p class="small-note">(В реальном приложении эти данные получаются с вашего разрешения через Telegram API)</p>
+            <p class="small-note">(Данные получаются с вашего разрешения через Telegram API)</p>
             <button id="start-game-button">Начать Игру!</button>
         </div>
     </div>
@@ -73,11 +52,15 @@
             <p>Подписчики: <span id="subscribers-count">0</span></p>
             <p>Баланс: $<span id="balance-count">100</span></p>
             <p>Вовлеченность (ER): <span id="engagement-rate">0</span>%</p>
-            <p>Настроение: <span id="audience-mood-display">75</span>%</p>
-
+            <p>Настроение: <span id="audience-mood-display">75</span>%</p> <!-- НОВЫЙ ЭЛЕМЕНТ -->
         </header>
 
         <main>
+            <!-- НОВЫЙ БЛОК ДЛЯ ТРЕНДА -->
+            <div id="current-trend-display" class="trend-banner" style="display: none;">
+                <p>🔥 В ТРЕНДЕ: <span id="trend-description"></span> (Бонус: x<span id="trend-bonus"></span>, осталось: <span id="trend-duration"></span> постов)</p>
+            </div>
+
             <div class="actions">
                 <h2>Действия:</h2>
                 <button id="post-text-button">Опубликовать Текстовый Пост</button>
@@ -92,16 +75,19 @@
 
             <div class="log">
                 <h3>Лог событий:</h3>
-                <ul id="event-log">
-                    <!-- Логи будут добавляться сюда через JS -->
-                </ul>
+                <ul id="event-log"></ul>
             </div>
         </main>
 
         <footer>
-            <p class="footer-text">Игра в разработке <span id="game-version">v0.3.0</span></p>
+            <p class="footer-text">Игра в разработке <span id="game-version">v0.4.0</span></p>
         </footer>
     </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="script.js"></script>

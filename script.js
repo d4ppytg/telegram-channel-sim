@@ -340,16 +340,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-    }
-    
-    if (tg.BackButton) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-            if (gameContainer && gameContainer.classList.contains('visible')) {
-                saveGame();
-                logEvent("Выход из игры (прогресс сохранен).", "info");
-            }
-            tg.close();
-        });
-    }
-});

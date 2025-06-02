@@ -76,27 +76,35 @@ body {
 
 
 /* --- PRELOADER STYLES --- */
-#preloader { /* Прелоадер виден по умолчанию, т.к. нет класса .visible */
+#preloader {
     position: fixed;
     left: 0;
     top: 0;
+    width: 100vw; /* Используем vw для полной ширины вьюпорта */
+    height: 100vh; /* Используем vh для полной высоты вьюпорта */
     z-index: 9999;
     background-color: var(--color-bg);
+    display: flex;
+    justify-content: center; /* Горизонтальное центрирование */
+    align-items: center;   /* Вертикальное центрирование */
     opacity: 1;
     visibility: visible;
+    /* transition убран отсюда, он будет на .hidden */
 }
 
-#preloader.hidden { /* Класс для скрытия прелоадера */
+#preloader.hidden {
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.7s ease-out, visibility 0s linear 0.7s;
+    transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; /* Перенесли transition сюда */
 }
 
 .loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    /* display: flex; */ /* Уже не нужен, т.к. родитель flex */
+    /* flex-direction: column; */ /* Уже не нужен */
+    /* align-items: center; */ /* Уже не нужен */
+    text-align: center; /* Для текста внутри, если он не flex-item */
+}
+/* ... остальные стили .pulsing-logo-placeholder, .loading-dots, .loader-text остаются ... */
 }
 
 .pulsing-logo-placeholder {

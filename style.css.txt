@@ -1,0 +1,75 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 15px;
+    background-color: var(--tg-theme-bg-color, #ffffff); /* Используем переменные темы Telegram */
+    color: var(--tg-theme-text-color, #000000);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-radius: 8px;
+}
+
+header h1 {
+    margin: 0 0 10px 0;
+}
+
+header p {
+    margin: 5px 0;
+}
+
+.actions, .upgrades, .log {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--tg-theme-secondary-bg-color, #f9f9f9);
+    border-radius: 8px;
+}
+
+button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--tg-theme-button-color, #007bff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#event-log {
+    list-style: none;
+    padding: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#event-log li {
+    padding: 3px 0;
+    font-size: 0.9em;
+    border-bottom: 1px dashed #eee;
+}
+#event-log li:last-child {
+    border-bottom: none;
+}

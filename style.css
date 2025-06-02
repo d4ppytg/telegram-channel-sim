@@ -192,3 +192,26 @@ button i {
                0 0 10px var(--color-accent-primary),
                0 0 15px var(--color-accent-primary);
 }
+/* --- Preloader Styles --- */
+#preloader {
+    position: fixed; /* За-logo"> -->
+            <!-- <div id="lottie-animation"></div> -->
+        </div>
+    </div>
+
+нимает весь экран и перекрывает все */
+    left: 0;
+    top: 0;
+    <div class="container" style="display: none;"> <!-- Скрываем основной контент пока -->
+        <!--    width: 100%;
+    height: 100%;
+    z-index: 9999; /* Выше всех остальных элементов */
+    background-color: var(--color-bg); /* Фон ... весь ваш существующий контент игры ... -->
+    </div>
+
+    <!-- Скрипты -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script прелоадера такой же, как основной фон игры */
+    display: flex;
+    flex-direction: column; /* src="script.js"></script>
+</body>

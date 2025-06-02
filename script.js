@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultGameState = {
         channelName: "Мой Канал",
         subscribers: 0,
+        audienceMood: 75
         balance: 100,
         engagementRate: 0,
         contentQualityMultiplier: 1,

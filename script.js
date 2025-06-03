@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultGameState = {
         channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
         audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "0.7.0", // Новая версия
+        gameVersion: "0.7.0", 
         theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
         currentTrend: null, trendPostsRemaining: 0,
     };
@@ -97,14 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(showNextSlide, 3000);
     }
     function showNextSlide() {
-        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { // Добавил проверку
+        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { 
             cutsceneSlides[currentSlideIndex].classList.remove('active');
             if (currentSlideIndex > 0 && cutsceneSlides[currentSlideIndex - 1]) { 
                 setTimeout(() => { if (cutsceneSlides[currentSlideIndex - 1]) cutsceneSlides[currentSlideIndex - 1].style.display = 'none'; }, 500); 
             }
         }
         currentSlideIndex++;
-        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { // Добавил проверку
+        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { 
             cutsceneSlides[currentSlideIndex].style.display = 'flex'; 
             cutsceneSlides[currentSlideIndex].classList.add('active'); 
             setTimeout(showNextSlide, 3000); 
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function initializeGameFlow() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); // Новый ключ
+        const savedState = localStorage.getItem('channelSimGameState_v7'); 
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState }; if (gameState.theme) { showWelcomeScreen(); return; } }
         gameState = { ...defaultGameState }; saveGame(); showThemeSelectionScreen();
     }
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); // Новый ключ
+        const savedState = localStorage.getItem('channelSimGameState_v7'); 
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
         if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
         updateUI(); updateTrendUI(); checkUpgradeButtonStatus();
@@ -170,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'block';
         } else {
             if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'none';
-            // gameState.currentTrend = null; // Не нужно сбрасывать здесь, сбросится при генерации нового или если trendPostsRemaining станет 0
         }
     }
     function generateNewTrend() { 
@@ -202,17 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const subGain = Math.floor((Math.random() * (baseSubMax - baseSubMin + 1) + baseSubMin) * gameState.contentQualityMultiplier * themeMod * moodMultiplier * trendBonusMultiplier);
             const moneyGain = Math.floor((Math.random() * (baseMoneyMax - baseMoneyMin + 1) + baseMoneyMin) * gameState.contentQualityMultiplier);
             gameState.subscribers += subGain; gameState.balance += moneyGain; gameState.postsMade++;
-            // gameState.engagementRate - пока не используется в UI студии
             let moodChange = 0;
             if (subGain > 2) moodChange = Math.floor(gameState.contentQualityMultiplier * 1.5);
-            else if (subGain < 0 && gameState.subscribers > 0) moodChange = -5; // Отнимаем настроение только если есть подписчики, и пост ушел в минус
+            else if (subGain < 0 && gameState.subscribers > 0) moodChange = -5; 
             gameState.audienceMood = Math.min(Math.max(gameState.audienceMood + moodChange, 0), 100);
             if (gameState.audienceMood < 30 && gameState.subscribers > 10) { const uC = (30 - gameState.audienceMood) / 30; if (Math.random() < uC * 0.05) { const unsub = Math.min(gameState.subscribers, Math.floor(Math.random()*(gameState.subscribers*0.03)+1)); gameState.subscribers -= unsub; logEvent(`Аудитория недовольна! Отписалось ${unsub} подписчиков.`, 'error'); gameState.audienceMood = Math.max(gameState.audienceMood - 3, 0);}}
             logEvent(`Опубликован ${getPostTypeName(postType)}! +${subGain} подписчиков, +$${moneyGain}.`, 'success');
             if (gameState.currentTrend && gameState.trendPostsRemaining > 0) { gameState.trendPostsRemaining--; }
             if ((!gameState.currentTrend || gameState.trendPostsRemaining <= 0) && gameState.postsMade > 2) { if (Math.random() < 0.20) { generateNewTrend(); }}
             
-            // Реакция персонажа
             if (subGain > 8) { setCharacterState(CHARACTER_STATES.HAPPY, 3000); }
             else { setCharacterState(CHARACTER_STATES.IDLE_BLINKING); }
 
@@ -235,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.audienceMood = Math.min(gameState.audienceMood + 2, 100);
             updateUI(); saveGame(); checkUpgradeButtonStatus();
             tg.HapticFeedback.impactOccurred('medium');
-            setCharacterState(CHARACTER_STATES.HAPPY, 1500); // Персонаж радуется улучшению
+            setCharacterState(CHARACTER_STATES.HAPPY, 1500); 
             closeModal(upgradesModal);
         } else { logEvent("Недостаточно средств для улучшения.", 'error'); tg.HapticFeedback.notificationOccurred('error');}
      });
@@ -260,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         if (preloader) { preloader.classList.remove('visible'); setTimeout(() => { if(preloader) preloader.style.display = 'none'; }, 700); }
         initializeGameFlow();
-    }, 1500); 
+    }, 2500); // Общее время показа прелоадера (можно настроить)
 
     if (startGameButton) {
         startGameButton.addEventListener('click', () => {

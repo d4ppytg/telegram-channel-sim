@@ -10,70 +10,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="preloader" class="full-screen-overlay">
-        <div class="loader-container">
-            <div class="pulsing-logo-placeholder"></div>
-            <div class="loading-dots">
-                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            </div>
-            <p class="loader-text">Загрузка Канал Контроль...</p>
-        </div>
-    </div>
+    <!-- === ЭКРАНЫ ДО НАЧАЛА ИГРЫ === -->
+    <div id="preloader" class="full-screen-overlay"> <!-- ... как раньше ... --> </div>
+    <div id="theme-selection-screen" class="full-screen-overlay" style="display: none;"> <!-- ... как раньше ... --> </div>
+    <div id="welcome-screen" class="full-screen-overlay" style="display: none;"> <!-- ... как раньше ... --> </div>
+    <div id="cutscene-screen" class="full-screen-overlay" style="display: none;"> <!-- ... как раньше ... --> </div>
+    <!-- === КОНЕЦ ЭКРАНОВ ДО НАЧАЛА ИГРЫ === -->
 
-    <div id="theme-selection-screen" class="full-screen-overlay" style="display: none;">
-        <div class="theme-selection-content">
-            <h2>Выберите Тематику Канала!</h2>
-            <p>От этого выбора будут зависеть ваши стартовые возможности и реакция аудитории.</p>
-            <div class="themes-grid">
-                <div class="theme-card" data-theme="news"><div class="theme-icon">📰</div><h3>Новости</h3><p>Быстрый рост, высокий охват. Требует частого постинга.</p></div>
-                <div class="theme-card" data-theme="entertainment"><div class="theme-icon">😂</div><h3>Развлечения</h3><p>Мемы и юмор. Высокая виральность. Аудитория активна.</p></div>
-                <div class="theme-card" data-theme="education"><div class="theme-icon">📚</div><h3>Образование</h3><p>Медленный, но стабильный рост лояльной аудитории.</p></div>
-                <div class="theme-card" data-theme="tech"><div class="theme-icon">💻</div><h3>Технологии</h3><p>Нишевая, но очень вовлеченная аудитория.</p></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="welcome-screen" class="full-screen-overlay" style="display: none;">
-        <div class="welcome-content">
-            <h2>Добро пожаловать в Канал Контроль!</h2>
-            <p>Мы используем ваш Telegram username для персонализации.</p>
-            <div class="user-info-display">
-                <img id="user-photo" src="placeholder-avatar.png" alt="User Avatar" class="avatar-placeholder">
-                <p>Ваш Username: <span id="telegram-username-display">Загрузка...</span></p>
-            </div>
-            <p class="small-note">(Данные получаются с вашего разрешения через Telegram API)</p>
-            <button id="start-game-button">Начать Игру!</button>
-        </div>
-    </div>
-
-    <div id="cutscene-screen" class="full-screen-overlay" style="display: none;">
-        <div class="cutscene-slide" id="slide1" style="display: none;">
-            <div class="cutscene-logo-placeholder">💡</div>
-            <h2>Мечта о Вершине</h2>
-            <p>Вы всегда хотели свой популярный канал...</p>
-        </div>
-        <div class="cutscene-slide" id="slide2" style="display: none;">
-            <div class="cutscene-logo-placeholder">🚀</div>
-            <h2>Время Действовать!</h2>
-            <p>Путь к тысячам подписчиков начинается прямо сейчас!</p>
-        </div>
-    </div>
-
-    <div class="studio-container" style="display: none;">
-        <header class="studio-header">
-            <div class="stats-block">
-                <p>Подписчики: <span id="subscribers-count">0</span></p>
-                <p>Баланс: $<span id="balance-count">100</span></p>
-            </div>
-            <div class="mood-block">
-                <p>Настроение: <span id="audience-mood-display">75</span>%</p>
-            </div>
-        </header>
-
+    <!-- === ОСНОВНОЙ ИГРОВОЙ ИНТЕРФЕЙС (СТУДИЯ) === -->
+    <div id="studio-screen-container" class="full-screen-overlay" style="display: none;"> 
+        <header class="studio-header"> <!-- ... как раньше ... --> </header>
         <main class="studio-main">
-            <div class="character-wrapper">
-                <div id="character-sprite"></div> 
-            </div>
+            <div class="character-wrapper"><div id="character-sprite"></div></div>
             <div class="computer-area">
                 <div class="monitor-screen">
                     <div id="channel-feed-placeholder">
@@ -82,52 +30,65 @@
                             <p>🔥 <span id="trend-description-monitor"></span></p>
                         </div>
                     </div>
-                    <div class="monitor-actions">
-                        <button id="create-post-button-monitor">Создать Пост</button>
+                    <div class="monitor-actions"> 
+                        <button id="open-text-lab-button">Начать Текстовый Пост</button> 
+                        <!-- Можно добавить кнопки для других типов постов, открывающие свои "лаборатории" -->
                     </div>
                 </div>
             </div>
-            <div class="side-panel">
-                <button class="icon-button" id="open-upgrades-button" title="Улучшения">⚙️</button>
-                <button class="icon-button" id="open-log-button" title="Лог событий">📜</button>
-            </div>
+            <div id="live-feedback-container"> </div>
         </main>
-        
+        <div class="side-panel"> 
+             <button class="icon-button" id="open-upgrades-button" title="Улучшения">🚀</button>
+             <button class="icon-button" id="open-log-button" title="Лог событий">📜</button>
+        </div>
         <footer class="studio-footer">
-            <p class="footer-text">Игра в разработке <span id="game-version">v0.7.0</span></p>
+            <p class="footer-text">Игра в разработке <span id="game-version">v1.1.0</span></p>
         </footer>
     </div>
+    <!-- === КОНЕЦ ОСНОВНОГО ИГРОВОГО ИНТЕРФЕЙСА === -->
 
-    <!-- Модальные окна -->
-    <div id="create-post-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="create-post-modal">×</span>
-            <h2>Создать Новый Пост</h2>
-            <div class="modal-actions">
-                <button id="post-text-button">Текстовый Пост</button>
-                <button id="post-meme-button">Мем</button>
-                <button id="post-video-button">Видеоролик</button>
+    <!-- === ЛАБОРАТОРИЯ ТЕКСТОВОГО КОНТЕНТА === -->
+    <div id="text-post-lab-screen" class="full-screen-overlay game-lab-screen" style="display: none;">
+        <div class="lab-content">
+            <h2 id="text-lab-title">Создание Текстового Поста</h2>
+            
+            <div id="text-lab-step-title-selection" class="lab-step">
+                <h3>Шаг 1: Выберите Заголовок</h3>
+                <div class="title-options-grid">
+                    <!-- Заполняется JS -->
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="upgrades-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="upgrades-modal">×</span>
-            <h2>Улучшения Канала</h2>
-            <div class="modal-upgrades">
-                <button id="upgrade-content-quality" data-cost="50">Улучшить качество контента (Стоимость: $50)</button>
+            <div id="text-lab-step-word-flow" class="lab-step" style="display: none;">
+                <h3>Шаг 2: Напишите Пост!</h3>
+                <p class="lab-instruction">Кликайте на "хорошие" слова, чтобы добавить их в текст. Избегайте "плохих"!</p>
+                <div class="word-flow-stats">
+                    <span>Время: <span id="word-flow-time-left">30</span>с</span>
+                    <span>Качество: <span id="word-flow-quality-score">0</span></span>
+                </div>
+                <div class="word-flow-area">
+                    <!-- Сюда JS будет добавлять слова для клика -->
+                </div>
+                <div class="collected-words-preview">
+                    <h4>Предпросмотр вашего поста:</h4>
+                    <div id="собранный-текст-поста-в-лабе"></div>
+                </div>
             </div>
+
+            <div id="text-lab-step-publish" class="lab-step" style="display: none;">
+                <h3>Пост Готов!</h3>
+                <p>Итоговое качество: <span id="final-post-quality-display">0</span></p>
+                <button id="publish-text-post-from-lab-button">Опубликовать!</button>
+            </div>
+            <button id="cancel-text-post-lab-button" class="cancel-lab-button">Отмена</button>
         </div>
     </div>
-    
-    <div id="log-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="log-modal">×</span>
-            <h2>Лог Событий</h2>
-            <ul id="event-log"></ul>
-        </div>
-    </div>
+    <!-- === КОНЕЦ ЛАБОРАТОРИИ === -->
+
+    <!-- === МОДАЛЬНЫЕ ОКНА (Улучшения, Лог) === -->
+    <div id="upgrades-modal" class="modal-overlay" style="display: none;"> <!-- ... как раньше ... --> </div>
+    <div id="log-modal" class="modal-overlay" style="display: none;"> <!-- ... как раньше ... --> </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="script.js"></script>

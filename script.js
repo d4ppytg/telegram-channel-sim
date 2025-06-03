@@ -171,8 +171,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             console.log("DEBUG: Event listeners successfully ADDED to all theme cards.");
-        } else { console.error("DEBUG: CRITICAL - No .theme-card found INSIDE #theme-selection-screen!"); }
-    } else { console.error("DEBUG: CRITICAL - #theme-selection-screen NOT FOUND for attaching listeners!");}
+       /* --- THEME SELECTION SCREEN STYLES --- */
+#theme-selection-screen.visible .theme-selection-content { 
+    /* Стили для контента, когда сам экран видим */
+    /* pointer-events: auto; -- УБЕРЕМ ЭТО ПОКА ОТСЮДА */
+}
+
+#theme-selection-screen .theme-selection-content { 
+    /* background-color: var(--color-card-bg); -- ВРЕМЕННО СДЕЛАЕМ ПРОЗРАЧНЫМ */
+    background-color: rgba(0, 255, 0, 0.1); /* Полупрозрачный зеленый для отладки */
+    padding: 25px; 
+    border-radius: var(--border-radius-lg); 
+    /* box-shadow: 0 10px 30px rgba(0,0,0,0.4); -- ВРЕМЕННО УБЕРЕМ ТЕНЬ */
+    max-width: 600px; 
+    width: 90%; 
+    text-align: center; 
+    max-height: calc(100vh - 40px); 
+    overflow-y: auto;
+    box-sizing: border-box;
+    pointer-events: none; /* ВАЖНО: Сам контейнер контента НЕ должен перехватывать клики */
+}
+
+/* ... (стили для h2, p, .themes-grid остаются) ... */
+
+#theme-selection-screen .theme-card { 
+    background-color: rgba(var(--color-accent-primary-rgb), 0.3); /* Явный фон для карточек */
+    border: 2px solid var(--color-accent-primary) !important;  /* Явная рамка */
+    padding: 15px; 
+    border-radius: var(--border-radius-md); 
+    cursor: pointer; 
+    transition: all 0.25s ease-in-out; 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
+    pointer-events: auto !important; /* ВАЖНО: Карточки ДОЛЖНЫ быть кликабельны */
+    position: relative; /* Чтобы z-index сработал */
+    z-index: 100001 !important; /* Поднять карточки НАД ВСЕМ, включая модальные окна */
+}
+/* ... (остальные стили для .theme-card, .theme-icon, h3, p остаются) ... */
     
     // --- ОСТАЛЬНЫЕ ОБРАБОТЧИКИ (Интерактивный монитор, Навигация, Модалки, Улучшения) ---
     if (initiatePostCreationButton) { /* ... как раньше ... */ }

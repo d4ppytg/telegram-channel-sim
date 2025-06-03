@@ -1,112 +1,155 @@
+/* Глобальные переменные для цветов и шрифтов */
+:root {
+    --font-primary: 'Montserrat', sans-serif;
+    --color-bg: #16181D; --color-card-bg: #1F232D; --color-card-bg-rgb: 31, 35, 45; 
+    --color-text-primary: #E0E0E0; --color-text-secondary: #A0A0A0;
+    --color-accent-primary: #3B82F6; --color-accent-primary-rgb: 59, 130, 246;
+    --color-accent-secondary: #8A2BE2; --color-accent-secondary-rgb: 138, 43, 226;
+    --color-success: #4ADE80; --color-warning: #FACC15; --color-error: #F87171;
+    --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
+    --header-height: 56px; 
+    /* Telegram Theme Vars */
+    --tg-theme-bg-color: var(--color-bg); --tg-theme-text-color: var(--color-text-primary);
+    --tg-theme-hint-color: var(--color-text-secondary); --tg-theme-link-color: var(--color-accent-primary);
+    --tg-theme-button-color: var(--color-accent-primary); --tg-theme-button-text-color: #FFFFFF;
+    --tg-theme-secondary-bg-color: var(--color-card-bg);
+}
+
 body {
-    font-family: sans-serif;
-    margin: 0;
-    background-color: #111;
-    color: white;
+    font-family: var(--font-primary); margin: 0; background-color: var(--color-bg); color: var(--color-text-primary);
+    line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;
 }
 
-/* Стили для ВСЕХ полноэкранных блоков */
+/* Общие стили для полноэкранных оверлеев и основного игрового интерфейса */
 .full-screen-overlay, #game-interface {
-    width: 100vw;
-    height: 100vh;
-    padding: 20px;
+    width: 100%; height: 100vh; 
+    box-sizing: border-box; 
+    opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: fixed; top: 0; left: 0;
+    overflow-y: auto; 
+    padding: 20px; /* Общий padding для всех оверлеев, если их контент не на всю ширину/высоту */
+}
+.full-screen-overlay.visible, #game-interface.visible { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out; }
+
+/* Z-INDEX MANAGEMENT */
+#preloader { z-index: 9999; opacity: 1; visibility: visible; }
+#theme-selection-screen { z-index: 9998; }
+#welcome-screen { z-index: 9998; }
+#cutscene-screen { z-index: 9997; padding: 0; } /* Катсцена сама управляет паддингом слайдов */
+#game-interface { z-index: 100; justify-content: flex-start; align-items: stretch; padding: 0; }
+.modal-overlay { z-index: 10000; }
+
+
+/* --- PRELOADER --- */
+#preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
+.preloader-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 400px; width: 100%;}
+.preloader-hero-image { max-width: 80%; height: auto; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); animation: 등장HeroImage 0.8s 0.2s ease-out forwards; }
+@keyframes 등장HeroImage { to { opacity: 1; transform: translateY(0); } }
+.preloader-title { font-size: 2.2em; color: var(--color-text-primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 0.5px; opacity: 0; animation: 등장Text 0.6s 0.5s ease-out forwards; }
+.preloader-progress-bar-container { width: 80%; max-width: 300px; height: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.5); border-radius: 5px; margin-bottom: 10px; overflow: hidden; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+.preloader-progress-bar-fill { width: 0%; height: 100%; background-image: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: 5px; animation: 채움ProgressBar 2s 0.3s ease-out forwards; }
+@keyframes 채움ProgressBar { from { width: 0%; } to { width: 100%; } }
+.preloader-loading-text { font-size: 1em; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 30px; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+@keyframes 등장Text { to { opacity: 1; } }
+.preloader-footer { position: absolute; bottom: 25px; left: 0; width: 100%; text-align: center; opacity: 0; animation: 등장Text 0.6s 0.9s ease-out forwards; }
+.preloader-footer p { margin: 0; font-size: 0.9em; color: var(--color-text-secondary); }
+.preloader-footer a { color: var(--color-accent-primary); text-decoration: none; font-weight: 500; }
+.preloader-footer a:hover { text-decoration: underline; }
+
+/* --- THEME SELECTION SCREEN STYLES --- */
+/* Контейнер контента для экрана выбора тем */
+#theme-selection-screen .theme-selection-content { 
+    background-color: var(--color-card-bg); 
+    padding: 25px; 
+    border-radius: var(--border-radius-lg); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+    max-width: 600px; /* Максимальная ширина блока с контентом */
+    width: 90%; /* Ширина относительно родителя (.full-screen-overlay) */
+    text-align: center; 
+    max-height: calc(100vh - 40px); /* Максимальная высота (минус паддинги родителя) */
+    overflow-y: auto; /* Скролл, если контент не влезает */
     box-sizing: border-box;
-    border: 2px dashed red; /* Чтобы видеть границы блока */
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: none; /* По умолчанию все скрыты, JS будет показывать */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+}
+#theme-selection-screen .theme-selection-content h2 { 
+    color: #fff; margin: 0 0 10px 0; font-size: 1.6em; border-bottom: none; 
+}
+#theme-selection-screen .theme-selection-content > p { /* Первый параграф с описанием */
+    color: var(--color-text-secondary); margin-bottom: 20px; font-size: 0.95em; line-height: 1.4; 
+}
+#theme-selection-screen .themes-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Адаптивная сетка */
+    gap: 15px; 
+    margin-top: 15px; 
+    width: 100%; 
+}
+#theme-selection-screen .theme-card { 
+    background-color: rgba(var(--color-card-bg-rgb), 0.95); 
+    border: 1px solid rgba(var(--color-accent-primary-rgb), 0.4); 
+    padding: 15px; 
+    border-radius: var(--border-radius-md); 
+    cursor: pointer; 
+    transition: all 0.25s ease-in-out; 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
+}
+#theme-selection-screen .theme-card:hover { 
+    transform: translateY(-4px) scale(1.01); 
+    background-color: rgba(var(--color-accent-primary-rgb), 0.15); 
+    border-color: var(--color-accent-primary); 
+    box-shadow: 0 6px 18px rgba(var(--color-accent-primary-rgb), 0.25); 
+}
+#theme-selection-screen .theme-icon { 
+    font-size: 2em; margin-bottom: 10px; color: var(--color-accent-primary); 
+}
+#theme-selection-screen .theme-card h3 { 
+    color: var(--color-text-primary); font-size: 1.15em; margin: 0 0 8px 0; 
+}
+#theme-selection-screen .theme-card p { 
+    color: var(--color-text-secondary); font-size: 0.8em; line-height: 1.45; flex-grow: 1; 
 }
 
-#game-interface {
-    border-color: blue;
-}
 
-/* Стили для вкладок внутри game-interface */
-.game-screen {
-    width: 90%;
-    height: 80%;
-    border: 1px solid yellow;
-    padding: 10px;
-    margin: 10px;
-    display: none; /* Скрыты по умолчанию */
-    overflow-y: auto;
+/* --- WELCOME SCREEN --- */
+#welcome-screen .welcome-content { /* ... как раньше ... */ }
+/* ... остальные стили для welcome-content ... */
+
+/* --- CUTSCENE --- */
+#cutscene-screen .cutscene-slide { 
+    display: none; flex-direction: column; justify-content: center; align-items: center; 
+    width: 90%; max-width: 500px; /* Размеры слайда */
+    height: auto; max-height: 70vh; 
+    text-align: center; background-color: var(--color-card-bg); 
+    border-radius: var(--border-radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+    padding: 30px 20px; box-sizing: border-box; 
+    opacity: 0; transition: opacity 0.5s ease-in-out; 
+    position: absolute; /* Чтобы слайды были на одном месте */
 }
-.game-screen.active-screen {
-    display: flex !important; /* Показываем активный экран */
-    flex-direction: column;
-    align-items: center;
-}
+#cutscene-screen .cutscene-slide.active { display: flex !important; opacity: 1; z-index: 1; }
+/* ... остальные стили для cutscene ... */
 
 
-/* Чтобы видеть кнопки навигации */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background-color: #333;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000; /* Поверх всего */
-    border-top: 1px solid #555;
-}
-.nav-button {
-    color: white;
-    background-color: #444;
-    padding: 10px;
-    border: 1px solid #666;
-    cursor: pointer;
-}
-.nav-button.active {
-    background-color: #66F;
-}
+/* === ИГРОВОЙ ИНТЕРФЕЙС === */
+/* ... Все стили для .game-header, #game-screens-container, .game-screen, ... */
+/* ... .screen-content-wrapper, вкладок, #studioScreen, персонажа, ... */
+/* ... .computer-area, .monitor-screen, #studio-side-panel, ... */
+/* ... #live-feedback-container, модальных окон, кнопок, .bottom-nav ... */
+/* ... как в ПОЛНОМ CSS из предыдущего ответа, где мы добавляли персонажа и нижнее меню ... */
+/* ВАЖНО: Убедитесь, что все селекторы для элементов внутри #game-interface НЕ содержат префикса .container, а напрямую обращаются к элементам или используют #studioScreen и т.д. */
 
-/* Стили для персонажа, чтобы просто его увидеть */
-#character-sprite {
-    width: 200px;
-    height: 300px;
-    background-image: url('character_sheet.png'); /* Убедитесь, что имя файла правильное! */
-    background-repeat: no-repeat;
-    background-position: -400px 0px; /* Третий кадр (печатает) */
-    border: 1px solid limegreen;
-    margin: 10px;
+/* Пример для .game-header, если он был внутри .container раньше */
+.game-header { /* Был: .container header */
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px; background-color: rgba(var(--color-card-bg-rgb), 0.9);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.25); width:100%; box-sizing: border-box;
+    z-index: 100; flex-shrink: 0;
 }
+/* И так далее для всех остальных блоков, которые раньше могли иметь .container в селекторе */
 
-/* Упрощенные стили для кнопок, чтобы они были видны */
-button {
-    background-color: #555;
-    color: white;
-    padding: 10px 15px;
-    border: 1px solid #777;
-    margin: 5px;
-    cursor: pointer;
-}
-button:disabled {
-    background-color: #222;
-    color: #666;
-    cursor: not-allowed;
-}
-
-/* Простые стили для карточек тем */
-.theme-card {
-    border: 1px solid orange;
-    padding: 10px;
-    margin: 5px;
-    background-color: #2a2a2a;
-    cursor: pointer;
-}
-.theme-card:hover {
-    background-color: #3a3a3a;
-}
-
-/* Модальное окно лога */
-.modal-overlay {
-    border-color: magenta;
-}
+#studioScreen .studio-footer { text-align: center; padding: 10px; width:100%; box-sizing: border-box; margin-top:auto; flex-shrink: 0; }
+#studioScreen .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

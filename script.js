@@ -92,7 +92,28 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DEBUG: Telegram WebApp SDK ready and expanded.");
 
     function setCharacterState(newState, durationMs = 0) { /* ... как раньше ... */ }
-    function showTopLevelScreen(screenElementToShow) { /* ... как раньше с console.log ... */ }
+    function showTopLevelScreen(screenElementToShow) {
+    console.log("DEBUG: showTopLevelScreen called for:", screenElementToShow ? screenElementToShow.id : "null element");
+    // СНАЧАЛА СКРЫВАЕМ ВСЕ
+    [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, gameInterface].forEach(el => {
+        if (el) { 
+            el.classList.remove('visible'); 
+            el.style.display = 'none'; // Гарантированно скрываем
+            // console.log(`DEBUG: Hiding ${el.id}`);
+        }
+    });
+    // ПОТОМ ПОКАЗЫВАЕМ НУЖНЫЙ
+    if (screenElementToShow) {
+        console.log(`DEBUG: Attempting to show ${screenElementToShow.id}`);
+        screenElementToShow.style.display = 'flex'; 
+        requestAnimationFrame(() => { 
+            requestAnimationFrame(() => { 
+                screenElementToShow.classList.add('visible'); 
+                console.log(`DEBUG: ${screenElementToShow.id} class 'visible' added, display is ${getComputedStyle(screenElementToShow).display}.`);
+            }); 
+        });
+    } else { /* ... */ }
+}
     function setActiveGameScreen(targetScreenId) { /* ... как раньше с console.log ... */ }
     function playCutscene() { /* ... как раньше с console.log ... */ }
     function showNextSlide() { /* ... как раньше ... */ }

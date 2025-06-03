@@ -2,20 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DEBUG: DOMContentLoaded - Script execution started.");
     const tg = window.Telegram.WebApp;
 
-    // --- DOM Element Variables (с проверками) ---
-    function getElem(id, required = true, context = document) {
-        const element = context.getElementById(id);
-        if (!element && required) {
-            console.error(`DEBUG FATAL: Element with ID '${id}' NOT FOUND!`);
-        } else if (element && required) {
-            // console.log(`DEBUG: Element '${id}' found.`);
-        }
+    // --- DOM Element Variables ---
+    function getElem(id, required = true) {
+        const element = document.getElementById(id);
+        if (!element && required) console.error(`DEBUG FATAL: Element with ID '${id}' NOT FOUND!`);
         return element;
     }
-    function querySel(selector, parent = document, required = true) { /* ... как раньше ... */ }
-    function querySelAll(selector, parent = document, required = true) { /* ... как раньше ... */ }
+    function querySelAll(selector, parent = document, required = true) {
+        const elements = parent.querySelectorAll(selector);
+        if ((!elements || elements.length === 0) && required) console.warn(`DEBUG Warning: No elements found for selector '${selector}'.`);
+        return elements;
+    }
 
-    // Экраны и оверлеи
     const preloader = getElem('preloader');
     const themeSelectionScreen = getElem('theme-selection-screen');
     const welcomeScreen = getElem('welcome-screen');
@@ -57,18 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const monitorPostTypeButtons = monitorSteps.selectType ? querySelAll('.monitor-button', monitorSteps.selectType, false) : [];
     const effortSlider = getElem('effort-slider', false);
     const effortLevelDisplay = getElem('effort-level-display', false);
-    const selectedThemeNameDisplay = monitorSteps.qualityText ? querySel('.selected-theme-name-monitor', monitorSteps.qualityText, false) : null;
-    const monitorPublishButton = monitorSteps.qualityText ? querySel('.monitor-publish-button', monitorSteps.qualityText, false) : null;
+    const selectedThemeNameDisplay = monitorSteps.qualityText ? monitorSteps.qualityText.querySelector('.selected-theme-name-monitor') : null;
+    const monitorPublishButton = monitorSteps.qualityText ? monitorSteps.qualityText.querySelector('.monitor-publish-button') : null;
     const monitorCancelButtons = querySelAll('#monitor-content-area .monitor-cancel-button', document, false);
     const monitorBackButtons = querySelAll('#monitor-content-area .monitor-back-button', document, false);
     
     const navButtons = querySelAll('.bottom-nav .nav-button', document, false);
-    const upgradeContentQualityButton = querySel('#upgradesScreen #upgrade-content-quality', document, false);
-    const upgradeCostSpan = upgradeContentQualityButton ? querySel('.upgrade-cost', upgradeContentQualityButton, false) : null;
+    const upgradeContentQualityButton = document.querySelector('#upgradesScreen #upgrade-content-quality');
+    const upgradeCostSpan = upgradeContentQualityButton ? upgradeContentQualityButton.querySelector('.upgrade-cost') : null;
     
     const liveFeedbackContainer = getElem('live-feedback-container', false);
 
-    // --- Game State & Constants ---
     const MAX_FEEDBACK_ITEMS = 7;
     const positiveComments = ["Круто!", "Лучший!", "Огонь 🔥", "Люблю!", "Подписка!", "👍👍👍", "Гений!"];
     const neutralComments = ["Интересно.", "Неплохо.", "Пойдет.", "Норм.", "🤔", "Ок."];
@@ -80,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultGameState = {
         channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
         audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "1.0.2_debugFocus", 
+        gameVersion: "1.0.3_finalAttempt", 
         theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
         currentTrend: null, trendPostsRemaining: 0,
     };
@@ -93,36 +90,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setCharacterState(newState, durationMs = 0) { /* ... как раньше ... */ }
     function showTopLevelScreen(screenElementToShow) {
-    console.log("DEBUG: showTopLevelScreen called for:", screenElementToShow ? screenElementToShow.id : "null element");
-    // СНАЧАЛА СКРЫВАЕМ ВСЕ
-    [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, gameInterface].forEach(el => {
-        if (el) { 
-            el.classList.remove('visible'); 
-            el.style.display = 'none'; // Гарантированно скрываем
-            // console.log(`DEBUG: Hiding ${el.id}`);
-        }
-    });
-    // ПОТОМ ПОКАЗЫВАЕМ НУЖНЫЙ
-    if (screenElementToShow) {
-        console.log(`DEBUG: Attempting to show ${screenElementToShow.id}`);
-        screenElementToShow.style.display = 'flex'; 
-        requestAnimationFrame(() => { 
-            requestAnimationFrame(() => { 
-                screenElementToShow.classList.add('visible'); 
-                console.log(`DEBUG: ${screenElementToShow.id} class 'visible' added, display is ${getComputedStyle(screenElementToShow).display}.`);
-            }); 
+        console.log("DEBUG: showTopLevelScreen called for:", screenElementToShow ? screenElementToShow.id : "null_element");
+        [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, gameInterface, logModal].forEach(el => { // Добавил logModal в список скрываемых
+            if (el) { el.classList.remove('visible'); el.style.display = 'none'; el.style.pointerEvents = 'none';}
         });
-    } else { /* ... */ }
-}
-    function setActiveGameScreen(targetScreenId) { /* ... как раньше с console.log ... */ }
+        if (screenElementToShow) {
+            screenElementToShow.style.display = 'flex'; 
+            requestAnimationFrame(() => { requestAnimationFrame(() => { 
+                screenElementToShow.classList.add('visible'); 
+                screenElementToShow.style.pointerEvents = 'auto';
+                console.log(`DEBUG: ${screenElementToShow.id} class 'visible' added, display: ${getComputedStyle(screenElementToShow).display}, pointerEvents: ${getComputedStyle(screenElementToShow).pointerEvents}`);
+            }); });
+        } else { console.error("DEBUG: showTopLevelScreen: target element is null or undefined!");}
+    }
+    function setActiveGameScreen(targetScreenId) { /* ... как раньше, с console.log ... */ }
     function playCutscene() { /* ... как раньше с console.log ... */ }
-    function showNextSlide() { /* ... как раньше ... */ }
+    function showNextSlide() { /* ... как раньше, но в конце startGameplay() ... */ }
     
     function initializeGameFlow() { 
         console.log("DEBUG: --- initializeGameFlow START ---");
         let savedStateJson = null; let themeFromStorage = null;
         try {
-            savedStateJson = localStorage.getItem('channelSimGameState_v11_debugFocusThemeBtn'); 
+            savedStateJson = localStorage.getItem('channelSimGameState_v12_finalAttempt'); 
             console.log("DEBUG: localStorage raw data:", savedStateJson);
             if (savedStateJson) { 
                 const parsedState = JSON.parse(savedStateJson); 
@@ -130,101 +119,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 themeFromStorage = gameState.theme; 
                 console.log("DEBUG: Loaded game state. gameState.theme is:", themeFromStorage);
                 if (themeFromStorage) { 
-                    console.log("DEBUG: Theme IS PRESENT in loaded state. Showing Welcome Screen.");
+                    console.log("DEBUG: Theme IS PRESENT. Showing Welcome Screen.");
                     showWelcomeScreen(); return; 
-                } else { console.log("DEBUG: Theme IS NULL or UNDEFINED in loaded state."); }
-            } else { console.log("DEBUG: No saved state found in localStorage."); }
-        } catch (e) { console.error("DEBUG: Error during localStorage getItem or JSON.parse:", e); savedStateJson = null; }
+                } else { console.log("DEBUG: Theme IS NULL in loaded state."); }
+            } else { console.log("DEBUG: No saved state found."); }
+        } catch (e) { console.error("DEBUG: Error localStorage/JSON.parse:", e); savedStateJson = null; }
         
-        console.log("DEBUG: Proceeding to new game setup / theme selection.");
+        console.log("DEBUG: Proceeding to new game or theme selection.");
         gameState = { ...defaultGameState }; 
-        console.log("DEBUG: gameState reset to default. gameState.theme is now:", gameState.theme); 
+        console.log("DEBUG: gameState reset. theme:", gameState.theme); 
         saveGame(); 
-        console.log("DEBUG: Game saved, NOW attempting to show Theme Selection Screen...");
+        console.log("DEBUG: Game saved, NOW show Theme Selection.");
         showThemeSelectionScreen();
     }
     function showThemeSelectionScreen() { 
         console.log("DEBUG: --- showThemeSelectionScreen CALLED ---"); 
         if (themeSelectionScreen) { 
-            console.log("DEBUG: themeSelectionScreen element IS found. Calling showTopLevelScreen.");
+            console.log("DEBUG: themeSelectionScreen IS found. Calling showTopLevelScreen.");
             showTopLevelScreen(themeSelectionScreen); 
-        } else {
-            console.error("DEBUG: !!! CANNOT SHOW Theme Selection Screen because themeSelectionScreen is NULL !!!");
-        }
+        } else { console.error("DEBUG: !!! themeSelectionScreen is NULL !!!"); }
     }
-    function showWelcomeScreen() { /* ... как раньше ... */ }
-    function startGameplay() { /* ... как раньше ... */ }
-    function loadGame() { /* ... */ }
-    function saveGame() { localStorage.setItem('channelSimGameState_v11_debugFocusThemeBtn', JSON.stringify(gameState)); console.log("DEBUG: Game saved."); }
-    function logEvent(message, type = 'info') { /* ... */ }
-    function updateUI() { /* ... */ }
-    function checkUpgradeButtonStatus() { /* ... */ }
-    function updateTrendUI() { /* ... */ }
-    function generateNewTrend() { /* ... */ }
+    function showWelcomeScreen() { /* ... как раньше, с console.log и showTopLevelScreen ... */ }
+    function startGameplay() { /* ... как раньше, с console.log, setCharacterState и setActiveGameScreen('studioScreen') ... */ }
+    function loadGame() { /* ... как раньше, с ключом v12_finalAttempt ... */ }
+    function saveGame() { localStorage.setItem('channelSimGameState_v12_finalAttempt', JSON.stringify(gameState)); console.log("DEBUG: Game saved."); }
+    function logEvent(message, type = 'info') { /* ... как раньше ... */ }
+    function updateUI() { /* ... как раньше ... */ }
+    function checkUpgradeButtonStatus() { /* ... как раньше ... */ }
+    function updateTrendUI() { /* ... как раньше ... */ }
+    function generateNewTrend() { /* ... как раньше ... */ }
     function getThemeDisplayName(themeKey) { /* ... */ }
     function getPostTypeName(typeKey) { /* ... */ }
-    function showMonitorStep(stepElementToShow) { /* ... как раньше ... */ }
-    function openModal(modalElement) { /* ... */ }
-    function closeModal(modalElement) { /* ... */ }
-    function showFeedback(text, isEmoji = false, username = null) { /* ... */ }
-    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax, effort, themeId) { /* ... как раньше ... */ }
-
-    // --- ОБРАБОТЧИКИ ВЫБОРА ТЕМЫ (с усиленной отладкой) ---
+    function showMonitorStep(stepElementToShow) { /* ... как раньше, с setCharacterState ... */ }
+    
+    // --- ОБРАБОТЧИКИ ВЫБОРА ТЕМЫ ---
     if (themeSelectionScreen) {
         console.log("DEBUG: Attaching listeners to theme cards. themeSelectionScreen is:", themeSelectionScreen);
         const themeCards = themeSelectionScreen.querySelectorAll('.theme-card');
         console.log(`DEBUG: Found ${themeCards.length} theme cards.`);
-
         if (themeCards && themeCards.length > 0) {
             themeCards.forEach((card, index) => {
                 console.log(`DEBUG: Adding click listener to theme card ${index + 1} (data-theme: ${card.dataset.theme})`);
                 card.addEventListener('click', () => {
                     console.log(`DEBUG: Theme card CLICKED! Theme: ${card.dataset.theme}`);
                     const selectedTheme = card.dataset.theme;
-                    gameState.theme = selectedTheme; 
-                    gameState.audienceMood = 75;
-                    switch(selectedTheme) { 
-                        case 'news': gameState.themeModifiers = { text: 1.2, meme: 0.8, video: 1.1 }; gameState.channelName = "Новостной Вестник"; gameState.balance = 110; break;
-                        case 'entertainment': gameState.themeModifiers = { text: 0.9, meme: 1.5, video: 1.2 }; gameState.channelName = "Веселый Уголок"; break;
-                        case 'education': gameState.themeModifiers = { text: 1.3, meme: 0.7, video: 1.0 }; gameState.channelName = "Академия Знаний"; gameState.subscribers = 5; break;
-                        case 'tech': gameState.themeModifiers = { text: 1.1, meme: 1.0, video: 1.3 }; gameState.channelName = "Техно Гуру"; break;
-                    }
+                    gameState.theme = selectedTheme; gameState.audienceMood = 75;
+                    switch(selectedTheme) { /* ... как раньше ... */ }
                     logEvent(`Выбрана тема: ${getThemeDisplayName(selectedTheme)}`, "success");
-                    console.log("DEBUG: Theme selected, saving game and showing welcome screen...");
-                    saveGame(); 
-                    showWelcomeScreen();
+                    console.log("DEBUG: Theme selected, saving and showing welcome screen...");
+                    saveGame(); showWelcomeScreen();
                 });
             });
             console.log("DEBUG: Event listeners successfully ADDED to all theme cards.");
-        } else { 
-            console.error("DEBUG: CRITICAL - No theme cards (.theme-card) found INSIDE #theme-selection-screen!"); 
-        }
-    } else {
-        console.error("DEBUG: CRITICAL - #theme-selection-screen element NOT FOUND in DOM when trying to attach listeners!");
-    }
+        } else { console.error("DEBUG: CRITICAL - No .theme-card found INSIDE #theme-selection-screen!"); }
+    } else { console.error("DEBUG: CRITICAL - #theme-selection-screen NOT FOUND for attaching listeners!");}
     
     // --- ОСТАЛЬНЫЕ ОБРАБОТЧИКИ (Интерактивный монитор, Навигация, Модалки, Улучшения) ---
-    // ... (весь остальной код для if (initiatePostCreationButton), if (monitorCancelButtons) и т.д. как в последнем полном скрипте) ...
-    // Убедитесь, что все селекторы для этих элементов (например, для кнопок на мониторе) правильные
-    // и что элементы существуют в вашем HTML. Я добавил console.warn/error если они не найдены.
+    if (initiatePostCreationButton) { /* ... как раньше ... */ }
+    if (monitorCancelButtons) monitorCancelButtons.forEach(button => { /* ... */ });
+    if (monitorBackButtons) monitorBackButtons.forEach(button => { /* ... */ });
+    if (monitorPostTypeButtons) monitorPostTypeButtons.forEach(button => { /* ... */ });
+    if (monitorSteps.selectThemeText) {
+        const themeButtons = monitorSteps.selectThemeText.querySelectorAll('.monitor-theme-button');
+        if (themeButtons) themeButtons.forEach(button => { /* ... */ });
+    }
+    if (effortSlider) { /* ... */ }
+    if (monitorPublishButton) { /* ... */ }
+    
+    if (navButtons) navButtons.forEach(button => { /* ... */ });
+    function openModal(modalElement) { if (modalElement) { modalElement.style.display = 'flex'; requestAnimationFrame(() => modalElement.classList.add('visible')); modalElement.style.pointerEvents = 'auto';} }
+    function closeModal(modalElement) { if (modalElement) { modalElement.classList.remove('visible'); modalElement.style.pointerEvents = 'none'; setTimeout(() => { modalElement.style.display = 'none'; }, 300); } }
+    if(openLogButton) openLogButton.addEventListener('click', () => openModal(logModal));
+    if(closeModalButtons) closeModalButtons.forEach(button => { /* ... */ });
+    function showFeedback(text, isEmoji = false, username = null) { /* ... */ }
+    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax, effort, themeId) { /* ... как в предыдущем полном коде ... */ }
+    // ОБРАБОТЧИКИ ДЛЯ КНОПОК СОЗДАНИЯ ПОСТА НА ЭКРАНЕ createPostScreen (если он будет использоваться)
+    // Эти кнопки были в HTML для вкладки #createPostScreen, поэтому их обработчики должны быть здесь
+    const postTextBtnTab = document.querySelector('#createPostScreen .content-type-button[data-post-type="text"]');
+    const postMemeBtnTab = document.querySelector('#createPostScreen .content-type-button[data-post-type="meme"]');
+    const postVideoBtnTab = document.querySelector('#createPostScreen .content-type-button[data-post-type="video"]');
+
+    if(postTextBtnTab) postTextBtnTab.addEventListener('click', () => handlePostAction('text', 1, 5, 2, 10, 1, 5, 2, 'generic_text_theme')); // Пример усилия и темы
+    else console.warn("DEBUG: postTextButton on createPostScreen TAB not found");
+    if(postMemeBtnTab) postMemeBtnTab.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8, 2, 'generic_meme_theme'));
+    else console.warn("DEBUG: postMemeButton on createPostScreen TAB not found");
+    if(postVideoBtnTab) postVideoBtnTab.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10, 2, 'generic_video_theme'));
+    else console.warn("DEBUG: postVideoButton on createPostScreen TAB not found");
+    
+    if(upgradeContentQualityButton) { /* ... как в предыдущем полном коде ... */ }
     
     // --- ИНИЦИАЛИЗАЦИЯ ЗАПУСКА ---
     console.log("DEBUG: Attempting to show preloader...");
     if (preloader) {
-        showTopLevelScreen(preloader);
-    } else {
-        console.error("DEBUG: Preloader is null, cannot show. Attempting to start game flow directly.");
-        initializeGameFlow();
-    }
+        showTopLevelScreen(preloader); // Это должно сделать прелоадер видимым и активным
+    } else { /* ... */ }
     
     setTimeout(() => {
         console.log("DEBUG: Preloader timeout! Hiding preloader, calling initializeGameFlow.");
         if (preloader) { 
             preloader.classList.remove('visible'); 
+            preloader.style.pointerEvents = 'none';
             setTimeout(() => { 
                 if(preloader) preloader.style.display = 'none'; 
                 console.log("DEBUG: Preloader display set to none.");
-            }, 700); 
+            }, 500); // Увеличил немного, чтобы совпадало с transition в CSS
         }
         initializeGameFlow();
     }, 2500); 

@@ -64,13 +64,11 @@
         </header>
 
         <main id="game-screens-container">
-            <!-- ЭКРАН "СТУДИЯ" (ГЛАВНАЯ) -->
             <section id="studioScreen" class="game-screen active-screen">
                 <div class="character-wrapper"><div id="character-sprite"></div></div>
                 <div class="computer-area">
                     <div class="monitor-screen">
                         <div id="monitor-content-area">
-                            <!-- Начальное состояние монитора -->
                             <div id="monitor-idle-content" class="monitor-step active-monitor-step">
                                 <p id="channel-name-on-monitor">Название Канала</p>
                                 <div id="current-trend-display-monitor" class="trend-banner-monitor" style="display: none;">
@@ -78,8 +76,6 @@
                                 </div>
                                 <button id="initiate-post-creation-button" class="monitor-main-action-button">Создать Пост</button> 
                             </div>
-    
-                            <!-- Шаг 1: Выбор типа поста -->
                             <div id="monitor-step-select-type" class="monitor-step" style="display: none;">
                                 <h3>Выберите тип контента:</h3>
                                 <div class="monitor-options-grid">
@@ -89,10 +85,8 @@
                                 </div>
                                 <button class="monitor-cancel-button">Отмена</button>
                             </div>
-    
-                            <!-- Шаг 2: Выбор темы (пример для типа "text") -->
                             <div id="monitor-step-select-theme-text" class="monitor-step" style="display: none;">
-                                <h3>Текст: Выберите тему</h3>
+                               <h3>Текст: Выберите тему</h3>
                                 <div class="monitor-options-grid">
                                     <button class="monitor-theme-button" data-theme-id="news_breaking">Срочные новости</button>
                                     <button class="monitor-theme-button" data-theme-id="text_opinion">Личное мнение</button>
@@ -101,8 +95,6 @@
                                 <button class="monitor-back-button" data-target-step-id="monitor-step-select-type">Назад</button>
                                 <button class="monitor-cancel-button">Отмена</button>
                             </div>
-                            
-                            <!-- Шаг 3: Мини-игра / Настройка качества (пример для текста) -->
                             <div id="monitor-step-quality-text" class="monitor-step" style="display: none;">
                                 <h3>Текст: Качество (Тема: <span class="selected-theme-name-monitor"></span>)</h3>
                                 <p>Мини-игра "Редактура" (в разработке)</p>
@@ -115,22 +107,19 @@
                                 <button class="monitor-back-button" data-target-step-id="monitor-step-select-theme-text">Назад</button>
                                 <button class="monitor-cancel-button">Отмена</button>
                             </div>
-                            <!-- Добавьте аналогичные monitor-step-select-theme-meme, monitor-step-quality-meme и т.д. -->
                         </div>
                     </div>
                 </div>
                 <div id="live-feedback-container"> </div>
                  <footer class="studio-footer">
-                    <p class="footer-text">Игра в разработке <span id="game-version">v1.0.0</span></p>
+                    <p class="footer-text">Игра в разработке <span id="game-version">v1.0.3_fix</span></p>
                 </footer>
             </section>
 
-            <!-- ЭКРАН "СОЗДАТЬ КОНТЕНТ" (ТЕПЕРЬ НЕ ИСПОЛЬЗУЕТСЯ ДЛЯ ОСНОВНОГО ФЛОУ) -->
             <section id="createPostScreen" class="game-screen" style="display: none;">
-                <div class="screen-content-wrapper"><h2>Создание Контента (Перенесено на монитор)</h2></div>
+                <div class="screen-content-wrapper"><h2>Создание Контента (Основной флоу на мониторе)</h2> <p>Эта вкладка может быть использована для дополнительных опций или информации в будущем.</p></div>
             </section>
 
-            <!-- ЭКРАН "УЛУЧШЕНИЯ" -->
             <section id="upgradesScreen" class="game-screen" style="display: none;">
                  <div class="screen-content-wrapper">
                     <h2>Улучшения Канала</h2>

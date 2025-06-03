@@ -5,7 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element Variables ---
     // Screens & Overlays
     const preloader = document.getElementById('preloader');
-    const themeSelectionScreen = document.getElementById('theme-selection-screen');
+   const themeSelectionScreen = document.getElementById('theme-selection-screen');
+// Добавьте сразу после этого:
+if (!themeSelectionScreen) {
+    console.error("FATAL ERROR: themeSelectionScreen element NOT FOUND in DOM!");
+} else {
+    console.log("themeSelectionScreen element found:", themeSelectionScreen);
+}
     const welcomeScreen = document.getElementById('welcome-screen');
     const cutsceneScreen = document.getElementById('cutscene-screen');
     const gameInterface = document.getElementById('game-interface');
@@ -146,30 +152,42 @@ document.addEventListener('DOMContentLoaded', () => {
     function showNextSlide() { /* ... как в предыдущем полном коде ... */ }
     
     // --- Game Flow & State Management ---
-    function initializeGameFlow() { /* ... как в предыдущем полном коде с try...catch для localStorage ... */ 
-        console.log("--- initializeGameFlow START ---");
-        let savedStateJson = null;
-        try {
-            savedStateJson = localStorage.getItem('channelSimGameState_v10_interactiveMonitor'); 
-            if (savedStateJson) { 
-                const parsedState = JSON.parse(savedStateJson); 
-                gameState = { ...defaultGameState, ...parsedState }; 
-                console.log("Loaded game state:", gameState);
-                if (gameState.theme) { 
-                    console.log("Theme found, showing Welcome Screen");
-                    showWelcomeScreen(); return; 
-                }
+   function initializeGameFlow() { 
+    console.log("--- initializeGameFlow START ---");
+    let savedStateJson = null;
+    let themeFromStorage = null; // Переменная для отладки
+
+    try {
+        savedStateJson = localStorage.getItem('channelSimGameState_v10_interactiveMonitor'); 
+        console.log("localStorage raw data:", savedStateJson); // << НОВЫЙ ЛОГ
+
+        if (savedStateJson) { 
+            const parsedState = JSON.parse(savedStateJson); 
+            gameState = { ...defaultGameState, ...parsedState }; 
+            themeFromStorage = gameState.theme; // Сохраняем значение темы из хранилища
+            console.log("Loaded game state. gameState.theme is:", themeFromStorage); // << НОВЫЙ ЛОГ
+            
+            if (themeFromStorage) { // Проверяем именно то, что достали из хранилища
+                console.log("Theme IS PRESENT in loaded state. Showing Welcome Screen.");
+                showWelcomeScreen(); 
+                return; 
             } else {
-                 console.log("No saved state found.");
+                console.log("Theme IS NULL or UNDEFINED in loaded state."); // << НОВЫЙ ЛОГ
             }
-        } catch (e) {
-            console.error("Error parsing saved state from localStorage:", e);
-            savedStateJson = null; 
+        } else {
+             console.log("No saved state found in localStorage.");
         }
-        console.log("No valid saved state or no theme, showing Theme Selection Screen");
-        gameState = { ...defaultGameState }; saveGame(); 
-        showThemeSelectionScreen();
+    } catch (e) {
+        console.error("Error during localStorage getItem or JSON.parse:", e);
+        savedStateJson = null; 
     }
+    
+    console.log("Proceeding to new game setup / theme selection.");
+    gameState = { ...defaultGameState }; 
+    console.log("gameState reset to default. gameState.theme is now:", gameState.theme); // << НОВЫЙ ЛОГ
+    saveGame(); 
+    showThemeSelectionScreen(); 
+}
     function showThemeSelectionScreen() { /* ... */ }
     function showWelcomeScreen() { /* ... */ }
     function startGameplay() { /* ... */ }

@@ -52,7 +52,31 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTrend: null, trendPostsRemaining: 0,
     };
     let gameState = { ...defaultGameState };
+// ... (после defaultGameState) ...
 
+const POST_THEMES = {
+    text: [
+        { id: 'hot_news', displayName: '🔥 Горячие Новости', baseMultiplier: 1.1 },
+        { id: 'useful_tips', displayName: '💡 Полезные Советы', baseMultiplier: 1.0 },
+        { id: 'deep_analysis', displayName: '🧐 Глубокий Анализ', baseMultiplier: 1.2 },
+        { id: 'personal_story', displayName: '✍️ Личная История', baseMultiplier: 0.9 }
+    ],
+    meme: [
+        { id: 'animal_memes', displayName: '😹 Мемы про Животных', baseMultiplier: 1.2 },
+        { id: 'current_events', displayName: '🌍 Актуальные События', baseMultiplier: 1.1 },
+        { id: 'classic_memes', displayName: '🗿 Классика Юмора', baseMultiplier: 1.0 },
+        { id: 'gaming_memes', displayName: '🎮 Игровые Мемы', baseMultiplier: 1.15 }
+    ],
+    video: [
+        { id: 'gadget_review', displayName: '📱 Обзор Гаджета', baseMultiplier: 1.2 },
+        { id: 'funny_cats', displayName: '😻 Смешные Котики', baseMultiplier: 1.3 },
+        { id: 'lifehacks', displayName: '🛠️ Лайфхаки', baseMultiplier: 1.1 },
+        { id: 'vlog_day', displayName: '🤳 Мой День (Влог)', baseMultiplier: 0.9 }
+    ]
+};
+
+let selectedPostType = null; // Будем хранить выбранный тип поста
+// ...
     const CHARACTER_STATES = {
         IDLE_BLINKING: 'idle_blinking', TYPING: 'typing',
         HAPPY: 'happy', SLEEPING: 'sleeping' 

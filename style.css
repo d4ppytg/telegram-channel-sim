@@ -1,17 +1,31 @@
 /* Глобальные переменные для цветов и шрифтов */
 :root {
     --font-primary: 'Montserrat', sans-serif;
-    --color-bg: #16181D; --color-card-bg: #1F232D; --color-card-bg-rgb: 31, 35, 45; 
-    --color-text-primary: #E0E0E0; --color-text-secondary: #A0A0A0; --color-text-secondary-rgb: 160, 160, 160;
-    --color-accent-primary: #3B82F6; --color-accent-primary-rgb: 59, 130, 246;
-    --color-accent-secondary: #8A2BE2; --color-accent-secondary-rgb: 138, 43, 226;
-    --color-success: #4ADE80; --color-warning: #FACC15; --color-error: #F87171; --color-error-rgb: 248, 113, 113;
-    --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
+    --color-bg: #16181D; 
+    --color-card-bg: #1F232D; 
+    --color-card-bg-rgb: 31, 35, 45; 
+    --color-text-primary: #E0E0E0; 
+    --color-text-secondary: #A0A0A0; 
+    --color-text-secondary-rgb: 160, 160, 160;
+    --color-accent-primary: #3B82F6; 
+    --color-accent-primary-rgb: 59, 130, 246;
+    --color-accent-secondary: #8A2BE2; 
+    --color-accent-secondary-rgb: 138, 43, 226;
+    --color-success: #4ADE80; 
+    --color-warning: #FACC15; 
+    --color-error: #F87171; 
+    --color-error-rgb: 248, 113, 113;
+    --border-radius-sm: 6px; 
+    --border-radius-md: 10px; 
+    --border-radius-lg: 16px;
     --header-height: 56px; 
     /* Telegram Theme Vars */
-    --tg-theme-bg-color: var(--color-bg); --tg-theme-text-color: var(--color-text-primary);
-    --tg-theme-hint-color: var(--color-text-secondary); --tg-theme-link-color: var(--color-accent-primary);
-    --tg-theme-button-color: var(--color-accent-primary); --tg-theme-button-text-color: #FFFFFF;
+    --tg-theme-bg-color: var(--color-bg); 
+    --tg-theme-text-color: var(--color-text-primary);
+    --tg-theme-hint-color: var(--color-text-secondary); 
+    --tg-theme-link-color: var(--color-accent-primary);
+    --tg-theme-button-color: var(--color-accent-primary); 
+    --tg-theme-button-text-color: #FFFFFF;
     --tg-theme-secondary-bg-color: var(--color-card-bg);
 }
 
@@ -43,21 +57,32 @@ body {
 #welcome-screen { z-index: 9998; }
 #cutscene-screen { z-index: 9997; padding: 0; } 
 #game-interface { z-index: 100; justify-content: flex-start; align-items: stretch; padding: 0; }
-.modal-overlay { z-index: 10000; }
+.modal-overlay { z-index: 10000; padding: 20px; } /* Модалки всегда поверх всего */
 
 
 /* --- PRELOADER --- */
 #preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none !important; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
-/* ... остальные стили прелоадера как в предыдущем полном коде ... */
+.preloader-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 400px; width: 100%;}
+.preloader-hero-image { max-width: 80%; height: auto; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); animation: 등장HeroImage 0.8s 0.2s ease-out forwards; }
+@keyframes 등장HeroImage { to { opacity: 1; transform: translateY(0); } }
+.preloader-title { font-size: 2.2em; color: var(--color-text-primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 0.5px; opacity: 0; animation: 등장Text 0.6s 0.5s ease-out forwards; }
+.preloader-progress-bar-container { width: 80%; max-width: 300px; height: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.5); border-radius: 5px; margin-bottom: 10px; overflow: hidden; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+.preloader-progress-bar-fill { width: 0%; height: 100%; background-image: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: 5px; animation: 채움ProgressBar 2s 0.3s ease-out forwards; }
+@keyframes 채움ProgressBar { from { width: 0%; } to { width: 100%; } }
+.preloader-loading-text { font-size: 1em; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 30px; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+@keyframes 등장Text { to { opacity: 1; } }
+.preloader-footer { position: absolute; bottom: 25px; left: 0; width: 100%; text-align: center; opacity: 0; animation: 등장Text 0.6s 0.9s ease-out forwards; }
+.preloader-footer p { margin: 0; font-size: 0.9em; color: var(--color-text-secondary); }
+.preloader-footer a { color: var(--color-accent-primary); text-decoration: none; font-weight: 500; }
+.preloader-footer a:hover { text-decoration: underline; }
 
 /* --- THEME SELECTION SCREEN STYLES --- */
-#theme-selection-screen.visible .theme-selection-content { pointer-events: auto; }
 #theme-selection-screen .theme-selection-content { 
     background-color: var(--color-card-bg); padding: 25px; border-radius: var(--border-radius-lg); 
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 600px; width: 90%; 
     text-align: center; max-height: calc(100vh - 40px); overflow-y: auto;
     box-sizing: border-box;
-    /* pointer-events: none; -- Убрано, чтобы сам контент был кликабельным, если родитель visible */
+    pointer-events: auto; /* Разрешаем события для самого контента, когда родитель .visible */
 }
 #theme-selection-screen .theme-selection-content h2 { color: #fff; margin: 0 0 10px 0; font-size: 1.6em; border-bottom: none; }
 #theme-selection-screen .theme-selection-content > p { color: var(--color-text-secondary); margin-bottom: 20px; font-size: 0.95em; line-height: 1.4; }
@@ -70,19 +95,106 @@ body {
     display: flex; flex-direction: column; align-items: center; 
     box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
     pointer-events: auto !important; /* Карточки всегда должны быть кликабельны */
-    position: relative; /* Для z-index, если понадобится поднять их еще выше */
-    /* z-index: 1; -- Можно добавить, если .theme-selection-content мешает */
+    position: relative; 
+    z-index: 1; /* Чтобы были выше фона .theme-selection-content, если он тоже имеет pointer-events: auto */
 }
 #theme-selection-screen .theme-card:hover { transform: translateY(-4px) scale(1.01); background-color: rgba(var(--color-accent-primary-rgb), 0.15); border-color: var(--color-accent-primary); box-shadow: 0 6px 18px rgba(var(--color-accent-primary-rgb), 0.25); }
 #theme-selection-screen .theme-icon { font-size: 2em; margin-bottom: 10px; color: var(--color-accent-primary); }
 #theme-selection-screen .theme-card h3 { color: var(--color-text-primary); font-size: 1.15em; margin: 0 0 8px 0; }
 #theme-selection-screen .theme-card p { color: var(--color-text-secondary); font-size: 0.8em; line-height: 1.45; flex-grow: 1; }
 
-/* --- WELCOME SCREEN & CUTSCENE --- */
-/* ... Стили для welcome и cutscene остаются как в предыдущем полном CSS ... */
+/* --- WELCOME SCREEN --- */
+#welcome-screen .welcome-content { /* ... как в предыдущем полном CSS ... */ }
+/* ... остальные стили для welcome-content ... */
+
+/* --- CUTSCENE --- */
+#cutscene-screen .cutscene-slide { /* ... как в предыдущем полном CSS ... */ }
+/* ... остальные стили для cutscene ... */
 
 /* === ИГРОВОЙ ИНТЕРФЕЙС === */
-/* ... Все остальные стили для .game-header, #game-screens-container, .game-screen, ... */
-/* ... #studioScreen, персонажа, монитора, модальных окон, кнопок, .bottom-nav и т.д. ... */
-/* ... как в ПОЛНОМ CSS из ОТВЕТА, ГДЕ МЫ ВНЕДРЯЛИ ИНТЕРАКТИВНЫЙ МОНИТОР И ПЕРСОНАЖА ... */
-/* ... Убедитесь, что стили для интерактивного монитора (.monitor-step, .monitor-button и т.д.) здесь присутствуют ... */
+.game-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: rgba(var(--color-card-bg-rgb), 0.9); box-shadow: 0 1px 5px rgba(0,0,0,0.25); width:100%; box-sizing: border-box; z-index: 100; flex-shrink: 0; height: var(--header-height); }
+.stats-block p, .mood-block p { margin: 3px 0; font-size: 0.9em; }
+.stats-block span, .mood-block span { font-weight: bold; font-size: 1em;}
+.game-header #subscribers-count, .game-header #balance-count, .game-header #audience-mood-display { color: var(--color-accent-primary); }
+
+#game-screens-container { flex-grow: 1; position: relative; overflow-y: auto; width: 100%; }
+.game-screen { display: none; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; width: 100%; min-height: 100%; position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease-out, visibility 0s linear 0.3s; }
+.game-screen.active-screen { display: flex; opacity: 1; visibility: visible; pointer-events: auto; z-index: 1; }
+.screen-content-wrapper { width: 100%; max-width: 600px; text-align: center; padding-top: 10px; }
+.screen-content-wrapper h2 { color: #fff; margin-bottom: 25px; font-size: 1.8em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.screen-content-wrapper > p { margin-bottom: 20px; color: var(--color-text-secondary); }
+
+/* Вкладка "Создать Пост" */
+#createPostScreen .content-type-selection { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+#createPostScreen .content-type-button { padding: 18px 20px; font-size: 1.1em; }
+
+/* Вкладка "Улучшения" */
+#upgradesScreen .upgrades-list { display: flex; flex-direction: column; gap: 15px; }
+#upgradesScreen .upgrade-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--color-card-bg); padding: 15px; border-radius: var(--border-radius-md); text-align: left; }
+#upgradesScreen .upgrade-icon { font-size: 1.8em; margin-right: 15px; color: var(--color-accent-primary); }
+#upgradesScreen .upgrade-info h4 { margin: 0 0 5px 0; font-size: 1.1em; color: var(--color-text-primary); }
+#upgradesScreen .upgrade-info p { margin: 0; font-size: 0.85em; color: var(--color-text-secondary); }
+#upgradesScreen .upgrade-item button { width: auto; padding: 10px 15px; font-size: 0.9em; margin: 0; text-transform: none; }
+
+/* --- СТУДИЯ (экран #studioScreen) --- */
+#studioScreen { justify-content: space-between; }
+#studioScreen .character-wrapper { margin-top: 20px; margin-bottom: -30px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
+#studioScreen #character-sprite { width: 200px; height: 300px; background-image: url('character_sheet.png'); background-repeat: no-repeat; background-position: -400px 0px; }
+.char-anim-idle-blink { animation: characterIdleBlinkingAnimation 4s steps(1, end) infinite; }
+@keyframes characterIdleBlinkingAnimation { 0%, 85% { background-position-x: -400px; } 90%, 95% { background-position-x: 0px; } 100% { background-position-x: -400px; } }
+.char-state-typing { background-position-x: -400px !important; animation: none !important; }
+.char-state-happy { background-position-x: -200px !important; animation: none !important; }
+.char-state-sleeping { background-position-x: 0px !important; animation: none !important; }
+
+#studioScreen .computer-area { padding: 10px 20px 0px 20px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 400px; margin-top: 10px; }
+#studioScreen .monitor-screen { width: 100%; aspect-ratio: 16 / 10; background-color: #0A0C0F; border-radius: var(--border-radius-sm); box-shadow: 0 0 15px rgba(var(--color-accent-primary-rgb), 0.15), inset 0 0 8px rgba(0,0,0,0.5); padding: 10px; display: flex; flex-direction: column; justify-content: center; border: 2px solid #2c2f3b; overflow: hidden; }
+#monitor-content-area { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+#monitor-idle-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;}
+#monitor-idle-content #channel-name-on-monitor { font-size: 1.3em; font-weight: bold; color: var(--color-text-primary); margin-bottom: 10px;}
+#monitor-idle-content .trend-banner-monitor { background-color: rgba(var(--color-accent-secondary-rgb), 0.2); border: 1px solid var(--color-accent-secondary); padding: 8px 12px; margin: 10px auto; border-radius: var(--border-radius-sm); font-size: 0.8em; max-width: 90%; }
+#monitor-idle-content .trend-banner-monitor p { margin: 0; font-size: 0.9em; }
+#monitor-idle-content .trend-banner-monitor span { font-weight: bold; color: var(--color-accent-secondary); }
+#monitor-idle-content #initiate-post-creation-button { width: auto; padding: 10px 25px; font-size: 1em; margin-top: 15px; }
+
+.monitor-step { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 5px; box-sizing: border-box; }
+.monitor-step.active-monitor-step { display: flex !important; }
+.monitor-step h3 { color: var(--color-text-primary); font-size: 1em; margin: 0 0 8px 0; text-align: center; }
+.monitor-step p { font-size: 0.85em; color: var(--color-text-secondary); margin-bottom: 8px; }
+.monitor-options-grid { display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 280px; }
+.monitor-button, .monitor-theme-button { background-color: rgba(var(--color-accent-primary-rgb), 0.15); border: 1px solid var(--color-accent-primary); color: var(--color-text-primary); padding: 8px 10px; border-radius: var(--border-radius-sm); font-size: 0.9em; font-family: var(--font-primary); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; text-transform: none; box-shadow: none; width: 100%; margin: 0; }
+.monitor-button:hover, .monitor-theme-button:hover { background-color: rgba(var(--color-accent-primary-rgb), 0.3); }
+.monitor-navigation-buttons { display: flex; justify-content: space-around; width: 90%; max-width: 280px; margin-top: 15px; }
+.monitor-cancel-button, .monitor-back-button, .monitor-publish-button { padding: 8px 15px; font-size: 0.85em; width: auto; min-width: 80px; margin:0 5px; background-image: none; }
+.monitor-cancel-button { background-color: rgba(var(--color-error-rgb), 0.6); border: 1px solid var(--color-error); color: #fff; }
+.monitor-back-button { background-color: rgba(var(--color-text-secondary-rgb), 0.3); border: 1px solid var(--color-text-secondary); color: var(--color-text-secondary); }
+.monitor-publish-button { background-color: var(--color-success); border: none; color: #fff; font-weight: bold; }
+.effort-control { margin: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.9em;}
+.effort-control label { color: var(--color-text-secondary); }
+#effort-slider { width: 70%;} #effort-level-display { font-weight: bold; color: var(--color-accent-primary); }
+.selected-theme-name-monitor { font-style: italic; color: var(--color-accent-secondary); }
+
+#studio-side-panel { position: fixed; right: 10px; top: calc(var(--header-height) + 20px); display: none; flex-direction: column; gap: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.7); padding: 10px; border-radius: var(--border-radius-md); backdrop-filter: blur(5px); z-index: 50; }
+.icon-button { /* ... как раньше ... */ }
+
+/* --- LIVE FEEDBACK --- */
+#live-feedback-container { /* ... как раньше ... */ }
+.feedback-item { /* ... как раньше ... */ }
+/* ... анимации для feedback-item ... */
+
+/* --- МОДАЛЬНЫЕ ОКНА --- */
+.modal-content { /* ... как раньше ... */ }
+/* ... остальные стили для модальных окон ... */
+
+/* --- ОБЩИЕ СТИЛИ КНОПОК --- */
+button { /* ... как раньше ... */ }
+
+/* --- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ --- */
+.bottom-nav { /* ... как раньше ... */ }
+/* ... стили для .nav-button, .nav-icon, .nav-text ... */
+
+/* Лог событий */
+#event-log li { /* ... как раньше ... */ }
+/* ... стили для .log-success, .log-error и т.д. ... */
+
+#studioScreen .studio-footer { text-align: center; padding: 10px; width:100%; box-sizing: border-box; margin-top:auto; flex-shrink: 0; }
+#studioScreen .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

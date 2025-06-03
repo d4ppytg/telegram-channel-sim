@@ -52,7 +52,7 @@
     <!-- === КОНЕЦ ЭКРАНОВ ДО НАЧАЛА ИГРЫ === -->
 
     <!-- === ОСНОВНОЙ ИГРОВОЙ ИНТЕРФЕЙС (СТУДИЯ) === -->
-    <div id="studio-screen-container" class="full-screen-overlay" style="display: none;"> <!-- Был #game-interface, теперь это главный контейнер студии -->
+    <div id="studio-screen-container" class="full-screen-overlay" style="display: none;"> 
         <header class="studio-header"> 
             <div class="stats-block">
                 <p>Подписчики: <span id="subscribers-count">0</span></p>
@@ -74,20 +74,20 @@
                         </div>
                     </div>
                     <div class="monitor-actions"> 
-                        <button id="create-post-button-monitor">Создать Пост</button> <!-- Открывает модалку -->
+                        <button id="create-post-button-monitor">Создать Пост</button> 
                     </div>
                 </div>
             </div>
             <div id="live-feedback-container"> </div>
         </main>
         
-        <div class="side-panel"> <!-- Боковая панель для улучшений и лога -->
-             <button class="icon-button" id="open-upgrades-button" title="Улучшения">🚀</button> <!-- Иконка ракеты для улучшений -->
+        <div class="side-panel"> 
+             <button class="icon-button" id="open-upgrades-button" title="Улучшения">🚀</button>
              <button class="icon-button" id="open-log-button" title="Лог событий">📜</button>
         </div>
 
         <footer class="studio-footer">
-            <p class="footer-text">Игра в разработке <span id="game-version">v1.0.0</span></p>
+            <p class="footer-text">Игра в разработке <span id="game-version">v0.7.0</span></p>
         </footer>
     </div>
     <!-- === КОНЕЦ ОСНОВНОГО ИГРОВОГО ИНТЕРФЕЙСА === -->
@@ -116,7 +116,6 @@
                     <div class="upgrade-info"><h4>Улучшить качество контента</h4><p>Повышает эффективность всех постов.</p></div>
                     <button id="upgrade-content-quality" data-cost="50">Улучшить ($<span class="upgrade-cost">50</span>)</button>
                 </div>
-                 <!-- Сюда можно будет добавлять другие карточки улучшений -->
             </div>
         </div>
     </div>

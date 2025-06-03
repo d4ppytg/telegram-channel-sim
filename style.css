@@ -1,170 +1,94 @@
-/* ... (Все предыдущие стили: :root, body, .full-screen-overlay, прелоадер, темы, welcome, катсцена, студия, персонаж, модалки улучшений и лога, live-feedback, общие кнопки) ... */
-/* Убедитесь, что стили для #studio-screen-container и его дочерних элементов (хедер, мейн, футер, персонаж, компьютер, боковая панель) на месте */
-
-/* === СТИЛИ ДЛЯ ЛАБОРАТОРИИ ТЕКСТОВОГО КОНТЕНТА === */
-.game-lab-screen { /* Общий класс для всех "лабораторий", если их будет несколько */
-    z-index: 5000; /* Выше студии, но ниже обычных модалок типа лога */
-    justify-content: center; /* Центрируем lab-content */
-    align-items: center;
-    backdrop-filter: blur(3px); /* Легкое размытие фона студии */
-    background-color: rgba(var(--color-bg-rgb, 22, 24, 29), 0.85); /* Полупрозрачный фон */
-}
-
-.game-lab-screen .lab-content {
-    background-color: var(--color-card-bg);
-    padding: 25px 30px;
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    width: 90%;
-    max-width: 650px; /* Лаборатория может быть чуть шире */
-    max-height: 90vh;
-    overflow-y: auto;
-    text-align: center;
-    border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3);
-}
-
-.game-lab-screen .lab-content h2 { /* Заголовок лаборатории */
-    color: #fff;
-    margin: 0 0 20px 0;
-    font-size: 1.8em;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 15px;
-}
-.game-lab-screen .lab-content h3 { /* Заголовок шага */
-    color: var(--color-text-primary);
-    margin: 0 0 15px 0;
-    font-size: 1.3em;
-}
-.game-lab-screen .lab-instruction {
-    font-size: 0.9em;
-    color: var(--color-text-secondary);
-    margin-bottom: 15px;
-}
-
-.lab-step { /* Общий стиль для шагов, JS будет показывать/скрывать их */
-    margin-bottom: 20px;
-}
-
-/* Шаг 1: Выбор Заголовка */
-.title-options-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Одна колонка для заголовков */
-    gap: 10px;
-    margin-top: 15px;
-}
-.title-option-button {
-    /* Использует общие стили button, но можно добавить специфичные */
-    padding: 12px 15px;
-    font-size: 1em;
-    text-transform: none; /* Обычный текст для заголовков */
-    justify-content: flex-start; /* Текст слева */
-    text-align: left;
-}
-
-/* Шаг 2: Поток Слов */
-.word-flow-stats {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 15px;
-    font-size: 0.95em;
-    color: var(--color-text-secondary);
-}
-.word-flow-stats span span { /* Для цифр таймера и качества */
-    font-weight: bold;
-    color: var(--color-accent-primary);
-}
-
-.word-flow-area {
-    width: 100%;
-    height: 200px; /* Высота области для слов */
-    background-color: rgba(var(--color-bg-rgb), 0.5); /* Темнее фона лабы */
-    border-radius: var(--border-radius-md);
-    border: 1px dashed var(--color-text-secondary);
-    margin-bottom: 15px;
-    position: relative; /* Для позиционирования слов */
-    overflow: hidden; /* Чтобы слова не вылезали */
-    padding: 10px;
-    box-sizing: border-box;
-    display: flex; /* Для расположения слов, если нужно */
-    flex-wrap: wrap;
-    align-content: flex-start;
-    gap: 5px;
-}
-.clickable-word {
-    padding: 5px 10px;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: transform 0.1s ease-out, background-color 0.2s;
-    user-select: none; /* Чтобы текст не выделялся при клике */
-    position: absolute; /* Для случайного позиционирования */
-    /* Начальные стили для анимации появления (JS будет их менять) */
-    opacity: 0;
-    transform: translateY(20px);
-}
-.clickable-word.good-word {
-    background-color: rgba(var(--color-success-rgb, 74, 222, 128), 0.2); /* Нужны RGB для success */
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
-}
-.clickable-word.bad-word {
-    background-color: rgba(var(--color-error-rgb, 248, 113, 113), 0.2); /* Нужны RGB для error */
-    border: 1px solid var(--color-error);
-    color: var(--color-error);
-}
-.clickable-word:hover { transform: scale(1.05); }
-.clickable-word.collected { /* Когда слово добавлено в пост */
-    opacity: 0.5; pointer-events: none; background-color: #555; border-color: #444; color: #888;
-}
-
-.collected-words-preview {
-    margin-top: 15px;
-    text-align: left;
-}
-.collected-words-preview h4 {
-    margin: 0 0 8px 0;
-    font-size: 1em;
-    color: var(--color-text-secondary);
-}
-#собранный-текст-поста-в-лабе {
-    min-height: 60px;
-    background-color: rgba(var(--color-bg-rgb), 0.3);
-    border: 1px solid var(--color-text-secondary);
-    border-radius: var(--border-radius-sm);
-    padding: 10px;
-    font-size: 0.9em;
-    line-height: 1.5;
-    color: var(--color-text-primary);
-    overflow-y: auto;
-    max-height: 100px;
-}
-
-/* Шаг 3: Публикация */
-#text-lab-step-publish p {
-    font-size: 1.1em;
-    margin-bottom: 20px;
-}
-#text-lab-step-publish span {
-    font-weight: bold;
-    color: var(--color-accent-primary);
-    font-size: 1.2em;
-}
-
-.cancel-lab-button { /* Кнопка отмены в лаборатории */
-    background-image: none;
-    background-color: var(--color-text-secondary);
-    color: var(--color-bg);
-    margin-top: 20px;
-    width: auto; /* Не на всю ширину */
-    padding: 10px 25px;
-}
-.cancel-lab-button:hover {
-    background-color: var(--color-error);
+/* MINIMAL DEBUG CSS */
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    background-color: #101216; /* Очень темный фон для контраста */
     color: white;
+    overflow: hidden; /* Предотвращаем любой скролл на body */
 }
 
-/* Добавьте в :root, если еще нет (замените на реальные RGB ваших цветов) */
-/* :root {
-    --color-success-rgb: 74, 222, 128;
-    --color-error-rgb: 248, 113, 113;
-} */
+/* Общий стиль для всех полноэкранных контейнеров */
+.full-screen-overlay {
+    width: 100vw; /* На всю ширину вьюпорта */
+    height: 100vh; /* На всю высоту вьюпорта */
+    padding: 20px;
+    box-sizing: border-box;
+    border: 3px dashed red !important; /* Яркая рамка для отладки */
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: none; /* Изначально все скрыты, JS будет управлять этим */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow-y: auto; /* Если контент внутри больше, он будет скроллиться */
+}
+
+/* Делаем видимым тот, у кого есть класс .visible (управляется JS) */
+.full-screen-overlay.visible {
+    display: flex !important; /* Показываем через flex */
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Конкретные z-index, чтобы видеть порядок наложения */
+#preloader { z-index: 5; background-color: rgba(50,0,0,0.5); } /* Полупрозрачный красный */
+#theme-selection-screen { z-index: 4; background-color: rgba(0,50,0,0.5); } /* Полупрозрачный зеленый */
+#welcome-screen { z-index: 3; background-color: rgba(0,0,50,0.5); } /* Полупрозрачный синий */
+#cutscene-screen { z-index: 2; background-color: rgba(50,50,0,0.5); } /* Полупрозрачный желтый */
+#studio-screen-container { z-index: 1; background-color: rgba(50,0,50,0.5); } /* Полупрозрачный фиолетовый */
+
+/* Стили для контента внутри theme-selection-screen, чтобы он был виден */
+#theme-selection-screen .theme-selection-content {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 5px;
+    border: 2px solid orange;
+    width: 80%;
+    max-width: 500px;
+}
+#theme-selection-screen .themes-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Пока одна колонка для простоты */
+    gap: 10px;
+    border: 1px solid cyan;
+}
+#theme-selection-screen .theme-card {
+    background-color: #444;
+    padding: 10px;
+    border: 1px solid white;
+    cursor: pointer;
+}
+#theme-selection-screen .theme-card:hover {
+    background-color: #555;
+}
+
+/* Простые стили для кнопки, чтобы она была видна */
+button {
+    padding: 10px 15px;
+    margin: 10px;
+    background-color: #666;
+    color: white;
+    border: 1px solid #888;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #777;
+}
+
+/* Сделайте остальные элементы просто видимыми, если они должны быть */
+.welcome-content, .cutscene-slide, .studio-header, .studio-main, .studio-footer, .modal-content {
+    border: 1px solid white;
+    padding: 10px;
+    margin: 10px;
+    background-color: rgba(20,20,20,0.7); /* Чтобы видеть их */
+}
+
+#character-sprite {
+    width: 100px; height: 150px; /* Уменьшенные размеры для теста */
+    background-color: limegreen; /* Просто цветная заглушка */
+    border: 2px solid yellow;
+    margin: 10px;
+}
+/* Не используем background-image для спрайта в этом тесте */

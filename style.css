@@ -7,7 +7,12 @@
     --color-accent-secondary: #8A2BE2; --color-accent-secondary-rgb: 138, 43, 226;
     --color-success: #4ADE80; --color-warning: #FACC15; --color-error: #F87171;
     --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
-    --tg-theme-bg-color: var(--color-bg); /* ... и остальные tg-переменные ... */
+    --header-height: 60px; /* Примерная высота хедера для расчета отступа боковой панели */
+    /* Telegram Theme Vars */
+    --tg-theme-bg-color: var(--color-bg); --tg-theme-text-color: var(--color-text-primary);
+    --tg-theme-hint-color: var(--color-text-secondary); --tg-theme-link-color: var(--color-accent-primary);
+    --tg-theme-button-color: var(--color-accent-primary); --tg-theme-button-text-color: #FFFFFF;
+    --tg-theme-secondary-bg-color: var(--color-card-bg);
 }
 
 body {
@@ -27,16 +32,17 @@ body {
 .full-screen-overlay.visible, #game-interface.visible { opacity: 1; visibility: visible; transition: opacity 0.5s ease-in-out; }
 
 /* Z-INDEX MANAGEMENT */
-#preloader { z-index: 9999; opacity: 1; visibility: visible; /* Виден по умолчанию */}
+#preloader { z-index: 9999; opacity: 1; visibility: visible; }
 #theme-selection-screen { z-index: 9998; }
 #welcome-screen { z-index: 9998; }
 #cutscene-screen { z-index: 9997; }
-#game-interface { z-index: 100; justify-content: flex-start; align-items: stretch; } /* Выше чем body, но ниже оверлеев до игры */
-.modal-overlay { z-index: 10000; } /* Модалки всегда поверх всего */
+#game-interface { z-index: 100; justify-content: flex-start; align-items: stretch; }
+.modal-overlay { z-index: 10000; }
 
 
 /* --- PRELOADER --- */
 #preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
+/* ... остальные стили прелоадера как в предыдущем полном коде ... */
 .preloader-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 400px; width: 100%;}
 .preloader-hero-image { max-width: 80%; height: auto; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); animation: 등장HeroImage 0.8s 0.2s ease-out forwards; }
 @keyframes 등장HeroImage { to { opacity: 1; transform: translateY(0); } }
@@ -51,6 +57,7 @@ body {
 .preloader-footer a { color: var(--color-accent-primary); text-decoration: none; font-weight: 500; }
 .preloader-footer a:hover { text-decoration: underline; }
 
+
 /* --- THEME SELECTION SCREEN STYLES --- */
 #theme-selection-screen .theme-selection-content { background-color: var(--color-card-bg); padding: 30px 25px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 700px; width: 95%; text-align: center; max-height: 90vh; overflow-y: auto;}
 #theme-selection-screen .theme-selection-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
@@ -63,36 +70,47 @@ body {
 #theme-selection-screen .theme-card p { color: var(--color-text-secondary); font-size: 0.85em; line-height: 1.5; text-align: center; flex-grow: 1; }
 
 /* --- WELCOME SCREEN --- */
-#welcome-screen .welcome-content { /* ... как раньше, но селектор уточнен ... */ }
-/* ... остальные стили для welcome-content ... */
+#welcome-screen .welcome-content { /* ... как раньше ... */ background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 500px; width: 90%; text-align: center;}
+#welcome-screen .welcome-content h2 { /* ... */ color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
+#welcome-screen .welcome-content > p:first-of-type { /* ... */ color: var(--color-text-secondary); margin-bottom: 20px; font-size: 1em; }
+#welcome-screen .user-info-display { /* ... */ margin: 25px 0; padding: 15px; border: 1px dashed rgba(var(--color-accent-primary-rgb), 0.3); border-radius: var(--border-radius-md); }
+#welcome-screen .avatar-placeholder { /* ... */ width: 70px; height: 70px; border-radius: 50%; background-color: #4A5568; margin: 0 auto 15px auto; border: 3px solid var(--color-accent-primary); object-fit: cover; }
+#welcome-screen #telegram-username-display { /* ... */ font-weight: bold; color: var(--color-accent-primary); }
+#welcome-screen .small-note { /* ... */ font-size: 0.85em; color: var(--color-text-secondary); opacity: 0.7; margin-top: 25px; margin-bottom: 25px; }
+#welcome-screen .welcome-content button { max-width: 250px; margin-left: auto; margin-right: auto; }
+
 
 /* --- CUTSCENE --- */
-#cutscene-screen .cutscene-slide { /* ... как раньше, но селектор уточнен ... */ }
-/* ... остальные стили для cutscene ... */
+#cutscene-screen .cutscene-slide { display: none; flex-direction: column; justify-content: center; align-items: center; width: 90%; max-width: 500px; height: auto; max-height: 70vh; text-align: center; background-color: var(--color-card-bg); border-radius: var(--border-radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 30px 20px; box-sizing: border-box; opacity: 0; transition: opacity 0.5s ease-in-out; position: absolute; }
+#cutscene-screen .cutscene-slide.active { display: flex !important; opacity: 1; z-index: 1; }
+#cutscene-screen .cutscene-logo-placeholder { font-size: 3.5em; margin-bottom: 20px; color: var(--color-accent-primary); animation: pulse 2s infinite ease-in-out; }
+#cutscene-screen .cutscene-slide h2 { font-size: 2em; color: #fff; margin-top:0; margin-bottom: 15px; border-bottom: none; }
+#cutscene-screen .cutscene-slide p { font-size: 1.1em; color: var(--color-text-secondary); max-width: 95%; line-height: 1.5;}
+
 
 /* === ИГРОВОЙ ИНТЕРФЕЙС === */
 .game-header { /* ... как раньше ... */ }
-#game-screens-container { flex-grow: 1; position: relative; overflow-y: auto; width: 100%; }
-.game-screen { display: none; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; width: 100%; min-height: 100%; position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0s linear 0.3s; }
-.game-screen.active-screen { display: flex; opacity: 1; visibility: visible; z-index: 1; }
-.screen-content-wrapper { width: 100%; max-width: 600px; text-align: center; padding-top: 10px; }
-.screen-content-wrapper h2 { color: #fff; margin-bottom: 25px; font-size: 1.8em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-.screen-content-wrapper > p { margin-bottom: 20px; color: var(--color-text-secondary); }
+#game-screens-container { /* ... как раньше ... */ }
+.game-screen { /* ... как раньше ... */ }
+.game-screen.active-screen { /* ... как раньше ... */ }
+.screen-content-wrapper { /* ... как раньше ... */ }
+.screen-content-wrapper h2 { /* ... как раньше ... */ }
+.screen-content-wrapper > p { /* ... как раньше ... */ }
 
 /* Вкладка "Создать Пост" */
-.content-type-selection { display: flex; flex-direction: column; gap: 15px; }
-.content-type-button { padding: 18px 20px; font-size: 1.1em; }
+.content-type-selection { /* ... как раньше ... */ }
+.content-type-button { /* ... как раньше ... */ }
 
 /* Вкладка "Улучшения" */
-.upgrades-list { display: flex; flex-direction: column; gap: 15px; }
-.upgrade-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--color-card-bg); padding: 15px; border-radius: var(--border-radius-md); text-align: left; }
-.upgrade-icon { font-size: 1.8em; margin-right: 15px; color: var(--color-accent-primary); }
-.upgrade-info h4 { margin: 0 0 5px 0; font-size: 1.1em; color: var(--color-text-primary); }
-.upgrade-info p { margin: 0; font-size: 0.85em; color: var(--color-text-secondary); }
-.upgrade-item button { width: auto; padding: 10px 15px; font-size: 0.9em; margin: 0; text-transform: none; }
+.upgrades-list { /* ... как раньше ... */ }
+.upgrade-item { /* ... как раньше ... */ }
+.upgrade-icon { /* ... как раньше ... */ }
+.upgrade-info h4 { /* ... как раньше ... */ }
+.upgrade-info p { /* ... как раньше ... */ }
+.upgrade-item button { /* ... как раньше ... */ }
 
 /* --- СТУДИЯ (экран #studioScreen) --- */
-#studioScreen { justify-content: space-between; }
+#studioScreen { justify-content: space-between; } /* Чтобы футер был внизу */
 #studioScreen .character-wrapper { margin-top: 20px; margin-bottom: -30px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
 #studioScreen #character-sprite { width: 200px; height: 300px; background-image: url('character_sheet.png'); background-repeat: no-repeat; background-position: -400px 0px; }
 .char-anim-idle-blink { animation: characterIdleBlinkingAnimation 4s steps(1, end) infinite; }
@@ -101,14 +119,14 @@ body {
 .char-state-happy { background-position-x: -200px !important; animation: none !important; }
 .char-state-sleeping { background-position-x: 0px !important; animation: none !important; }
 
-#studioScreen .computer-area { padding: 10px 20px 20px 20px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 400px; margin-top: 10px; }
+#studioScreen .computer-area { /* ... как раньше ... */ }
 #studioScreen .monitor-screen { /* ... как раньше ... */ }
 #studioScreen #channel-feed-placeholder { /* ... как раньше ... */ }
 #studioScreen #channel-name-on-monitor { /* ... как раньше ... */ }
 #studioScreen .trend-banner-monitor { /* ... как раньше ... */ }
 #studioScreen .monitor-actions button { /* ... как раньше ... */ }
 
-#studio-side-panel { position: fixed; right: 10px; top: calc(var(--header-height, 70px) + 20px); /* Примерный отступ от хедера, var(--header-height) нужно будет задать в JS или фиксировано */ display: none; flex-direction: column; gap: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.7); padding: 10px; border-radius: var(--border-radius-md); backdrop-filter: blur(5px); z-index: 50; }
+#studio-side-panel { position: fixed; right: 10px; top: calc(var(--header-height) + 20px); display: none; flex-direction: column; gap: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.7); padding: 10px; border-radius: var(--border-radius-md); backdrop-filter: blur(5px); z-index: 50; }
 .icon-button { /* ... как раньше ... */ }
 
 /* --- LIVE FEEDBACK (Комментарии) --- */
@@ -118,14 +136,19 @@ body {
 .feedback-item .username { /* ... */ } .feedback-item .emoji { /* ... */ }
 
 /* --- МОДАЛЬНЫЕ ОКНА (для лога) --- */
-#log-modal .modal-content { /* ... как раньше ... */ }
-/* ... остальные стили для модальных окон и их содержимого ... */
+.modal-overlay { /* ... как раньше ... */ }
+.modal-content { /* ... как раньше ... */ }
+.modal-overlay.visible .modal-content { /* ... */ }
+.close-modal-button { /* ... */ } .close-modal-button:hover { /* ... */ }
+.modal-content h2 { /* ... */ }
+#log-modal .modal-content { /* ... */ } #log-modal #event-log { /* ... */ }
 
 /* --- ОБЩИЕ СТИЛИ КНОПОК --- */
 button { /* ... как раньше ... */ }
+button:hover { /* ... */ } button:active { /* ... */ } button:disabled { /* ... */ }
 
 /* --- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ --- */
-.bottom-nav { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 65px; background-color: var(--color-card-bg); box-shadow: 0 -2px 10px rgba(0,0,0,0.3); position: fixed; bottom: 0; left: 0; z-index: 900; flex-shrink: 0; }
+.bottom-nav { /* ... как раньше ... */ }
 .nav-button { /* ... как раньше ... */ }
 .nav-button:hover { /* ... */ } .nav-button.active { /* ... */ }
 .nav-icon { /* ... */ } .nav-text { /* ... */ }
@@ -134,5 +157,5 @@ button { /* ... как раньше ... */ }
 #event-log li { /* ... как раньше ... */ }
 /* ... стили для .log-success, .log-error и т.д. ... */
 
-#studioScreen .studio-footer { text-align: center; padding: 10px; width:100%; box-sizing: border-box; margin-top:auto; /* flex-shrink: 0; -- можно добавить, если нужно жестко зафиксировать внизу */ }
+#studioScreen .studio-footer { text-align: center; padding: 10px; width:100%; box-sizing: border-box; margin-top:auto; flex-shrink: 0; /* Чтобы футер не сжимался */ }
 #studioScreen .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

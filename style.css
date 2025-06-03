@@ -156,3 +156,153 @@ button:disabled { background-image: none; background-color: #3A3E4A; color: var(
 
 .studio-footer { text-align: center; padding: 15px; background-color: rgba(var(--color-card-bg-rgb), 0.5); width:100%; box-sizing: border-box; margin-top:auto; }
 .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}
+/* --- Стили для обновленного экрана "Создать Контент" (#createPostScreen) --- */
+#createPostScreen { /* Он уже .full-screen-overlay, так что основные стили есть */
+    z-index: 9000; /* Убедимся, что он выше студии, но ниже модалок типа лога */
+}
+
+#createPostScreen .screen-content-wrapper { /* Контейнер для содержимого экрана */
+    background-color: var(--color-card-bg);
+    padding: 25px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    max-width: 700px; /* Максимальная ширина */
+    width: 90%;
+    text-align: center;
+    max-height: calc(100vh - 60px); /* Макс высота, оставляя место для отступов оверлея */
+    overflow-y: auto; /* Скролл, если контент не влезает */
+}
+
+#createPostScreen h2#create-post-main-title { 
+    color: #fff; 
+    margin: 0 0 20px 0; 
+    font-size: 1.6em; 
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+
+.creation-step { 
+    width: 100%;
+    margin-bottom: 20px;
+}
+.creation-step.active-step { /* Класс для видимого шага, если он нужен для JS */
+    /* display: block; /* JS будет управлять display */
+}
+
+
+.step-prompt {
+    font-size: 1.05em; /* Чуть меньше */
+    color: var(--color-text-secondary);
+    margin-bottom: 15px;
+    text-align: left; 
+}
+#selected-post-type-name { 
+    font-weight: bold;
+    color: var(--color-accent-primary);
+}
+
+
+/* Шаг 1: Выбор ТИПА поста */
+.content-type-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Адаптивность */
+    gap: 15px;
+}
+
+.content-type-card {
+    background-color: rgba(var(--color-card-bg-rgb), 0.7); /* Чуть прозрачнее */
+    border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3);
+    padding: 18px; /* Уменьшил паддинг */
+    border-radius: var(--border-radius-md); /* Меньше скругление */
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.20s ease-out;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+.content-type-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-accent-primary);
+    background-color: rgba(var(--color-accent-primary-rgb), 0.1);
+    box-shadow: 0 6px 15px rgba(var(--color-accent-primary-rgb), 0.15);
+}
+.type-card-icon {
+    font-size: 2.5em;
+    margin-bottom: 8px;
+    line-height: 1;
+    color: var(--color-accent-primary); /* Иконка в акцентном цвете */
+}
+.content-type-card h3 {
+    font-size: 1.15em; /* Уменьшил */
+    color: var(--color-text-primary);
+    margin: 0 0 6px 0;
+    font-weight: 600;
+}
+.content-type-card p {
+    font-size: 0.8em;
+    color: var(--color-text-secondary);
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* Шаг 2: Выбор ТЕМЫ поста */
+#content-theme-selection-container .themes-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Адаптивность */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.theme-select-button-card { 
+    background-color: rgba(var(--color-card-bg-rgb), 0.8);
+    border: 1px solid rgba(var(--color-accent-secondary-rgb), 0.3);
+    padding: 12px 15px; /* Уменьшил */
+    border-radius: var(--border-radius-sm); /* Меньше скругление */
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: var(--color-text-primary);
+    font-size: 0.9em; /* Уменьшил */
+    font-weight: 500;
+}
+.theme-select-button-card:hover {
+    background-color: rgba(var(--color-accent-secondary-rgb), 0.2);
+    border-color: var(--color-accent-secondary);
+    transform: scale(1.02);
+}
+.theme-select-button-card .theme-interest { 
+    display: block;
+    font-size: 0.75em;
+    color: var(--color-warning); 
+    margin-top: 4px;
+}
+
+/* Кнопки "Назад" и "Опубликовать" на шагах */
+.step-back-button {
+    background-image: none;
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-text-secondary);
+    padding: 8px 18px; /* Уменьшил */
+    margin-top: 10px;
+    width: auto; 
+    text-transform: none;
+    font-size: 0.85em; /* Уменьшил */
+}
+.step-back-button:hover {
+    background-color: rgba(var(--color-text-secondary-rgb, 160, 160, 160), 0.15);
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+}
+
+.final-publish-button { 
+    margin-top: 20px;
+    padding: 12px 22px; /* Уменьшил */
+    font-size: 1em; /* Уменьшил */
+}
+
+#close-create-post-screen { /* Кнопка Отмена/Закрыть экран создания поста */
+    /* Может использовать стили .secondary-button или свои */
+}
+
+/* Убедитесь, что общие стили для button не конфликтуют сильно */
+/* Если нужно, сделайте селекторы для кнопок внутри #createPostScreen более специфичными */

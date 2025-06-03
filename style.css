@@ -38,28 +38,26 @@ body {
 }
 
 /* Z-INDEX MANAGEMENT */
-#preloader { z-index: 9999; opacity: 1; visibility: visible; pointer-events: auto; } /* Прелоадер виден и активен по умолчанию */
+#preloader { z-index: 9999; opacity: 1; visibility: visible; pointer-events: auto; } 
 #theme-selection-screen { z-index: 9998; }
 #welcome-screen { z-index: 9998; }
-#cutscene-screen { z-index: 9997; padding: 0; }
+#cutscene-screen { z-index: 9997; padding: 0; } 
 #game-interface { z-index: 100; justify-content: flex-start; align-items: stretch; padding: 0; }
 .modal-overlay { z-index: 10000; }
 
 
 /* --- PRELOADER --- */
-#preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
+#preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none !important; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
 /* ... остальные стили прелоадера как в предыдущем полном коде ... */
 
 /* --- THEME SELECTION SCREEN STYLES --- */
-#theme-selection-screen.visible .theme-selection-content { /* Стили для контента, когда сам экран видим */
-    pointer-events: auto; /* Разрешаем клики на контенте */
-}
+#theme-selection-screen.visible .theme-selection-content { pointer-events: auto; }
 #theme-selection-screen .theme-selection-content { 
     background-color: var(--color-card-bg); padding: 25px; border-radius: var(--border-radius-lg); 
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 600px; width: 90%; 
     text-align: center; max-height: calc(100vh - 40px); overflow-y: auto;
     box-sizing: border-box;
-    pointer-events: none; /* По умолчанию контент не кликабельный, если родитель не visible */
+    /* pointer-events: none; -- Убрано, чтобы сам контент был кликабельным, если родитель visible */
 }
 #theme-selection-screen .theme-selection-content h2 { color: #fff; margin: 0 0 10px 0; font-size: 1.6em; border-bottom: none; }
 #theme-selection-screen .theme-selection-content > p { color: var(--color-text-secondary); margin-bottom: 20px; font-size: 0.95em; line-height: 1.4; }
@@ -71,7 +69,9 @@ body {
     transition: all 0.25s ease-in-out; text-align: center; 
     display: flex; flex-direction: column; align-items: center; 
     box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
-    pointer-events: auto; /* Карточки всегда должны быть кликабельны, если их родитель видим */
+    pointer-events: auto !important; /* Карточки всегда должны быть кликабельны */
+    position: relative; /* Для z-index, если понадобится поднять их еще выше */
+    /* z-index: 1; -- Можно добавить, если .theme-selection-content мешает */
 }
 #theme-selection-screen .theme-card:hover { transform: translateY(-4px) scale(1.01); background-color: rgba(var(--color-accent-primary-rgb), 0.15); border-color: var(--color-accent-primary); box-shadow: 0 6px 18px rgba(var(--color-accent-primary-rgb), 0.25); }
 #theme-selection-screen .theme-icon { font-size: 2em; margin-bottom: 10px; color: var(--color-accent-primary); }
@@ -85,10 +85,4 @@ body {
 /* ... Все остальные стили для .game-header, #game-screens-container, .game-screen, ... */
 /* ... #studioScreen, персонажа, монитора, модальных окон, кнопок, .bottom-nav и т.д. ... */
 /* ... как в ПОЛНОМ CSS из ОТВЕТА, ГДЕ МЫ ВНЕДРЯЛИ ИНТЕРАКТИВНЫЙ МОНИТОР И ПЕРСОНАЖА ... */
-/* (Это был CSS для script.js версии 1.0.1_debugFull или 0.8.0) */
-/* Убедитесь, что он полный и корректный. */
-
-/* Важно для футера в studioScreen */
-#studioScreen { justify-content: space-between; }
-#studioScreen .studio-footer { text-align: center; padding: 10px; width:100%; box-sizing: border-box; margin-top:auto; flex-shrink: 0; }
-#studioScreen .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}
+/* ... Убедитесь, что стили для интерактивного монитора (.monitor-step, .monitor-button и т.д.) здесь присутствуют ... */

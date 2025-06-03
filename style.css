@@ -4,14 +4,14 @@
 
     --color-bg: #16181D;
     --color-card-bg: #1F232D;
+    --color-card-bg-rgb: 31, 35, 45; /* RGB для rgba */
     --color-text-primary: #E0E0E0;
     --color-text-secondary: #A0A0A0;
     
     --color-accent-primary: #3B82F6;
     --color-accent-primary-rgb: 59, 130, 246;
-    --color-accent-secondary: #8A2BE2; /* Фиолетовый */
-    --color-accent-secondary-rgb: 138, 43, 226; /* RGB для фиолетового */
-
+    --color-accent-secondary: #8A2BE2; 
+    --color-accent-secondary-rgb: 138, 43, 226;
 
     --color-success: #4ADE80;
     --color-warning: #FACC15;
@@ -39,38 +39,43 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
-    display: flex;
+    display: flex; 
     flex-direction: column;
     padding: 0;
+    overflow: hidden; /* Предотвращаем скролл на body */
 }
 
-.full-screen-overlay, .container {
+/* Общие стили для полноэкранных оверлеев и основного контейнера игры */
+.full-screen-overlay, .studio-container {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh; /* Занимает всю высоту вьюпорта */
     padding: 20px;
     box-sizing: border-box;
-    opacity: 0;
+    opacity: 0; 
     visibility: hidden;
     transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
-    display: flex;
+    display: flex; 
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    position: fixed; /* Чтобы они были поверх друг друга и body */
+    top: 0; left: 0;
 }
-.full-screen-overlay.visible, .container.visible {
+.full-screen-overlay.visible, .studio-container.visible {
     opacity: 1;
     visibility: visible;
     transition: opacity 0.5s ease-in-out;
 }
-.container {
-    display: none; opacity: 1; visibility: hidden;
-    justify-content: flex-start; align-items: stretch;
+/* Студия - особый случай для отображения */
+.studio-container {
+    justify-content: flex-start; 
+    align-items: stretch;
+    overflow-y: auto; /* Если контент студии будет больше экрана */
 }
-.container.visible { display: block; visibility: visible; }
 
 
 /* --- PRELOADER STYLES --- */
-#preloader { position: fixed; left: 0; top: 0; z-index: 9999; background-color: var(--color-bg); opacity: 1; visibility: visible; width: 100vw; height: 100vh;}
+#preloader { z-index: 9999; opacity: 1; visibility: visible; /* Виден по умолчанию */}
 #preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
 .loader-container { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .pulsing-logo-placeholder { width: 80px; height: 80px; background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: 50%; margin-bottom: 25px; animation: pulse 2s infinite ease-in-out; }
@@ -84,72 +89,113 @@ body {
 /* --- END PRELOADER STYLES --- */
 
 
-/* --- THEME SELECTION SCREEN STYLES --- */
-.theme-selection-content { background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 700px; width: 90%; text-align: center; }
-.theme-selection-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
-.theme-selection-content > p { color: var(--color-text-secondary); margin-bottom: 30px; font-size: 1em; }
+/* --- THEME SELECTION & WELCOME SCREEN CONTENT --- */
+.theme-selection-content, .welcome-content { background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 700px; width: 90%; text-align: center; }
+.theme-selection-content h2, .welcome-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
+.theme-selection-content > p, .welcome-content > p:first-of-type { color: var(--color-text-secondary); margin-bottom: 30px; font-size: 1em; } /* Стили для первого <p> */
 .themes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
 .theme-card { background-color: rgba(var(--color-accent-primary-rgb), 0.1); padding: 20px; border-radius: var(--border-radius-md); border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3); cursor: pointer; transition: all 0.2s ease-in-out; text-align: left; }
 .theme-card:hover { transform: translateY(-5px); background-color: rgba(var(--color-accent-primary-rgb), 0.2); box-shadow: 0 5px 15px rgba(var(--color-accent-primary-rgb), 0.2); }
 .theme-icon { font-size: 2.5em; margin-bottom: 10px; text-align: center; }
 .theme-card h3 { color: var(--color-text-primary); font-size: 1.3em; margin-top: 0; margin-bottom: 10px; }
 .theme-card p { color: var(--color-text-secondary); font-size: 0.9em; line-height: 1.4; }
-/* --- END THEME SELECTION SCREEN STYLES --- */
-
-
-/* --- WELCOME SCREEN STYLES --- */
-.welcome-content { background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 500px; width: 90%; text-align: center;}
-.welcome-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
-.welcome-content p { color: var(--color-text-secondary); margin-bottom: 20px; font-size: 1em; }
 .user-info-display { margin: 25px 0; padding: 15px; border: 1px dashed rgba(var(--color-accent-primary-rgb), 0.3); border-radius: var(--border-radius-md); }
 .avatar-placeholder { width: 70px; height: 70px; border-radius: 50%; background-color: #4A5568; margin: 0 auto 15px auto; border: 3px solid var(--color-accent-primary); object-fit: cover; }
 #telegram-username-display { font-weight: bold; color: var(--color-accent-primary); }
 .small-note { font-size: 0.85em; color: var(--color-text-secondary); opacity: 0.7; margin-top: 25px; margin-bottom: 25px; }
-/* --- END WELCOME SCREEN STYLES --- */
+/* --- END THEME SELECTION & WELCOME --- */
 
-
-/* --- MAIN GAME CONTAINER STYLES --- */
-.container header { text-align: center; margin-bottom: 30px; padding: 25px 20px; background-color: var(--color-card-bg); border-radius: var(--border-radius-lg); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
-.container header h1 { margin: 0 0 15px 0; font-size: 2em; font-weight: 700; letter-spacing: 0.5px; color: #FFFFFF; }
-.container header p { margin: 10px 0; font-size: 1.1em; color: var(--color-text-secondary); }
-.container header p span { font-weight: 600; color: var(--color-text-primary); }
-.container #subscribers-count, .container #balance-count, .container #audience-mood-display { color: var(--color-accent-primary); font-size: 1.2em; } /* Добавил audience-mood-display */
-
-/* СТИЛИ ДЛЯ БАННЕРА ТРЕНДА */
-.trend-banner {
-    background-color: rgba(var(--color-accent-secondary-rgb), 0.15); /* Используем второй акцентный цвет или другой */
-    border: 1px solid var(--color-accent-secondary);
-    padding: 12px 18px;
-    margin-bottom: 25px;
-    border-radius: var(--border-radius-md);
+/* --- CUTSCENE STYLES --- */
+#cutscene-screen { z-index: 9997; /* Ниже прелоадера, но выше остального */ }
+.cutscene-slide {
+    display: none; /* Скрыты по умолчанию, управляются JS */
+    flex-direction: column; justify-content: center; align-items: center;
+    width: 80%; height: 80%; /* Не на весь экран, а как "кадр" */
     text-align: center;
-    box-shadow: 0 4px 10px rgba(var(--color-accent-secondary-rgb), 0.1);
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    padding: 30px; box-sizing: border-box;
+    opacity: 0; transition: opacity 0.5s ease-in-out;
+    position: absolute; /* Чтобы можно было менять их, не сдвигая #cutscene-screen */
 }
-.trend-banner p {
-    margin: 0;
-    color: var(--color-text-primary);
-    font-weight: 500;
-    font-size: 0.95em;
-}
-.trend-banner span { /* Для выделения деталей тренда */
-    font-weight: 700; /* Сделаем жирнее */
-    color: var(--color-accent-secondary);
-}
-.trend-banner p > span:first-of-type { /* Для текста "В ТРЕНДЕ: ..." */
-     color: var(--color-text-primary); /* Обычный цвет для описания */
-}
+.cutscene-slide.active { display: flex; opacity: 1; z-index: 1; }
+.cutscene-logo-placeholder { font-size: 4em; margin-bottom: 20px; color: var(--color-accent-primary); animation: pulse 2s infinite ease-in-out; }
+.cutscene-slide h2 { font-size: 2.2em; color: #fff; margin-bottom: 15px; border-bottom: none; }
+.cutscene-slide p { font-size: 1.2em; color: var(--color-text-secondary); max-width: 90%;}
+/* --- END CUTSCENE STYLES --- */
 
 
-.container .actions, .container .upgrades, .container .log { margin-bottom: 30px; padding: 25px; background-color: var(--color-card-bg); border-radius: var(--border-radius-lg); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
-.container h2, .container .log h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.6em; font-weight: 600; color: #FFFFFF; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+/* --- STUDIO CONTAINER STYLES --- */
+.studio-container { z-index: 1; /* Основной игровой экран */ }
+.studio-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 25px;
+    background-color: rgba(var(--color-card-bg-rgb), 0.85);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    position: sticky; top: 0; z-index: 100; width:100%; box-sizing: border-box;
+}
+.stats-block p, .mood-block p { margin: 5px 0; font-size: 0.95em; color: var(--color-text-secondary); }
+.stats-block span, .mood-block span { font-weight: bold; color: var(--color-text-primary); font-size: 1.1em;}
+.studio-header #subscribers-count, .studio-header #balance-count, .studio-header #audience-mood-display { color: var(--color-accent-primary); }
 
-button { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 15px 20px; margin: 10px 0; border: none; border-radius: var(--border-radius-md); background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary)); color: #FFFFFF; cursor: pointer; font-size: 1.05em; font-family: var(--font-primary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.25s ease-out; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.studio-main {
+    flex-grow: 1; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 20px; position: relative; width: 100%; box-sizing: border-box;
+}
+.computer-area { padding: 20px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 450px; }
+.monitor-screen {
+    width: 100%; aspect-ratio: 16 / 10;
+    background-color: #0D0F13; border-radius: var(--border-radius-md);
+    box-shadow: 0 0 20px rgba(var(--color-accent-primary-rgb), 0.2), inset 0 0 10px rgba(0,0,0,0.4);
+    padding: 15px; display: flex; flex-direction: column; justify-content: space-between;
+    border: 3px solid #333742;
+}
+#channel-feed-placeholder { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+#channel-name-on-monitor { font-size: 1.4em; font-weight: bold; color: var(--color-text-primary); margin-bottom: 10px;}
+.trend-banner-monitor { background-color: rgba(var(--color-accent-secondary-rgb), 0.2); border: 1px solid var(--color-accent-secondary); padding: 8px 12px; margin: 10px auto; border-radius: var(--border-radius-sm); font-size: 0.8em; max-width: 90%; }
+.trend-banner-monitor p { margin: 0; font-size: 0.9em; }
+.trend-banner-monitor span { font-weight: bold; color: var(--color-accent-secondary); }
+.monitor-actions button { width: auto; padding: 10px 20px; font-size: 0.95em; margin: 15px auto 0 auto; display: block; }
+
+.side-panel {
+    position: fixed; right: 15px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 15px;
+    background-color: rgba(var(--color-card-bg-rgb), 0.7);
+    padding: 15px 10px; border-radius: var(--border-radius-md); backdrop-filter: blur(5px); z-index: 50;
+}
+.icon-button { background: none; background-image: none; box-shadow: none; border: 1px solid var(--color-text-secondary); color: var(--color-text-primary); font-size: 1.5em; padding: 10px; width: 50px; height: 50px; text-transform: none; }
+.icon-button:hover { background-color: rgba(var(--color-accent-primary-rgb), 0.2); border-color: var(--color-accent-primary); }
+/* --- END STUDIO --- */
+
+
+/* --- MODAL STYLES --- */
+.modal-overlay { z-index: 1000; } /* Выше студии */
+.modal-content { background-color: var(--color-card-bg); padding: 30px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.4); width: 90%; max-width: 500px; position: relative; transform: scale(0.9); transition: transform 0.3s ease-in-out; }
+.modal-overlay.visible .modal-content { transform: scale(1); }
+.close-modal-button { position: absolute; top: 15px; right: 20px; font-size: 1.8em; color: var(--color-text-secondary); cursor: pointer; background: none; border: none; padding: 0; }
+.close-modal-button:hover { color: var(--color-text-primary); }
+.modal-content h2 { font-size: 1.6em; color: #fff; margin-bottom: 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;}
+.modal-actions button, .modal-upgrades button { margin-bottom: 10px; }
+#log-modal .modal-content { max-height: 80vh; display: flex; flex-direction: column;} /* Для скролла лога */
+#log-modal #event-log { flex-grow: 1; overflow-y: auto; margin-top: 0; max-height: calc(80vh - 150px); /* Примерная высота для скролла */}
+/* --- END MODAL --- */
+
+
+button { /* Общие стили для ВСЕХ кнопок, если не переопределены */
+    display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 15px 20px; margin: 10px 0;
+    border: none; border-radius: var(--border-radius-md);
+    background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary));
+    color: #FFFFFF; cursor: pointer; font-size: 1.05em; font-family: var(--font-primary);
+    font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    transition: all 0.25s ease-out; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
 button:hover { filter: brightness(1.15); box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb), 0.4); }
 button:active { transform: translateY(2px); filter: brightness(0.95); box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb), 0.3); }
 button:disabled { background-image: none; background-color: #3A3E4A; color: var(--color-text-secondary); cursor: not-allowed; box-shadow: none; text-transform: none; }
-button i { margin-right: 10px; font-size: 1.2em; }
 
-#event-log { list-style: none; padding: 0; max-height: 180px; overflow-y: auto; border-radius: var(--border-radius-md); background-color: rgba(0,0,0,0.1); padding: 15px; }
 #event-log li { padding: 8px 0; font-size: 0.9em; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: var(--color-text-secondary); }
 #event-log li:last-child { border-bottom: none; }
 #event-log li.log-success { color: var(--color-success); font-weight: 500; }
@@ -157,6 +203,5 @@ button i { margin-right: 10px; font-size: 1.2em; }
 #event-log li.log-warning { color: var(--color-warning); font-weight: 500; }
 #event-log li.log-info { color: var(--color-text-secondary); }
 
-.container footer { text-align: center; padding: 20px 0 0 0; margin-top: auto; }
-.container .footer-text { font-size: 0.85em; color: var(--color-text-secondary); }
-/* --- END MAIN GAME CONTAINER STYLES --- */
+.studio-footer { text-align: center; padding: 15px; background-color: rgba(var(--color-card-bg-rgb), 0.5); width:100%; box-sizing: border-box; margin-top:auto; /* Прижимает футер книзу в studio-container */}
+.footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

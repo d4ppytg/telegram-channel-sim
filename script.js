@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded - Script execution started.");
     const tg = window.Telegram.WebApp;
 
     // Экраны и оверлеи
@@ -34,9 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalButtons = document.querySelectorAll('.close-modal-button');
     const eventLogUl = document.getElementById('event-log');
 
-    // Элементы интерактивного монитора
-    const monitorContentArea = document.getElementById('monitor-content-area');
-    const monitorIdleContent = document.getElementById('monitor-idle-content');
     const initiatePostCreationButton = document.getElementById('initiate-post-creation-button');
     const monitorSteps = {
         selectType: document.getElementById('monitor-step-select-type'),
@@ -53,28 +51,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const monitorBackButtons = document.querySelectorAll('#monitor-content-area .monitor-back-button');
     let currentPostCreation = { type: null, themeId: null, effort: 2 };
 
-    // Кнопки навигации
     const navButtons = document.querySelectorAll('.bottom-nav .nav-button');
-
-    // Кнопки улучшений (если будут на отдельном экране)
     const upgradeContentQualityButton = document.querySelector('#upgradesScreen #upgrade-content-quality');
     const upgradeCostSpan = document.querySelector('#upgradesScreen .upgrade-cost');
     
-    // Всплывающие комментарии
     const liveFeedbackContainer = document.getElementById('live-feedback-container');
     const MAX_FEEDBACK_ITEMS = 7;
-    const positiveComments = ["Круто!", "Лучший пост!", "Огонь 🔥", "Люблю!", "Подписка!", "👍👍👍", "Гениально!"];
+    const positiveComments = ["Круто!", "Лучший!", "Огонь 🔥", "Люблю!", "Подписка!", "👍👍👍", "Гений!"];
     const neutralComments = ["Интересно.", "Неплохо.", "Пойдет.", "Норм.", "🤔", "Ок."];
     const negativeComments = ["Что это?", "Скучно.", "Отписка.", "👎", "Не понял.", "Ужас."];
     const reactionEmojis = ['❤️', '😂', '🎉', '🤯', '👀', '💯'];
 
+    // Проверка ключевых элементов
+    if (!preloader) console.error("Preloader element not found!");
+    if (!gameInterface) console.error("Game Interface element not found!");
+
+
     tg.ready();
     tg.expand();
+    console.log("Telegram WebApp SDK ready and expanded.");
 
     let defaultGameState = {
         channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
         audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "1.0.0", 
+        gameVersion: "1.0.1_debug", // Обновленная версия для отладки
         theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
         currentTrend: null, trendPostsRemaining: 0,
     };
@@ -82,155 +82,183 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const CHARACTER_STATES = { IDLE_BLINKING: 'idle_blinking', TYPING: 'typing', HAPPY: 'happy', SLEEPING: 'sleeping' };
 
-    function setCharacterState(newState, durationMs = 0) { /* ... как в предыдущем полном коде ... */ }
+    function setCharacterState(newState, durationMs = 0) {
+        if (!characterEl) { console.warn("characterEl not found in setCharacterState"); return; }
+        clearTimeout(characterStateTimeout);
+        characterEl.className = ''; 
+        switch (newState) {
+            case CHARACTER_STATES.IDLE_BLINKING: characterEl.classList.add('char-anim-idle-blink'); break;
+            case CHARACTER_STATES.TYPING: characterEl.classList.add('char-state-typing'); break;
+            case CHARACTER_STATES.HAPPY:
+                characterEl.classList.add('char-state-happy');
+                if (durationMs > 0) {
+                    characterStateTimeout = setTimeout(() => setCharacterState(CHARACTER_STATES.IDLE_BLINKING), durationMs);
+                }
+                break;
+            case CHARACTER_STATES.SLEEPING: characterEl.classList.add('char-state-sleeping'); break;
+            default: characterEl.classList.add('char-anim-idle-blink'); break;
+        }
+    }
+
     function showTopLevelScreen(screenElementToShow) {
-    console.log("--- showTopLevelScreen called with: ---", screenElementToShow ? screenElementToShow.id : "null element"); // << НОВЫЙ LOG
-    function showTopLevelScreen(screenElementToShow) { /* ... как в предыдущем полном коде ... */ }
-        // ...
-if (screenElementToShow) {
-    console.log(`Setting display for ${screenElementToShow.id} to flex`); // << НОВЫЙ LOG
-    screenElementToShow.style.display = 'flex'; 
-    requestAnimationFrame(() => { 
-        requestAnimationFrame(() => { 
-            console.log(`Adding 'visible' class to ${screenElementToShow.id}`); // << НОВЫЙ LOG
-            screenElementToShow.classList.add('visible'); 
-        }); 
-    });
-}
-// ...
-    function setActiveGameScreen(targetScreenId) { /* ... как в предыдущем полном коде ... */ }
-    function playCutscene() { /* ... как в предыдущем полном коде ... */ }
+        console.log("showTopLevelScreen called for:", screenElementToShow ? screenElementToShow.id : "null");
+        const screens = [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, gameInterface];
+        screens.forEach(el => {
+            if (el) { 
+                el.classList.remove('visible'); 
+                el.style.display = 'none';
+            }
+        });
+        if (screenElementToShow) {
+            screenElementToShow.style.display = 'flex'; 
+            requestAnimationFrame(() => { 
+                requestAnimationFrame(() => { 
+                    screenElementToShow.classList.add('visible'); 
+                    console.log(screenElementToShow.id + " should be visible now.");
+                }); 
+            });
+        } else {
+            console.error("showTopLevelScreen called with null or undefined element!");
+        }
+    }
+
+    function setActiveGameScreen(targetScreenId) {
+        console.log("setActiveGameScreen called for:", targetScreenId);
+        if (!allGameScreens || allGameScreens.length === 0) {
+            console.error("allGameScreens not found or empty!");
+            return;
+        }
+        allGameScreens.forEach(screen => {
+            if (screen) {
+                const isActive = screen.id === targetScreenId;
+                screen.style.display = isActive ? 'flex' : 'none';
+                screen.classList.toggle('active-screen', isActive);
+            }
+        });
+        if (navButtons) {
+            navButtons.forEach(button => {
+                if (button) button.classList.toggle('active', button.dataset.targetScreen === targetScreenId);
+            });
+        }
+        if (studioSidePanel) {
+            studioSidePanel.style.display = (targetScreenId === 'studioScreen') ? 'flex' : 'none';
+        }
+        if(gameScreensContainer) gameScreensContainer.scrollTop = 0;
+        console.log("Active game screen set to:", targetScreenId);
+    }
+    
+    function playCutscene() { 
+        console.log("--- playCutscene START ---");
+        showTopLevelScreen(cutsceneScreen); currentSlideIndex = 0;
+        if (cutsceneSlides && cutsceneSlides.length > 0 && cutsceneSlides[0]) {
+             cutsceneSlides[0].style.display = 'flex'; cutsceneSlides[0].classList.add('active'); 
+        } else {
+            console.warn("No cutscene slides found, skipping to gameplay.");
+            startGameplay(); // Если слайдов нет, сразу к игре
+            return;
+        }
+        setTimeout(showNextSlide, 3000);
+    }
     function showNextSlide() { /* ... как в предыдущем полном коде ... */ }
-    function initializeGameFlow() {
-    console.log("--- initializeGameFlow START ---"); // << НОВЫЙ LOG
-    const savedState = localStorage.getItem('channelSimGameState_v9'); // Убедитесь, что ключ правильный
-        const savedState = localStorage.getItem('channelSimGameState_v10_interactiveMonitor'); 
-        if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState }; if (gameState.theme) { showWelcomeScreen(); return; } }
-        gameState = { ...defaultGameState }; saveGame(); showThemeSelectionScreen();
+    
+    function initializeGameFlow() { 
+        console.log("--- initializeGameFlow START ---");
+        let savedState = null;
+        try {
+            savedState = localStorage.getItem('channelSimGameState_v10_interactiveMonitor'); 
+            if (savedState) { 
+                const parsedState = JSON.parse(savedState); 
+                gameState = { ...defaultGameState, ...parsedState }; 
+                console.log("Loaded game state:", gameState);
+                if (gameState.theme) { 
+                    console.log("Theme found, showing Welcome Screen");
+                    showWelcomeScreen(); return; 
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing saved state from localStorage:", e);
+            // Если ошибка парсинга, сбрасываем до дефолта
+            savedState = null; 
+        }
+        
+        console.log("No valid saved state or no theme, showing Theme Selection Screen");
+        gameState = { ...defaultGameState }; saveGame(); 
+        showThemeSelectionScreen();
     }
-    function showThemeSelectionScreen() { logEvent("Требуется выбор тематики канала.", "info"); showTopLevelScreen(themeSelectionScreen); }
-    if (savedState) {
-    // ...
-    if (gameState.theme) {
-        console.log("Theme found in gameState, showing Welcome Screen"); // << НОВЫЙ LOG
-        showWelcomeScreen();
-        return;
-    }
-}
-gameState = { ...defaultGameState };
-saveGame();
-console.log("No theme or no saved state, showing Theme Selection Screen"); // << НОВЫЙ LOG
-showThemeSelectionScreen();
-    function showWelcomeScreen() { /* ... как в предыдущем полном коде ... */ showTopLevelScreen(welcomeScreen); }
+    function showThemeSelectionScreen() { /* ... */ console.log("Showing Theme Selection Screen"); showTopLevelScreen(themeSelectionScreen); }
+    function showWelcomeScreen() { /* ... */ console.log("Showing Welcome Screen"); showTopLevelScreen(welcomeScreen); }
+    
     function startGameplay() { 
-        loadGame(); showTopLevelScreen(gameInterface); 
+        console.log("--- startGameplay START ---");
+        loadGame(); 
+        showTopLevelScreen(gameInterface); 
         setActiveGameScreen('studioScreen'); 
         setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
         logEvent(`Игра запущена! Канал: ${gameState.channelName}.`, "info");
     }
-    function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v10_interactiveMonitor');
-        if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
-        if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
-        updateUI(); updateTrendUI(); checkUpgradeButtonStatus();
-    }
-    function saveGame() { localStorage.setItem('channelSimGameState_v10_interactiveMonitor', JSON.stringify(gameState)); }
-    function logEvent(message, type = 'info') { /* ... как в предыдущем полном коде ... */ }
-    function updateUI() { /* ... как в предыдущем полном коде ... */ }
-    function checkUpgradeButtonStatus() { /* ... как в предыдущем полном коде ... */ }
-    function updateTrendUI() { /* ... как в предыдущем полном коде ... */ }
-    function generateNewTrend() { /* ... как в предыдущем полном коде ... */ }
+
+    function loadGame() { /* ... */ }
+    function saveGame() { /* ... */ }
+    function logEvent(message, type = 'info') { /* ... */ }
+    function updateUI() { /* ... */ }
+    function checkUpgradeButtonStatus() { /* ... */ }
+    function updateTrendUI() { /* ... */ }
+    function generateNewTrend() { /* ... */ }
     function getThemeDisplayName(themeKey) { /* ... */ }
     function getPostTypeName(typeKey) { /* ... */ }
 
     // --- ИНТЕРАКТИВНЫЙ МОНИТОР ---
-    function showMonitorStep(stepElementToShow) {
-        if (monitorIdleContent) monitorIdleContent.style.display = 'none';
-        Object.values(monitorSteps).forEach(step => { if (step) step.style.display = 'none';});
-        if (stepElementToShow) {
-            stepElementToShow.style.display = 'flex';
-            setCharacterState(CHARACTER_STATES.TYPING); 
-        } else {
-            if (monitorIdleContent) monitorIdleContent.style.display = 'flex';
-            setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
-        }
+    function showMonitorStep(stepElementToShow) { /* ... как в предыдущем полном коде ... */ }
+    if (initiatePostCreationButton) { /* ... */ }
+    if (monitorCancelButtons) monitorCancelButtons.forEach(button => { /* ... */ });
+    if (monitorBackButtons) monitorBackButtons.forEach(button => { /* ... */ });
+    if (monitorPostTypeButtons) monitorPostTypeButtons.forEach(button => { /* ... */ });
+    if (monitorSteps.selectThemeText && monitorSteps.selectThemeText.querySelectorAll('.monitor-theme-button')) {
+        monitorSteps.selectThemeText.querySelectorAll('.monitor-theme-button').forEach(button => { /* ... */ });
     }
-    if (initiatePostCreationButton) {
-        initiatePostCreationButton.addEventListener('click', () => {
-            currentPostCreation = { type: null, themeId: null, effort: effortSlider ? parseInt(effortSlider.value) : 2 };
-            showMonitorStep(monitorSteps.selectType);
-        });
-    }
-    monitorCancelButtons.forEach(button => button.addEventListener('click', () => showMonitorStep(null)));
-    monitorBackButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetStepId = button.dataset.targetStepId; // Исправлено на targetStepId
-            showMonitorStep(document.getElementById(targetStepId) || monitorSteps.selectType);
-        });
-    });
-    monitorPostTypeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            currentPostCreation.type = button.dataset.postType;
-            if (currentPostCreation.type === 'text') showMonitorStep(monitorSteps.selectThemeText);
-            // Добавить else if для других типов и их шагов выбора тем
-            else { logEvent(`Выбор темы для "${currentPostCreation.type}" еще не реализован.`, "warning"); showMonitorStep(null); }
-        });
-    });
-    if (monitorSteps.selectThemeText) {
-        monitorSteps.selectThemeText.querySelectorAll('.monitor-theme-button').forEach(button => {
-            button.addEventListener('click', () => {
-                currentPostCreation.themeId = button.dataset.themeId;
-                if(selectedThemeNameDisplay) selectedThemeNameDisplay.textContent = button.textContent;
-                showMonitorStep(monitorSteps.qualityText);
-            });
-        });
-    }
-    if (effortSlider) {
-        effortSlider.addEventListener('input', () => {
-            currentPostCreation.effort = parseInt(effortSlider.value);
-            if (effortLevelDisplay) { const levels = ["Низкое", "Среднее", "Высокое"]; effortLevelDisplay.textContent = levels[currentPostCreation.effort - 1]; }
-        });
-        if (effortLevelDisplay) { const levels = ["Низкое", "Среднее", "Высокое"]; effortLevelDisplay.textContent = levels[parseInt(effortSlider.value) - 1];}
-    }
-    if (monitorPublishButton) {
-        monitorPublishButton.addEventListener('click', () => {
-            if (!currentPostCreation.type || (!currentPostCreation.themeId && currentPostCreation.type === 'text' /*и для других где есть темы*/)) {
-                logEvent("Ошибка: Тип или тема поста не выбраны!", "error"); showMonitorStep(null); return;
-            }
-            if (currentPostCreation.type === 'text') handlePostAction('text', 1, 5, 2, 10, 1, 5, currentPostCreation.effort, currentPostCreation.themeId);
-            else if (currentPostCreation.type === 'meme') handlePostAction('meme', 3, 10, 1, 5, 2, 8, currentPostCreation.effort, currentPostCreation.themeId); // Добавить themeId если для мемов будут темы
-            else if (currentPostCreation.type === 'video') handlePostAction('video', 8, 20, 7, 18, 3, 10, currentPostCreation.effort, currentPostCreation.themeId); // Добавить themeId если для видео будут темы
-            showMonitorStep(null);
-        });
-    }
-
+    if (effortSlider) { /* ... */ }
+    if (monitorPublishButton) { /* ... */ }
+    
     // Навигация
-    navButtons.forEach(button => button.addEventListener('click', () => setActiveGameScreen(button.dataset.targetScreen)));
+    if (navButtons) navButtons.forEach(button => { /* ... */ });
+    if(goToCreatePostTabButton) { /* ... */ }
+
     // Модальное окно для лога
-    function openModal(modalElement) { /* ... */ } function closeModal(modalElement) { /* ... */ }
-    if(openLogButton) openLogButton.addEventListener('click', () => openModal(logModal));
-    closeModalButtons.forEach(button => { /* ... */ });
+    function openModal(modalElement) { /* ... */ }
+    function closeModal(modalElement) { /* ... */ }
+    if(openLogButton) { /* ... */ }
+    if(closeModalButtons) closeModalButtons.forEach(button => { /* ... */ });
+
     // Всплывающие комментарии
-    function showFeedback(text, isEmoji = false, username = null) { /* ... как в предыдущем полном коде ... */ }
+    function showFeedback(text, isEmoji = false, username = null) { /* ... */ }
+
     // Действия игры
     function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax, effort, themeId) { /* ... как в предыдущем полном коде ... */ }
-    // Обработчики кнопок создания постов (теперь не нужны, т.к. логика в monitorPublishButton)
-    // if(postTextButton) ... и т.д. - ЭТИ СТРОКИ УДАЛИТЬ ИЛИ ЗАКОММЕНТИРОВАТЬ
-    if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => { /* ... как в предыдущем полном коде, но без closeModal ... */ });
+     if(postTextButton) postTextButton.addEventListener('click', () => handlePostAction('text', 1, 5, 2, 10, 1, 5, currentPostCreation.effort, currentPostCreation.themeId));
+     if(postMemeButton) postMemeButton.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8, currentPostCreation.effort, currentPostCreation.themeId));
+     if(postVideoButton) postVideoButton.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10, currentPostCreation.effort, currentPostCreation.themeId));
+     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => { /* ... как в предыдущем полном коде ... */ });
+
     if (themeSelectionScreen) { /* ... обработчики выбора темы как раньше ... */ }
     
-    showTopLevelScreen(preloader);
+    // --- ИНИЦИАЛИЗАЦИЯ ЗАПУСКА ---
+    console.log("Attempting to show preloader...");
+    showTopLevelScreen(preloader); // Показываем прелоадер первым
+
     setTimeout(() => {
-    console.log("Preloader timeout! Hiding preloader, calling initializeGameFlow."); // << НОВЫЙ LOG
-    if (preloader) { 
-        preloader.classList.remove('visible'); 
-        setTimeout(() => { 
-            if(preloader) preloader.style.display = 'none'; 
-            console.log("Preloader display set to none."); // << НОВЫЙ LOG
-        }, 700); // Время анимации opacity для #preloader.hidden (в CSS было 0.7s)
-    }
-    initializeGameFlow();
-}, 2500); // Общее время показа прелоадера
+        console.log("Preloader timeout! Hiding preloader, calling initializeGameFlow.");
+        if (preloader) { 
+            preloader.classList.remove('visible'); 
+            setTimeout(() => { 
+                if(preloader) preloader.style.display = 'none'; 
+                console.log("Preloader display set to none.");
+            }, 700); 
+        }
+        initializeGameFlow();
+    }, 2500); 
+
     if (startGameButton) { /* ... как раньше, вызывает playCutscene() ... */ }
     if (tg.BackButton) { /* ... как в предыдущем полном коде ... */ }
+
+    console.log("Script execution finished setup.");
 });

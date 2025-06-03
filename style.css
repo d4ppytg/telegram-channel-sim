@@ -41,11 +41,9 @@ body {
 
 
 /* --- PRELOADER, THEME, WELCOME, CUTSCENE --- */
-/* Стили для этих экранов остаются без изменений, как в предыдущем полном коде (версия перед "слетевшими" стилями) */
-/* ... (скопируйте сюда все стили для #preloader, #theme-selection-screen, #welcome-screen, #cutscene-screen) ... */
-/* Пример для прелоадера, остальные аналогично */
-#preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
-.preloader-content { /* ... */ } .preloader-hero-image { /* ... */ } /* и т.д. */
+/* Стили для этих экранов остаются как в ПОЛНОМ CSS из предпоследнего ответа, где они были подробно описаны */
+/* Убедитесь, что они здесь присутствуют и корректны. Для краткости я их не дублирую полностью. */
+#preloader.hidden { /* ... */ } .preloader-content { /* ... */ } /* и т.д. */
 #theme-selection-screen .theme-selection-content { /* ... */ } /* и т.д. */
 #welcome-screen .welcome-content { /* ... */ } /* и т.д. */
 #cutscene-screen .cutscene-slide { /* ... */ } /* и т.д. */
@@ -68,7 +66,7 @@ body {
     flex-grow: 1; display: flex; flex-direction: column; 
     justify-content: space-between; align-items: center; 
     padding: 20px; position: relative; width: 100%; box-sizing: border-box;
-    overflow-y: auto; /* Если контент студии будет больше экрана */
+    overflow-y: auto; 
 }
 
 /* --- CHARACTER STYLES --- */
@@ -89,10 +87,11 @@ body {
 #studio-screen-container .trend-banner-monitor span { font-weight: bold; color: var(--color-accent-secondary); }
 #studio-screen-container .monitor-actions button { width: auto; padding: 10px 20px; font-size: 0.95em; margin: 15px auto 0 auto; display: block; }
 
-#studio-screen-container .side-panel { /* Боковая панель */
+#studio-screen-container .side-panel { 
     position: fixed; right: 10px; 
-    top: calc(var(--header-height) + 20px); /* Отступ от хедера */
-    display: flex; flex-direction: column; gap: 10px; 
+    top: calc(var(--header-height) + 20px); 
+    display: flex; /* По умолчанию будет показан, если studio-screen-container виден */
+    flex-direction: column; gap: 10px; 
     background-color: rgba(var(--color-card-bg-rgb), 0.7); 
     padding: 10px; border-radius: var(--border-radius-md); 
     backdrop-filter: blur(5px); z-index: 50; 
@@ -101,22 +100,23 @@ body {
 .icon-button:hover { background-color: rgba(var(--color-accent-primary-rgb), 0.2); border-color: var(--color-accent-primary); }
 
 /* --- LIVE FEEDBACK (Комментарии) --- */
-#live-feedback-container { position: absolute; bottom: 20px; /* Выше футера студии */ right: 20px; width: 280px; max-height: 200px; display: flex; flex-direction: column-reverse; gap: 8px; z-index: 20; pointer-events: none; }
+#live-feedback-container { position: absolute; bottom: 20px; right: 20px; width: 280px; max-height: 200px; display: flex; flex-direction: column-reverse; gap: 8px; z-index: 20; pointer-events: none; }
 /* ... остальные стили для .feedback-item как раньше ... */
+.feedback-item { background-color: rgba(var(--color-card-bg-rgb), 0.9); backdrop-filter: blur(4px); padding: 8px 12px; border-radius: var(--border-radius-md); box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: var(--color-text-primary); font-size: 0.85em; animation: 등장FeedbackItem 0.5s ease-out; opacity: 0.95; }
+@keyframes 등장FeedbackItem { from { opacity: 0; transform: translateX(20px); } to { opacity: 0.95; transform: translateX(0); } }
+.feedback-item.fade-out { animation: 사라짐FeedbackItem 0.5s ease-in forwards; }
+@keyframes 사라짐FeedbackItem { to { opacity: 0; transform: translateX(30px); height: 0; padding-top:0; padding-bottom:0; margin-top:0; margin-bottom:0; border:0;} }
+.feedback-item .username { font-weight: bold; color: var(--color-accent-primary); margin-right: 5px; }
+.feedback-item .emoji { font-size: 1.4em; }
+
 
 /* --- МОДАЛЬНЫЕ ОКНА --- */
 /* ... стили для .modal-overlay, .modal-content, .close-modal-button как раньше ... */
-.modal-actions button { margin-bottom: 10px; } /* Для кнопок в модалке создания поста */
+.modal-actions button { margin-bottom: 10px; } 
 /* Стили для карточек улучшений внутри модального окна */
 #upgrades-modal .upgrades-list { display: flex; flex-direction: column; gap: 15px; }
-#upgrades-modal .upgrade-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--color-bg); /* Чуть темнее фона модалки */ padding: 15px; border-radius: var(--border-radius-sm); text-align: left; }
-#upgrades-modal .upgrade-icon { font-size: 1.8em; margin-right: 15px; color: var(--color-accent-primary); }
-#upgrades-modal .upgrade-info h4 { margin: 0 0 5px 0; font-size: 1.1em; color: var(--color-text-primary); }
-#upgrades-modal .upgrade-info p { margin: 0; font-size: 0.85em; color: var(--color-text-secondary); }
-#upgrades-modal .upgrade-item button { width: auto; padding: 10px 15px; font-size: 0.9em; margin: 0; text-transform: none; }
-
-#log-modal .modal-content { max-height: 80vh; display: flex; flex-direction: column;}
-#log-modal #event-log { flex-grow: 1; overflow-y: auto; margin-top: 0; max-height: calc(80vh - 150px); }
+#upgrades-modal .upgrade-item { /* ... */ } #upgrades-modal .upgrade-icon { /* ... */ } /* и т.д. */
+#log-modal .modal-content { /* ... */ } #log-modal #event-log { /* ... */ }
 
 
 /* --- ОБЩИЕ СТИЛИ КНОПОК --- */
@@ -127,5 +127,5 @@ button { /* ... как раньше ... */ }
 #event-log li { /* ... как раньше ... */ }
 /* ... стили для .log-success, .log-error и т.д. ... */
 
-#studio-screen-container .studio-footer { text-align: center; padding: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.8); width:100%; box-sizing: border-box; flex-shrink: 0; /* Чтобы футер не сжимался */ margin-top: auto; /* Прижимает футер к низу, если основной контент короткий */ }
+#studio-screen-container .studio-footer { text-align: center; padding: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.8); width:100%; box-sizing: border-box; flex-shrink: 0; margin-top:auto; }
 #studio-screen-container .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

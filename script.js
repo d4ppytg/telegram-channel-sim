@@ -7,6 +7,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcomeScreen = document.getElementById('welcome-screen');
     const cutsceneScreen = document.getElementById('cutscene-screen');
     const studioContainer = document.querySelector('.studio-container');
+    function closeModal(modalElement) { 
+    if (modalElement) { 
+        modalElement.classList.remove('visible'); 
+        setTimeout(() => { modalElement.style.display = 'none'; }, 300); // Время анимации CSS
+        showScreen(studioContainer); // Возвращаемся к студии
+    } 
+}
+    if (tg.BackButton) {
+    tg.BackButton.show();
+    tg.BackButton.onClick(() => {
+        const visibleModal = document.querySelector('.modal-overlay.visible'); // Ищем любую видимую модалку
+
+        if (visibleModal) {
+            closeModal(visibleModal);
+        } else if (studioContainer && studioContainer.classList.contains('visible')) {
+            saveGame(); 
+            logEvent("Выход из игры (прогресс сохранен).", "info"); 
+            tg.close();
+        } else if (cutsceneScreen && cutsceneScreen.classList.contains('visible')) {
+             tg.close(); 
+        } else if (welcomeScreen && welcomeScreen.classList.contains('visible')) {
+             tg.close(); 
+        } else if (themeSelectionScreen && themeSelectionScreen.classList.contains('visible')) {
+             tg.close(); 
+        } else {
+            tg.close(); // Общее закрытие, если ничего из вышеперечисленного не активно
+        }
+    });
+}
+    function showScreen(screenElementToShow) {
+    // Сначала скрываем все экраны верхнего уровня
+    [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioContainer, logModal, createPostModal, upgradesModal].forEach(el => {
+        if (el) { 
+            el.classList.remove('visible'); 
+            el.style.display = 'none';
+        }
+    });
+
+    if (screenElementToShow) {
+        screenElementToShow.style.display = 'flex'; // Все оверлеи и студия - flex
+         if (screenElementToShow === studioContainer) {
+             studioContainer.style.justifyContent = 'flex-start'; 
+             studioContainer.style.alignItems = 'stretch';
+             studioContainer.style.flexDirection = 'column'; // Для правильного расположения
+             if(studioSidePanel) studioSidePanel.style.display = 'flex'; // Показываем боковую панель для студии
+        } else {
+             if(studioSidePanel) studioSidePanel.style.display = 'none'; // Скрываем для других экранов
+        }
+
+        requestAnimationFrame(() => { 
+            requestAnimationFrame(() => { 
+                screenElementToShow.classList.add('visible'); 
+            }); 
+        });
+    }
+}
     
     const startGameButton = document.getElementById('start-game-button');
     const cutsceneSlides = cutsceneScreen ? cutsceneScreen.querySelectorAll('.cutscene-slide') : [];

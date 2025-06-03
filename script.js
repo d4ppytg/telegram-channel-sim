@@ -1,286 +1,289 @@
+// Полный script.js из предыдущего ответа (версия 1.0.0) 
+// + следующие ИЗМЕНЕНИЯ и ДОБАВЛЕНИЯ:
+
 document.addEventListener('DOMContentLoaded', () => {
-    const tg = window.Telegram.WebApp;
+    // ... (все существующие const для элементов UI, tg, defaultGameState, CHARACTER_STATES) ...
+    // Обновляем версию в defaultGameState
+    // defaultGameState.gameVersion = "1.1.0";
+    // Обновляем ключ localStorage в initializeGameFlow, loadGame, saveGame на 'channelSimGameState_v12'
 
-    // Экраны
-    const preloader = document.getElementById('preloader');
-    const themeSelectionScreen = document.getElementById('theme-selection-screen');
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const cutsceneScreen = document.getElementById('cutscene-screen');
-    const studioContainer = document.querySelector('.studio-container');
+    // === НОВЫЕ ЭЛЕМЕНТЫ И ПЕРЕМЕННЫЕ ДЛЯ ЛАБОРАТОРИИ ТЕКСТА ===
+    const openTextLabButton = document.getElementById('open-text-lab-button');
+    const textPostLabScreen = document.getElementById('text-post-lab-screen');
     
-    const startGameButton = document.getElementById('start-game-button');
-    const cutsceneSlides = cutsceneScreen ? cutsceneScreen.querySelectorAll('.cutscene-slide') : [];
-    let currentSlideIndex = 0;
-    const telegramUsernameDisplay = document.getElementById('telegram-username-display');
-    const userPhotoEl = document.getElementById('user-photo');
+    const textLabStepTitleSelection = document.getElementById('text-lab-step-title-selection');
+    const titleOptionsGrid = document.querySelector('#text-lab-step-title-selection .title-options-grid');
+    
+    const textLabStepWordFlow = document.getElementById('text-lab-step-word-flow');
+    const wordFlowTimerDisplay = document.getElementById('word-flow-time-left');
+    const wordFlowQualityScoreDisplay = document.getElementById('word-flow-quality-score');
+    const wordFlowArea = document.querySelector('#text-lab-step-word-flow .word-flow-area');
+    const collectedTextPreview = document.getElementById('собранный-текст-поста-в-лабе');
+    const wordsCollectedCountDisplay = document.getElementById('words-collected-count');
 
-    const characterEl = document.getElementById('character-sprite');
-    let characterStateTimeout; 
+    const textLabStepPublish = document.getElementById('text-lab-step-publish');
+    const finalPostQualityDisplay = document.getElementById('final-post-quality-display');
+    const publishTextPostFromLabButton = document.getElementById('publish-text-post-from-lab-button');
+    const cancelTextPostLabButton = document.getElementById('cancel-text-post-lab-button');
 
-    const channelNameOnMonitorEl = document.getElementById('channel-name-on-monitor');
-    const subscribersCountEl = document.getElementById('subscribers-count');
-    const balanceCountEl = document.getElementById('balance-count');
-    const audienceMoodDisplay = document.getElementById('audience-mood-display');
-    const gameVersionEl = document.getElementById('game-version');
-
-    const currentTrendDisplayMonitor = document.getElementById('current-trend-display-monitor');
-    const trendDescriptionMonitorEl = document.getElementById('trend-description-monitor');
-
-    const createPostButtonMonitor = document.getElementById('create-post-button-monitor');
-    const openUpgradesButton = document.getElementById('open-upgrades-button');
-    const openLogButton = document.getElementById('open-log-button');
-
-    const createPostModal = document.getElementById('create-post-modal');
-    const upgradesModal = document.getElementById('upgrades-modal');
-    const logModal = document.getElementById('log-modal');
-    const closeModalButtons = document.querySelectorAll('.close-modal-button');
-
-    const postTextButton = document.getElementById('post-text-button');
-    const postMemeButton = document.getElementById('post-meme-button');
-    const postVideoButton = document.getElementById('post-video-button');
-    const upgradeContentQualityButton = document.getElementById('upgrade-content-quality');
-    const eventLogUl = document.getElementById('event-log');
-
-    tg.ready();
-    tg.expand();
-
-    let defaultGameState = {
-        channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
-        audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "0.7.0", // Новая версия
-        theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
-        currentTrend: null, trendPostsRemaining: 0,
-    };
-    let gameState = { ...defaultGameState };
-
-    const CHARACTER_STATES = {
-        IDLE_BLINKING: 'idle_blinking', TYPING: 'typing',
-        HAPPY: 'happy', SLEEPING: 'sleeping' 
+    let currentTextLabState = {
+        selectedTitle: null,
+        collectedWords: [],
+        qualityScore: 0,
+        wordFlowInterval: null,
+        wordFlowTimeout: null,
+        wordSpawnInterval: null,
     };
 
-    function setCharacterState(newState, durationMs = 0) {
-        if (!characterEl) return;
-        clearTimeout(characterStateTimeout);
-        characterEl.className = ''; 
-        switch (newState) {
-            case CHARACTER_STATES.IDLE_BLINKING: characterEl.classList.add('char-anim-idle-blink'); break;
-            case CHARACTER_STATES.TYPING: characterEl.classList.add('char-state-typing'); break;
-            case CHARACTER_STATES.HAPPY:
-                characterEl.classList.add('char-state-happy');
-                if (durationMs > 0) {
-                    characterStateTimeout = setTimeout(() => setCharacterState(CHARACTER_STATES.IDLE_BLINKING), durationMs);
-                }
-                break;
-            case CHARACTER_STATES.SLEEPING: characterEl.classList.add('char-state-sleeping'); break;
-            default: characterEl.classList.add('char-anim-idle-blink'); break;
-        }
-    }
+    const TEXT_POST_TITLES = [ // Примеры заголовков
+        { id: 1, text: "Секреты Успеха: Как Набрать Миллион Подписчиков", baseQuality: 10, difficulty: 1},
+        { id: 2, text: "ШОК! Вы не поверите, что случилось дальше...", baseQuality: 15, difficulty: 1.2},
+        { id: 3, text: "Глубокий Анализ Рынка Котиков в Telegram", baseQuality: 8, difficulty: 0.8},
+        { id: 4, text: "Мой Топ-5 Лайфхаков для Продуктивности", baseQuality: 12, difficulty: 1.1},
+    ];
+    const GOOD_WORDS = ["отлично", "супер", "важно", "интересно", "полезно", "круто", "эксклюзив", "невероятно", "эффективно", "успех", "рост", "тренд"];
+    const BAD_WORDS = ["скучно", "вода", "бред", "ужасно", "плохо", "непонятно", "ошибка", "кринж", "фейк", "спам", "баян"];
 
-    function showScreen(screenElement) {
-        [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioContainer, createPostModal, upgradesModal, logModal].forEach(el => {
-            if (el) { el.classList.remove('visible'); el.style.display = 'none';}
+
+    // --- МОДИФИЦИРОВАННАЯ ЛОГИКА УПРАВЛЕНИЯ ЭКРАНАМИ ---
+    function showScreen(screenElementToShow) {
+        // Добавляем textPostLabScreen в список
+        [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioScreenContainer, textPostLabScreen, createPostModal, upgradesModal, logModal].forEach(el => {
+            if (el && el !== screenElementToShow) { 
+                el.classList.remove('visible'); el.style.display = 'none';
+            }
         });
-        if (screenElement) {
-            screenElement.style.display = 'flex'; 
-            if (screenElement === studioContainer) {
-                 studioContainer.style.flexDirection = 'column'; 
-                 studioContainer.style.justifyContent = 'flex-start';
-                 studioContainer.style.alignItems = 'stretch';
+        if (screenElementToShow) {
+            screenElementToShow.style.display = 'flex'; 
+            requestAnimationFrame(() => { requestAnimationFrame(() => { screenElementToShow.classList.add('visible'); }); });
+        }
+    }
+
+    // --- ЛОГИКА ЛАБОРАТОРИИ ТЕКСТОВОГО ПОСТА ---
+    function resetTextLab() {
+        currentTextLabState = { selectedTitle: null, collectedWords: [], qualityScore: 0, wordFlowInterval: null, wordFlowTimeout: null, wordSpawnInterval: null };
+        if(titleOptionsGrid) titleOptionsGrid.innerHTML = '';
+        if(wordFlowArea) wordFlowArea.innerHTML = '';
+        if(collectedTextPreview) collectedTextPreview.innerHTML = '';
+        if(wordsCollectedCountDisplay) wordsCollectedCountDisplay.textContent = '0';
+        if(wordFlowQualityScoreDisplay) wordFlowQualityScoreDisplay.textContent = '0';
+        if(textLabStepTitleSelection) textLabStepTitleSelection.style.display = 'block';
+        if(textLabStepWordFlow) textLabStepWordFlow.style.display = 'none';
+        if(textLabStepPublish) textLabStepPublish.style.display = 'none';
+    }
+
+    function startTextPostLab() {
+        resetTextLab();
+        // Заполняем опции заголовков
+        if (titleOptionsGrid) {
+            // Выбираем 3 случайных уникальных заголовка
+            const shuffledTitles = [...TEXT_POST_TITLES].sort(() => 0.5 - Math.random());
+            const selectedTitles = shuffledTitles.slice(0, 3);
+
+            selectedTitles.forEach(title => {
+                const button = document.createElement('button');
+                button.classList.add('title-option-button');
+                button.textContent = title.text;
+                button.dataset.titleId = title.id;
+                button.dataset.baseQuality = title.baseQuality;
+                button.addEventListener('click', () => selectTextLabTitle(title));
+                titleOptionsGrid.appendChild(button);
+            });
+        }
+        showScreen(textPostLabScreen);
+    }
+
+    function selectTextLabTitle(titleData) {
+        currentTextLabState.selectedTitle = titleData;
+        logEvent(`Выбран заголовок: "${titleData.text}"`, "info");
+        if(textLabStepTitleSelection) textLabStepTitleSelection.style.display = 'none';
+        if(textLabStepWordFlow) textLabStepWordFlow.style.display = 'block';
+        startWordFlowGame();
+    }
+
+    function startWordFlowGame() {
+        currentTextLabState.collectedWords = [];
+        currentTextLabState.qualityScore = 0;
+        if(collectedTextPreview) collectedTextPreview.innerHTML = '';
+        if(wordsCollectedCountDisplay) wordsCollectedCountDisplay.textContent = '0';
+        if(wordFlowQualityScoreDisplay) wordFlowQualityScoreDisplay.textContent = '0';
+
+        let timeLeft = 30;
+        if(wordFlowTimerDisplay) wordFlowTimerDisplay.textContent = timeLeft;
+
+        // Таймер игры
+        currentTextLabState.wordFlowTimeout = setInterval(() => {
+            timeLeft--;
+            if(wordFlowTimerDisplay) wordFlowTimerDisplay.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                endWordFlowGame();
             }
-            requestAnimationFrame(() => { requestAnimationFrame(() => { screenElement.classList.add('visible'); }); });
-        }
-    }
-    
-    function playCutscene() { 
-        showScreen(cutsceneScreen); currentSlideIndex = 0;
-        if (cutsceneSlides.length > 0) { cutsceneSlides[0].style.display = 'flex'; cutsceneSlides[0].classList.add('active'); }
-        setTimeout(showNextSlide, 3000);
-    }
-    function showNextSlide() {
-        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { // Добавил проверку
-            cutsceneSlides[currentSlideIndex].classList.remove('active');
-            if (currentSlideIndex > 0 && cutsceneSlides[currentSlideIndex - 1]) { 
-                setTimeout(() => { if (cutsceneSlides[currentSlideIndex - 1]) cutsceneSlides[currentSlideIndex - 1].style.display = 'none'; }, 500); 
-            }
-        }
-        currentSlideIndex++;
-        if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { // Добавил проверку
-            cutsceneSlides[currentSlideIndex].style.display = 'flex'; 
-            cutsceneSlides[currentSlideIndex].classList.add('active'); 
-            setTimeout(showNextSlide, 3000); 
-        } else { startGameplay(); }
-    }
-    
-    function initializeGameFlow() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); // Новый ключ
-        if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState }; if (gameState.theme) { showWelcomeScreen(); return; } }
-        gameState = { ...defaultGameState }; saveGame(); showThemeSelectionScreen();
-    }
-    function showThemeSelectionScreen() { logEvent("Требуется выбор тематики канала.", "info"); showScreen(themeSelectionScreen); }
-    function showWelcomeScreen() { 
-        const userData = tg.initDataUnsafe?.user;
-        if (userData) {
-            if (telegramUsernameDisplay) telegramUsernameDisplay.textContent = userData.username ? `@${userData.username}` : (userData.first_name || 'Игрок');
-            if (userPhotoEl && userData.photo_url) userPhotoEl.src = userData.photo_url;
-            else if (userPhotoEl) userPhotoEl.src = 'placeholder-avatar.png';
-        } else {
-            if (telegramUsernameDisplay) telegramUsernameDisplay.textContent = 'Гость';
-            if (userPhotoEl) userPhotoEl.src = 'placeholder-avatar.png';
-        }
-        showScreen(welcomeScreen); 
-    }
-    function startGameplay() { 
-        loadGame(); showScreen(studioContainer); 
-        logEvent(`Студия открыта! Канал: ${gameState.channelName}.`, "info");
-        setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
+        }, 1000);
+
+        // Генерация слов
+        currentTextLabState.wordSpawnInterval = setInterval(spawnWord, 1200); // Каждые 1.2 секунды новое слово
     }
 
-    function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); // Новый ключ
-        if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
-        if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
-        updateUI(); updateTrendUI(); checkUpgradeButtonStatus();
-    }
-    function saveGame() { localStorage.setItem('channelSimGameState_v7', JSON.stringify(gameState)); }
-    function logEvent(message, type = 'info') { 
-        if (!eventLogUl) return;
-        const listItem = document.createElement('li');
-        const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        listItem.textContent = `[${time}] ${message}`;
-        listItem.className = `log-${type}`;
-        eventLogUl.prepend(listItem);
-        if (eventLogUl.children.length > 30) eventLogUl.removeChild(eventLogUl.lastChild);
-     }
-    function updateUI() { 
-        const displayName = gameState.channelName || `Канал [${getThemeDisplayName(gameState.theme)}]`;
-        if (channelNameOnMonitorEl) channelNameOnMonitorEl.textContent = displayName;
-        if (subscribersCountEl) subscribersCountEl.textContent = gameState.subscribers;
-        if (balanceCountEl) balanceCountEl.textContent = gameState.balance.toFixed(0);
-        if (audienceMoodDisplay) audienceMoodDisplay.textContent = gameState.audienceMood.toFixed(0);
-        updateTrendUI();
-    }
-    function checkUpgradeButtonStatus() { 
-        if (!upgradeContentQualityButton) return;
-        const cost = parseInt(upgradeContentQualityButton.dataset.cost);
-        upgradeContentQualityButton.disabled = gameState.balance < cost;
-    }
-    function updateTrendUI() { 
-        if (gameState.currentTrend && gameState.trendPostsRemaining > 0) {
-            if (trendDescriptionMonitorEl) trendDescriptionMonitorEl.textContent = `${gameState.currentTrend.topic} (${getPostTypeName(gameState.currentTrend.type)}) Bonus x${gameState.currentTrend.bonus}, ${gameState.trendPostsRemaining} п.`;
-            if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'block';
-        } else {
-            if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'none';
-            // gameState.currentTrend = null; // Не нужно сбрасывать здесь, сбросится при генерации нового или если trendPostsRemaining станет 0
-        }
-    }
-    function generateNewTrend() { 
-        const trendTypes = ['text', 'meme', 'video'];
-        const trendTopics = { text: ["Горячие новости", "Советы", "Анализ"], meme: ["Мемы", "Юмор", "Животные"], video: ["Обзоры", "Котики", "Лайфхаки"] };
-        const randomType = trendTypes[Math.floor(Math.random() * trendTypes.length)];
-        const randomTopic = trendTopics[randomType][Math.floor(Math.random() * trendTopics[randomType].length)];
-        gameState.currentTrend = { type: randomType, topic: randomTopic, bonus: (Math.random() * 0.5 + 1.3).toFixed(1) };
-        gameState.trendPostsRemaining = Math.floor(Math.random() * 3) + 3;
-        logEvent(`Новый тренд! ${randomTopic} (${getPostTypeName(randomType)}) сейчас популярны! Бонус x${gameState.currentTrend.bonus} на ${gameState.trendPostsRemaining} постов.`, 'warning');
-    }
-    function getThemeDisplayName(themeKey) { const n = { news: 'Новости', entertainment: 'Развлечения', education: 'Образование', tech: 'Технологии'}; return n[themeKey] || 'Неизвестная'; }
-    function getPostTypeName(typeKey) { const n = { text: 'Тексты', meme: 'Мемы', video: 'Видео'}; return n[typeKey] || typeKey; }
+    function spawnWord() {
+        if (!wordFlowArea || document.hidden) return; // Не спавним, если вкладка не активна или нет области
 
-    function openModal(modalElement) { if (modalElement) { showScreen(modalElement); } }
-    function closeModal(modalElement) { if (modalElement) { modalElement.classList.remove('visible'); setTimeout(() => { modalElement.style.display = 'none'; }, 300); showScreen(studioContainer); } }
+        const wordEl = document.createElement('span');
+        wordEl.classList.add('clickable-word');
+        
+        const isGood = Math.random() > 0.35; // 65% шанс хорошего слова
+        wordEl.textContent = isGood ? GOOD_WORDS[Math.floor(Math.random() * GOOD_WORDS.length)] : BAD_WORDS[Math.floor(Math.random() * BAD_WORDS.length)];
+        wordEl.dataset.type = isGood ? 'good' : 'bad';
+        wordEl.classList.add(isGood ? 'good-word' : 'bad-word');
 
-    if(createPostButtonMonitor) createPostButtonMonitor.addEventListener('click', () => openModal(createPostModal));
-    if(openUpgradesButton) openUpgradesButton.addEventListener('click', () => openModal(upgradesModal));
-    if(openLogButton) openLogButton.addEventListener('click', () => openModal(logModal));
-    closeModalButtons.forEach(button => { button.addEventListener('click', () => { const modalId = button.dataset.modalId; const modalToClose = document.getElementById(modalId); closeModal(modalToClose); }); });
+        // Случайное позиционирование внутри wordFlowArea
+        const areaRect = wordFlowArea.getBoundingClientRect();
+        wordEl.style.left = Math.random() * (areaRect.width - 80) + 'px'; // -80 чтобы не у края
+        wordEl.style.top = Math.random() * (areaRect.height - 30) + 'px'; // -30 чтобы не у края
 
-    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) {
-        setCharacterState(CHARACTER_STATES.TYPING); 
+        // Анимация появления (можно сделать через CSS класс)
+        requestAnimationFrame(() => {
+            wordEl.style.opacity = '1';
+            wordEl.style.transform = 'translateY(0)';
+        });
+
+        wordEl.addEventListener('click', handleWordClick);
+        wordFlowArea.appendChild(wordEl);
+
+        // Удаляем слово через некоторое время, если на него не кликнули
         setTimeout(() => {
-            const themeModKey = postType; const themeMod = gameState.themeModifiers[themeModKey] || 1;
-            const moodMultiplier = 0.8 + (gameState.audienceMood / 100) * 0.4; let trendBonusMultiplier = 1;
-            if (gameState.currentTrend && gameState.currentTrend.type === postType && gameState.trendPostsRemaining > 0) { trendBonusMultiplier = parseFloat(gameState.currentTrend.bonus); gameState.audienceMood = Math.min(gameState.audienceMood + 5, 100); logEvent(`Пост "${getPostTypeName(postType)}" попал в тренд! Бонус x${trendBonusMultiplier}!`, 'info');}
-            const subGain = Math.floor((Math.random() * (baseSubMax - baseSubMin + 1) + baseSubMin) * gameState.contentQualityMultiplier * themeMod * moodMultiplier * trendBonusMultiplier);
-            const moneyGain = Math.floor((Math.random() * (baseMoneyMax - baseMoneyMin + 1) + baseMoneyMin) * gameState.contentQualityMultiplier);
-            gameState.subscribers += subGain; gameState.balance += moneyGain; gameState.postsMade++;
-            // gameState.engagementRate - пока не используется в UI студии
-            let moodChange = 0;
-            if (subGain > 2) moodChange = Math.floor(gameState.contentQualityMultiplier * 1.5);
-            else if (subGain < 0 && gameState.subscribers > 0) moodChange = -5; // Отнимаем настроение только если есть подписчики, и пост ушел в минус
-            gameState.audienceMood = Math.min(Math.max(gameState.audienceMood + moodChange, 0), 100);
-            if (gameState.audienceMood < 30 && gameState.subscribers > 10) { const uC = (30 - gameState.audienceMood) / 30; if (Math.random() < uC * 0.05) { const unsub = Math.min(gameState.subscribers, Math.floor(Math.random()*(gameState.subscribers*0.03)+1)); gameState.subscribers -= unsub; logEvent(`Аудитория недовольна! Отписалось ${unsub} подписчиков.`, 'error'); gameState.audienceMood = Math.max(gameState.audienceMood - 3, 0);}}
-            logEvent(`Опубликован ${getPostTypeName(postType)}! +${subGain} подписчиков, +$${moneyGain}.`, 'success');
-            if (gameState.currentTrend && gameState.trendPostsRemaining > 0) { gameState.trendPostsRemaining--; }
-            if ((!gameState.currentTrend || gameState.trendPostsRemaining <= 0) && gameState.postsMade > 2) { if (Math.random() < 0.20) { generateNewTrend(); }}
-            
-            // Реакция персонажа
-            if (subGain > 8) { setCharacterState(CHARACTER_STATES.HAPPY, 3000); }
-            else { setCharacterState(CHARACTER_STATES.IDLE_BLINKING); }
-
-            updateUI(); saveGame(); checkUpgradeButtonStatus();
-            tg.HapticFeedback.notificationOccurred('success');
-            closeModal(createPostModal);
-        }, 700); 
+            if (wordEl.parentNode) { // Если слово еще не удалено кликом
+                wordEl.style.opacity = '0';
+                setTimeout(() => wordEl.remove(), 300);
+            }
+        }, 3000 + Math.random() * 2000); // Слово висит 3-5 секунд
     }
 
-     if(postTextButton) postTextButton.addEventListener('click', () => handlePostAction('text', 1, 5, 2, 10, 1, 5));
-     if(postMemeButton) postMemeButton.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8));
-     if(postVideoButton) postVideoButton.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10));
-     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => {
-        const cost = parseInt(upgradeContentQualityButton.dataset.cost);
-        if (gameState.balance >= cost) {
-            gameState.balance -= cost; gameState.contentQualityMultiplier = parseFloat((gameState.contentQualityMultiplier + 0.2).toFixed(1));
-            const newCost = Math.floor(cost * 1.5); upgradeContentQualityButton.dataset.cost = newCost;
-            upgradeContentQualityButton.textContent = `Улучшить качество контента (Стоимость: $${newCost})`;
-            logEvent(`Качество контента улучшено! Множитель: ${gameState.contentQualityMultiplier}x.`, 'success');
-            gameState.audienceMood = Math.min(gameState.audienceMood + 2, 100);
-            updateUI(); saveGame(); checkUpgradeButtonStatus();
-            tg.HapticFeedback.impactOccurred('medium');
-            setCharacterState(CHARACTER_STATES.HAPPY, 1500); // Персонаж радуется улучшению
-            closeModal(upgradesModal);
-        } else { logEvent("Недостаточно средств для улучшения.", 'error'); tg.HapticFeedback.notificationOccurred('error');}
+    function handleWordClick(event) {
+        const wordEl = event.target;
+        if (wordEl.classList.contains('collected')) return;
+
+        wordEl.classList.add('collected'); // Помечаем как собранное/обработанное
+        
+        if (wordEl.dataset.type === 'good') {
+            currentTextLabState.collectedWords.push(wordEl.textContent);
+            currentTextLabState.qualityScore += 5; // +5 за хорошее слово
+            if(collectedTextPreview) collectedTextPreview.textContent = currentTextLabState.collectedWords.join(' ') + (currentTextLabState.collectedWords.length > 0 ? '. ' : '');
+            if(wordsCollectedCountDisplay) wordsCollectedCountDisplay.textContent = currentTextLabState.collectedWords.length;
+            if(wordFlowQualityScoreDisplay) wordFlowQualityScoreDisplay.textContent = currentTextLabState.qualityScore;
+             tg.HapticFeedback.impactOccurred('light');
+        } else {
+            currentTextLabState.qualityScore -= 3; // -3 за плохое
+            if(wordFlowQualityScoreDisplay) wordFlowQualityScoreDisplay.textContent = currentTextLabState.qualityScore;
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+        wordEl.remove(); // Удаляем слово после клика
+    }
+
+    function endWordFlowGame() {
+        clearInterval(currentTextLabState.wordFlowTimeout);
+        clearInterval(currentTextLabState.wordSpawnInterval);
+        if(wordFlowArea) wordFlowArea.innerHTML = ''; // Очищаем область от оставшихся слов
+        
+        logEvent(`Мини-игра "Поток слов" завершена. Качество: ${currentTextLabState.qualityScore}`, "info");
+        if(textLabStepWordFlow) textLabStepWordFlow.style.display = 'none';
+        if(textLabStepPublish) textLabStepPublish.style.display = 'block';
+        if(finalPostQualityDisplay) finalPostQualityDisplay.textContent = currentTextLabState.qualityScore;
+    }
+
+    if(publishTextPostFromLabButton) {
+        publishTextPostFromLabButton.addEventListener('click', () => {
+            // Здесь мы вызываем handlePostAction, передавая тип 'text' и результат мини-игры
+            // Базовые параметры для текстового поста можно взять из старого handlePostAction
+            // или определить новые, которые будут модифицироваться качеством из лабы.
+            
+            // Пример: качество из лабы влияет на множитель подписчиков
+            const labQualityMultiplier = 1 + (Math.max(0, currentTextLabState.qualityScore) / 50); // Пример: каждые 50 очков = +100%
+
+            // Вызываем основную функцию поста, но передаем ей labQualityMultiplier
+            // Для этого нужно будет немного изменить handlePostAction
+            handlePostAction('text', 1, 5, 2, 10, 1, 5, labQualityMultiplier, currentTextLabState.selectedTitle.text);
+            
+            showScreen(studioScreenContainer); // Возвращаемся в студию
+            setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
+        });
+    }
+    if(cancelTextPostLabButton) {
+        cancelTextPostLabButton.addEventListener('click', () => {
+            clearInterval(currentTextLabState.wordFlowTimeout);
+            clearInterval(currentTextLabState.wordSpawnInterval);
+            if(wordFlowArea) wordFlowArea.innerHTML = '';
+            logEvent("Создание текстового поста отменено.", "info");
+            showScreen(studioScreenContainer);
+            setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
+        });
+    }
+    
+    // Открываем лабораторию текстового поста
+    if (openTextLabButton) {
+        openTextLabButton.addEventListener('click', () => {
+            setCharacterState(CHARACTER_STATES.TYPING); // Персонаж начинает "думать/работать"
+            startTextPostLab();
+        });
+    }
+
+    // --- МОДИФИЦИРОВАННЫЙ handlePostAction ---
+    // Добавляем labQualityMultiplier и postTitle как параметры
+    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax, labQualityMultiplier = 1, postTitle = "Новый пост") {
+        // setCharacterState(CHARACTER_STATES.TYPING); // Уже установлено перед открытием лабы или модалки
+        
+        // Убираем setTimeout отсюда, так как "работа" происходит в лаборатории
+        // setTimeout(() => { ... }, 700); 
+
+        const themeModKey = postType; 
+        const themeMod = gameState.themeModifiers[themeModKey] || 1;
+        const moodMultiplier = 0.8 + (gameState.audienceMood / 100) * 0.4; 
+        let trendBonusMultiplier = 1;
+
+        if (gameState.currentTrend && gameState.currentTrend.type === postType && gameState.trendPostsRemaining > 0) { 
+            trendBonusMultiplier = parseFloat(gameState.currentTrend.bonus); 
+            gameState.audienceMood = Math.min(gameState.audienceMood + 5, 100); 
+            logEvent(`Пост "${postTitle}" (${getPostTypeName(postType)}) попал в тренд! Бонус x${trendBonusMultiplier}!`, 'info');
+        }
+
+        // Используем labQualityMultiplier
+        const subGain = Math.floor((Math.random() * (baseSubMax - baseSubMin + 1) + baseSubMin) * gameState.contentQualityMultiplier * themeMod * moodMultiplier * trendBonusMultiplier * labQualityMultiplier);
+        const moneyGain = Math.floor((Math.random() * (baseMoneyMax - baseMoneyMin + 1) + baseMoneyMin) * gameState.contentQualityMultiplier * labQualityMultiplier); // Деньги тоже могут зависеть от качества
+        
+        // ... (остальная логика поста: подписчики, баланс, посты, настроение, отписки, лог поста) ...
+        // Как в предыдущей версии, но используем postTitle в логе
+        logEvent(`Опубликован ${getPostTypeName(postType)}: "${postTitle}"! +${subGain} подписчиков, +$${moneyGain}.`, 'success');
+
+        if (gameState.currentTrend && gameState.trendPostsRemaining > 0) { gameState.trendPostsRemaining--; }
+        if ((!gameState.currentTrend || gameState.trendPostsRemaining <= 0) && gameState.postsMade > 2) { if (Math.random() < 0.20) { generateNewTrend(); }}
+        
+        if (subGain > 8) { setCharacterState(CHARACTER_STATES.HAPPY, 3000); } 
+        else { setCharacterState(CHARACTER_STATES.IDLE_BLINKING); } // Возвращаем в idle после "работы" в лабе
+
+        updateUI(); saveGame(); checkUpgradeButtonStatus();
+        tg.HapticFeedback.notificationOccurred('success');
+        
+        // Генерация фидбека
+        const feedbackCount = Math.floor(Math.random() * 3) + 2; 
+        for (let i = 0; i < feedbackCount; i++) { /* ... как раньше ... */ }
+        
+        // closeModal(createPostModal); // Эта модалка больше не используется для текстовых постов
+    }
+    
+    // Старые кнопки для мемов и видео пока могут открывать старую простую модалку (если она есть) или их тоже нужно переделать на лаборатории
+    // Если вы удалили createPostModal, то эти кнопки пока не будут работать
+    // if(postMemeButton) postMemeButton.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8));
+    // if(postVideoButton) postVideoButton.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10));
+    // Для простоты, пока оставим их без действия, или можно временно вызывать handlePostAction с дефолтным качеством
+     if(postMemeButton) postMemeButton.addEventListener('click', () => { 
+         logEvent("Лаборатория для Мемов еще не готова!", "warning");
+         // handlePostAction('meme', 3, 10, 1, 5, 2, 8, 1, "Прикольный Мем"); // Вызов с дефолтным качеством
+     });
+     if(postVideoButton) postVideoButton.addEventListener('click', () => {
+         logEvent("Лаборатория для Видео еще не готова!", "warning");
+         // handlePostAction('video', 8, 20, 7, 18, 3, 10, 1, "Новое Видео"); // Вызов с дефолтным качеством
      });
 
-    if (themeSelectionScreen) {
-        const themeCards = themeSelectionScreen.querySelectorAll('.theme-card');
-        themeCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const selectedTheme = card.dataset.theme; gameState.theme = selectedTheme; gameState.audienceMood = 75;
-                switch(selectedTheme) { 
-                    case 'news': gameState.themeModifiers = { text: 1.2, meme: 0.8, video: 1.1 }; gameState.channelName = "Новостной Вестник"; gameState.balance = 110; break;
-                    case 'entertainment': gameState.themeModifiers = { text: 0.9, meme: 1.5, video: 1.2 }; gameState.channelName = "Веселый Уголок"; break;
-                    case 'education': gameState.themeModifiers = { text: 1.3, meme: 0.7, video: 1.0 }; gameState.channelName = "Академия Знаний"; gameState.subscribers = 5; break;
-                    case 'tech': gameState.themeModifiers = { text: 1.1, meme: 1.0, video: 1.3 }; gameState.channelName = "Техно Гуру"; break;
-                }
-                logEvent(`Выбрана тема: ${getThemeDisplayName(selectedTheme)}`, "success"); saveGame(); showWelcomeScreen();
-            });
-        });
-    }
-    
-    showScreen(preloader);
-    setTimeout(() => {
-        if (preloader) { preloader.classList.remove('visible'); setTimeout(() => { if(preloader) preloader.style.display = 'none'; }, 700); }
-        initializeGameFlow();
-    }, 1500); 
 
-    if (startGameButton) {
-        startGameButton.addEventListener('click', () => {
-            if (welcomeScreen) {
-                welcomeScreen.classList.remove('visible');
-                setTimeout(() => { welcomeScreen.style.display = 'none'; playCutscene(); }, 500); 
-            }
-        });
-    }
-    
-    if (tg.BackButton) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-            const visibleModal = document.querySelector('.modal-overlay.visible');
-            if (visibleModal) { closeModal(visibleModal); }
-            else if (studioContainer && studioContainer.classList.contains('visible')) { saveGame(); logEvent("Выход из игры (прогресс сохранен).", "info"); tg.close(); }
-            else if (cutsceneScreen && cutsceneScreen.classList.contains('visible')) { tg.close(); }
-            else if (welcomeScreen && welcomeScreen.classList.contains('visible')) { tg.close(); }
-            else if (themeSelectionScreen && themeSelectionScreen.classList.contains('visible')) { tg.close(); }
-            else { tg.close(); }
-        });
-    }
+    // ... (весь остальной код: initializeGameFlow, управление модалками улучшений/лога, обработчики кнопок и т.д. как в версии 1.0.0) ...
+    // Убедитесь, что вызовы closeModal теперь не ссылаются на createPostModal, если он удален.
 });

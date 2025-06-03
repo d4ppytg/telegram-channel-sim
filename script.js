@@ -83,16 +83,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const CHARACTER_STATES = { IDLE_BLINKING: 'idle_blinking', TYPING: 'typing', HAPPY: 'happy', SLEEPING: 'sleeping' };
 
     function setCharacterState(newState, durationMs = 0) { /* ... как в предыдущем полном коде ... */ }
+    function showTopLevelScreen(screenElementToShow) {
+    console.log("--- showTopLevelScreen called with: ---", screenElementToShow ? screenElementToShow.id : "null element"); // << НОВЫЙ LOG
     function showTopLevelScreen(screenElementToShow) { /* ... как в предыдущем полном коде ... */ }
+        // ...
+if (screenElementToShow) {
+    console.log(`Setting display for ${screenElementToShow.id} to flex`); // << НОВЫЙ LOG
+    screenElementToShow.style.display = 'flex'; 
+    requestAnimationFrame(() => { 
+        requestAnimationFrame(() => { 
+            console.log(`Adding 'visible' class to ${screenElementToShow.id}`); // << НОВЫЙ LOG
+            screenElementToShow.classList.add('visible'); 
+        }); 
+    });
+}
+// ...
     function setActiveGameScreen(targetScreenId) { /* ... как в предыдущем полном коде ... */ }
     function playCutscene() { /* ... как в предыдущем полном коде ... */ }
     function showNextSlide() { /* ... как в предыдущем полном коде ... */ }
-    function initializeGameFlow() { 
+    function initializeGameFlow() {
+    console.log("--- initializeGameFlow START ---"); // << НОВЫЙ LOG
+    const savedState = localStorage.getItem('channelSimGameState_v9'); // Убедитесь, что ключ правильный
         const savedState = localStorage.getItem('channelSimGameState_v10_interactiveMonitor'); 
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState }; if (gameState.theme) { showWelcomeScreen(); return; } }
         gameState = { ...defaultGameState }; saveGame(); showThemeSelectionScreen();
     }
     function showThemeSelectionScreen() { logEvent("Требуется выбор тематики канала.", "info"); showTopLevelScreen(themeSelectionScreen); }
+    if (savedState) {
+    // ...
+    if (gameState.theme) {
+        console.log("Theme found in gameState, showing Welcome Screen"); // << НОВЫЙ LOG
+        showWelcomeScreen();
+        return;
+    }
+}
+gameState = { ...defaultGameState };
+saveGame();
+console.log("No theme or no saved state, showing Theme Selection Screen"); // << НОВЫЙ LOG
+showThemeSelectionScreen();
     function showWelcomeScreen() { /* ... как в предыдущем полном коде ... */ showTopLevelScreen(welcomeScreen); }
     function startGameplay() { 
         loadGame(); showTopLevelScreen(gameInterface); 
@@ -193,9 +221,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     showTopLevelScreen(preloader);
     setTimeout(() => {
-        if (preloader) { preloader.classList.remove('visible'); setTimeout(() => { if(preloader) preloader.style.display = 'none'; }, 700); }
-        initializeGameFlow();
-    }, 2500); 
+    console.log("Preloader timeout! Hiding preloader, calling initializeGameFlow."); // << НОВЫЙ LOG
+    if (preloader) { 
+        preloader.classList.remove('visible'); 
+        setTimeout(() => { 
+            if(preloader) preloader.style.display = 'none'; 
+            console.log("Preloader display set to none."); // << НОВЫЙ LOG
+        }, 700); // Время анимации opacity для #preloader.hidden (в CSS было 0.7s)
+    }
+    initializeGameFlow();
+}, 2500); // Общее время показа прелоадера
     if (startGameButton) { /* ... как раньше, вызывает playCutscene() ... */ }
     if (tg.BackButton) { /* ... как в предыдущем полном коде ... */ }
 });

@@ -1,4 +1,4 @@
-/* Глобальные переменные для цветов и шрифтов */
+/* Глобальные переменные ... (как были) ... */
 :root {
     --font-primary: 'Montserrat', sans-serif;
     --color-bg: #16181D; --color-card-bg: #1F232D; --color-card-bg-rgb: 31, 35, 45; 
@@ -7,7 +7,7 @@
     --color-accent-secondary: #8A2BE2; --color-accent-secondary-rgb: 138, 43, 226;
     --color-success: #4ADE80; --color-warning: #FACC15; --color-error: #F87171;
     --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
-    --header-height: 56px; /* Примерная высота хедера */
+    --header-height: auto; /* Динамическая высота хедера */
     /* Telegram Theme Vars */
     --tg-theme-bg-color: var(--color-bg); --tg-theme-text-color: var(--color-text-primary);
     --tg-theme-hint-color: var(--color-text-secondary); --tg-theme-link-color: var(--color-accent-primary);
@@ -15,16 +15,10 @@
     --tg-theme-secondary-bg-color: var(--color-card-bg);
 }
 
-body {
-    font-family: var(--font-primary); margin: 0; background-color: var(--color-bg); color: var(--color-text-primary);
-    line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;
-}
+body { /* ... как было ... */ }
 
-/* Общие стили для полноэкранных оверлеев (прелоадер, выбор темы, welcome, катсцена, модалки) */
-.full-screen-overlay {
-    width: 100%; height: 100vh; 
-    padding: 20px; box-sizing: border-box;
+.full-screen-overlay { /* Убрал #game-interface отсюда */
+    width: 100%; height: 100vh; padding: 20px; box-sizing: border-box;
     opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: fixed; top: 0; left: 0;
@@ -32,97 +26,87 @@ body {
 }
 .full-screen-overlay.visible { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out; }
 
-/* Z-INDEX MANAGEMENT (ВАЖНО!) */
-#preloader { z-index: 9999; opacity: 1; visibility: visible; /* Виден по умолчанию */}
+/* Z-INDEX MANAGEMENT */
+#preloader { z-index: 9999; opacity: 1; visibility: visible; }
 #theme-selection-screen { z-index: 9998; }
 #welcome-screen { z-index: 9998; }
 #cutscene-screen { z-index: 9997; padding: 0; }
-.studio-container { /* Основной игровой контейнер */
-    width: 100%; min-height: 100vh; /* Занимает всю высоту, может скроллиться */
+.studio-container { /* Основной игровой контейнер (был #game-interface) */
+    width: 100%; min-height: 100vh; 
     display: none; /* Управляется JS */
     flex-direction: column;
-    background-color: var(--color-bg); /* Фон студии */
+    background-color: var(--color-bg);
     opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
-    z-index: 100; /* Выше body, но ниже оверлеев */
-    padding: 0; /* Убираем общий padding, он будет у дочерних */
-    overflow-y: auto; /* Позволяет скроллить контент студии */
+    z-index: 100; 
+    padding: 0; 
+    overflow-y: auto; 
+    position: fixed; top: 0; left: 0; /* Чтобы занимал весь экран */
 }
-.studio-container.visible { opacity: 1; visibility: visible; display: flex; } /* Показываем как flex */
+.studio-container.visible { opacity: 1; visibility: visible; display: flex; }
 
-.modal-overlay { z-index: 10000; } /* Модалки всегда поверх всего */
+.modal-overlay { z-index: 10000; padding: 20px; }
 
 
-/* --- PRELOADER --- */
+/* --- PRELOADER, THEME, WELCOME, CUTSCENE --- */
+/* Эти стили остаются такими же, как в последнем полном CSS, который я давал (версия 0.9.0) */
+/* ... (скопируйте сюда стили для #preloader, #theme-selection-screen, #welcome-screen, #cutscene-screen) ... */
+/* ПРИМЕР для прелоадера, остальные аналогично */
 #preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
-/* ... остальные стили прелоадера из вашего рабочего style.css (версия 0.8.0) ... */
 .preloader-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 400px; width: 100%;}
-.preloader-hero-image { max-width: 80%; height: auto; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); animation: 등장HeroImage 0.8s 0.2s ease-out forwards; }
-@keyframes 등장HeroImage { to { opacity: 1; transform: translateY(0); } }
-.preloader-title { font-size: 2.2em; color: var(--color-text-primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 0.5px; opacity: 0; animation: 등장Text 0.6s 0.5s ease-out forwards; }
-.preloader-progress-bar-container { width: 80%; max-width: 300px; height: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.5); border-radius: 5px; margin-bottom: 10px; overflow: hidden; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
-.preloader-progress-bar-fill { width: 0%; height: 100%; background-image: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: 5px; animation: 채움ProgressBar 2s 0.3s ease-out forwards; }
-@keyframes 채움ProgressBar { from { width: 0%; } to { width: 100%; } }
-.preloader-loading-text { font-size: 1em; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 30px; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
-@keyframes 등장Text { to { opacity: 1; } }
-.preloader-footer { position: absolute; bottom: 25px; left: 0; width: 100%; text-align: center; opacity: 0; animation: 등장Text 0.6s 0.9s ease-out forwards; }
-.preloader-footer p { margin: 0; font-size: 0.9em; color: var(--color-text-secondary); }
-.preloader-footer a { color: var(--color-accent-primary); text-decoration: none; font-weight: 500; }
-.preloader-footer a:hover { text-decoration: underline; }
-
-/* --- THEME SELECTION SCREEN STYLES --- */
-#theme-selection-screen .theme-selection-content { background-color: var(--color-card-bg); padding: 25px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 600px; width: 90%; text-align: center; max-height: calc(100vh - 40px); overflow-y: auto; box-sizing: border-box;}
-#theme-selection-screen .theme-selection-content h2 { color: #fff; margin: 0 0 10px 0; font-size: 1.6em; border-bottom: none; }
-#theme-selection-screen .theme-selection-content > p { color: var(--color-text-secondary); margin-bottom: 20px; font-size: 0.95em; line-height: 1.4; }
-#theme-selection-screen .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 15px; width: 100%; }
-#theme-selection-screen .theme-card { background-color: rgba(var(--color-card-bg-rgb), 0.95); border: 1px solid rgba(var(--color-accent-primary-rgb), 0.4); padding: 15px; border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.25s ease-in-out; text-align: center; display: flex; flex-direction: column; align-items: center; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-#theme-selection-screen .theme-card:hover { transform: translateY(-4px) scale(1.01); background-color: rgba(var(--color-accent-primary-rgb), 0.15); border-color: var(--color-accent-primary); box-shadow: 0 6px 18px rgba(var(--color-accent-primary-rgb), 0.25); }
-#theme-selection-screen .theme-icon { font-size: 2em; margin-bottom: 10px; color: var(--color-accent-primary); }
-#theme-selection-screen .theme-card h3 { color: var(--color-text-primary); font-size: 1.15em; margin: 0 0 8px 0; }
-#theme-selection-screen .theme-card p { color: var(--color-text-secondary); font-size: 0.8em; line-height: 1.45; flex-grow: 1; }
-
-/* --- WELCOME SCREEN --- */
-#welcome-screen .welcome-content { /* ... как в вашем style.css от 0.8.0 ... */ }
-/* ... остальные стили для welcome-content ... */
-
-/* --- CUTSCENE --- */
-#cutscene-screen .cutscene-slide { /* ... как в вашем style.css от 0.8.0, но с position: absolute и display:none по умолчанию ... */
-    display: none; flex-direction: column; justify-content: center; align-items: center; 
-    width: 90%; max-width: 500px; height: auto; max-height: 70vh; text-align: center; 
-    background-color: var(--color-card-bg); border-radius: var(--border-radius-lg); 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 30px 20px; box-sizing: border-box; 
-    opacity: 0; transition: opacity 0.5s ease-in-out; position: absolute;
-}
-#cutscene-screen .cutscene-slide.active { display: flex !important; opacity: 1; z-index: 1; }
-/* ... остальные стили для cutscene-logo-placeholder, h2, p ... */
+/* ... и так далее ... */
 
 
-/* === СТИЛИ ДЛЯ .studio-container И ЕГО СОДЕРЖИМОГО === */
-/* Эти стили должны быть похожи на те, что были в вашем style.css для версии 0.8.0, */
-/* но вместо селектора .container, используйте .studio-container */
-
-.studio-container .studio-header { /* Был: .container header */
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 25px; background-color: rgba(var(--color-card-bg-rgb), 0.85);
-    backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    position: sticky; top: 0; z-index: 100; width:100%; box-sizing: border-box;
+/* === СТИЛИ ДЛЯ .studio-container И ЕГО СОДЕРЖИМОГО (ВОЗВРАЩАЕМ СТАРУЮ СТРУКТУРУ) === */
+.studio-container .studio-header { /* Это наш старый "header" */
+    text-align: center;
+    padding: 15px 20px; /* Уменьшил вертикальный паддинг */
+    background-color: var(--color-card-bg);
+    border-bottom: 1px solid rgba(var(--color-accent-primary-rgb),0.2); /* Тонкая линия внизу */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     flex-shrink: 0; /* Чтобы хедер не сжимался */
+    z-index: 100;
+    position: sticky; /* Чтобы "прилипал" при скролле студии */
+    top: 0;
 }
-.studio-container .stats-block p, .studio-container .mood-block p { margin: 5px 0; font-size: 0.95em; color: var(--color-text-secondary); }
-.studio-container .stats-block span, .studio-container .mood-block span { font-weight: bold; color: var(--color-text-primary); font-size: 1.1em;}
+.studio-container .studio-header h1 { margin: 0 0 10px 0; font-size: 1.8em; font-weight: 700; color: #FFFFFF; }
+.studio-container .studio-header p { margin: 5px 0; font-size: 1em; color: var(--color-text-secondary); }
+.studio-container .studio-header p span { font-weight: 600; color: var(--color-text-primary); }
 .studio-container .studio-header #subscribers-count, 
 .studio-container .studio-header #balance-count, 
-.studio-container .studio-header #audience-mood-display { color: var(--color-accent-primary); }
+.studio-container .studio-header #audience-mood-display { color: var(--color-accent-primary); font-size: 1.1em; }
 
 .studio-container .studio-main { 
-    flex-grow: 1; display: flex; flex-direction: column; 
-    justify-content: space-between; /* Попробуем так для распределения */
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
     align-items: center; 
-    padding: 20px; position: relative; width: 100%; box-sizing: border-box;
+    padding: 20px; 
+    position: relative; 
+    width: 100%; 
+    box-sizing: border-box;
 }
 
+/* Баннер тренда внутри .studio-main */
+.studio-main .trend-banner {
+    background-color: rgba(var(--color-accent-secondary-rgb), 0.15);
+    border: 1px solid var(--color-accent-secondary);
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(var(--color-accent-secondary-rgb), 0.1);
+    width: 100%;
+    max-width: 500px; /* Ограничиваем ширину баннера */
+    box-sizing: border-box;
+}
+.studio-main .trend-banner p { margin: 0; color: var(--color-text-primary); font-weight: 500; font-size: 0.9em; }
+.studio-main .trend-banner span { font-weight: 700; color: var(--color-accent-secondary); }
+.studio-main .trend-banner p > span:first-of-type { color: var(--color-text-primary); }
+
+
 /* --- CHARACTER STYLES --- */
-.studio-container .character-wrapper { margin-top: 20px; margin-bottom: -30px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
-.studio-container #character-sprite {
+.studio-main .character-wrapper { margin-top: 10px; margin-bottom: -20px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
+.studio-main #character-sprite {
     width: 200px; height: 300px;
     background-image: url('character_sheet.png'); 
     background-repeat: no-repeat;
@@ -136,14 +120,16 @@ body {
 .char-state-sleeping { background-position-x: 0px !important; animation: none !important; }
 
 
-.studio-container .computer-area { /* ... как раньше ... */ }
-.studio-container .monitor-screen { /* ... как раньше ... */ }
-/* ... и так далее для всех элементов внутри .studio-container ... */
+.studio-main .computer-area { /* ... как в вашем style.css от 0.8.0 ... */ }
+.studio-main .monitor-screen { /* ... как в вашем style.css от 0.8.0 ... */ }
+/* ... и так далее для элементов внутри .studio-main ... */
 
-.studio-container .side-panel { /* Был: .side-panel */
-    position: fixed; right: 10px; 
-    top: calc(var(--header-height) + 30px); /* Отступ от хедера + еще немного */
-    display: flex; /* Изначально flex, будет управляться JS */
+.studio-main .side-panel { 
+    position: fixed; /* Fixed относительно вьюпорта */
+    right: 15px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    display: flex; /* Показываем сразу, если studio-main видим */
     flex-direction: column; gap: 10px; 
     background-color: rgba(var(--color-card-bg-rgb), 0.7); 
     padding: 10px; border-radius: var(--border-radius-md); 
@@ -151,40 +137,43 @@ body {
 }
 .icon-button { /* ... как раньше ... */ }
 
-
-/* --- LIVE FEEDBACK (Комментарии) --- */
-/* Позиционируем относительно .studio-main, если он position:relative */
-.studio-main #live-feedback-container { 
-    position: absolute; 
-    bottom: 10px; /* Отступ от низа .studio-main */
-    right: 10px; 
-    width: 250px; /* Уменьшил ширину */
-    max-height: 200px; /* Уменьшил высоту */
+/* LIVE FEEDBACK */
+#live-feedback-container { /* Позиционируем относительно .studio-main или body */
+    position: fixed; /* Чтобы не скроллился с .studio-main */
+    bottom: 20px; 
+    right: 20px; 
+    width: 250px; 
+    max-height: 200px; 
     display: flex; flex-direction: column-reverse; 
-    gap: 8px; z-index: 20; pointer-events: none; 
+    gap: 8px; z-index: 900; /* Выше студии, но ниже модалок */
+    pointer-events: none; 
 }
 /* ... остальные стили для .feedback-item ... */
 
+/* МОДАЛЬНЫЕ ОКНА */
+/* ... стили для .modal-overlay, .modal-content и их содержимого как в 0.8.0 ... */
+.modal-overlay .modal-actions button { /* Стили для кнопок внутри модалки */
+     width: 100%; /* На всю ширину модалки */
+     margin-bottom: 10px;
+}
+.modal-overlay .modal-upgrades button { /* Стили для кнопок внутри модалки */
+     width: 100%;
+     margin-bottom: 10px;
+}
 
-/* --- МОДАЛЬНЫЕ ОКНА (для лога и др.) --- */
-.modal-overlay .modal-content { /* ... как раньше ... */ }
-/* ... остальные стили для модальных окон ... */
 
-/* --- ОБЩИЕ СТИЛИ КНОПОК --- */
+/* ОБЩИЕ СТИЛИ КНОПОК */
 button { /* ... как раньше ... */ }
 
-/* Нижняя панель навигации НЕ ИСПОЛЬЗУЕТСЯ в этой версии, поэтому ее стили можно закомментировать или удалить */
-/* .bottom-nav { ... } */
-
-/* Лог событий */
+/* ЛОГ СОБЫТИЙ (внутри модалки) */
+#log-modal #event-log { /* ... как раньше ... */ }
 #event-log li { /* ... как раньше ... */ }
 /* ... стили для .log-success, .log-error и т.д. ... */
 
 .studio-container .studio-footer { /* Был: .studio-footer */
     text-align: center; padding: 10px; 
     width:100%; box-sizing: border-box; 
-    margin-top:auto; /* Прижимает футер книзу */
-    flex-shrink: 0; /* Чтобы футер не сжимался */
-    background-color: rgba(var(--color-card-bg-rgb), 0.3); /* Сделал чуть прозрачнее */
+    margin-top:auto; flex-shrink: 0; 
+    background-color: rgba(var(--color-card-bg-rgb), 0.3); 
 }
 .studio-container .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

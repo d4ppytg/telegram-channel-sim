@@ -221,14 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Навигация
     if (navButtons) navButtons.forEach(button => { /* ... */ });
-    if (initiatePostCreationButton) {
-    initiatePostCreationButton.addEventListener('click', () => {
-        currentPostCreation = { type: null, themeId: null, effort: effortSlider ? parseInt(effortSlider.value) : 2 };
-        showMonitorStep(monitorSteps.selectType);
-    });
-} else {
-    console.error("Кнопка 'initiatePostCreationButton' не найдена!");
-}
+  if (initiatePostCreationButton) {
+        initiatePostCreationButton.addEventListener('click', () => {
+            currentPostCreation = { type: null, themeId: null, effort: effortSlider ? parseInt(effortSlider.value) : 2 };
+            showMonitorStep(monitorSteps.selectType);
+        });
+    } else {
+        console.error("Кнопка 'initiatePostCreationButton' не найдена!");
+    }
 
     // Модальное окно для лога
     function openModal(modalElement) { /* ... */ }

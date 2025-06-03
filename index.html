@@ -14,15 +14,20 @@
         <div class="preloader-content">
             <img src="preloader_main_image.png" alt="Канал Контроль Загрузка" class="preloader-hero-image">
             <h1 class="preloader-title">Канал Контроль</h1>
-            <div class="preloader-progress-bar-container"><div class="preloader-progress-bar-fill"></div></div>
+            <div class="preloader-progress-bar-container">
+                <div class="preloader-progress-bar-fill"></div>
+            </div>
             <p class="preloader-loading-text">Загрузка игровых данных...</p>
-            <div class="preloader-footer"><p>Разработано: <a href="https://t.me/ваш_телеграм_ник" target="_blank" rel="noopener noreferrer">@ваш_телеграм_ник</a></p></div>
+            <div class="preloader-footer">
+                <p>Разработано: <a href="https://t.me/ваш_телеграм_ник" target="_blank" rel="noopener noreferrer">@ваш_телеграм_ник</a></p>
+            </div>
         </div>
     </div>
 
     <div id="theme-selection-screen" class="full-screen-overlay" style="display: none;">
         <div class="theme-selection-content">
-            <h2>Выберите Тематику Канала!</h2><p>От этого выбора будут зависеть ваши стартовые возможности и реакция аудитории.</p>
+            <h2>Выберите Тематику Канала!</h2>
+            <p>От этого выбора будут зависеть ваши стартовые возможности и реакция аудитории.</p>
             <div class="themes-grid">
                 <div class="theme-card" data-theme="news"><div class="theme-icon">📰</div><h3>Новости</h3><p>Быстрый рост, высокий охват. Требует частого постинга.</p></div>
                 <div class="theme-card" data-theme="entertainment"><div class="theme-icon">😂</div><h3>Развлечения</h3><p>Мемы и юмор. Высокая виральность. Аудитория активна.</p></div>
@@ -34,7 +39,8 @@
 
     <div id="welcome-screen" class="full-screen-overlay" style="display: none;">
         <div class="welcome-content">
-            <h2>Добро пожаловать в Канал Контроль!</h2><p>Мы используем ваш Telegram username для персонализации.</p>
+            <h2>Добро пожаловать в Канал Контроль!</h2>
+            <p>Мы используем ваш Telegram username для персонализации.</p>
             <div class="user-info-display">
                 <img id="user-photo" src="placeholder-avatar.png" alt="User Avatar" class="avatar-placeholder">
                 <p>Ваш Username: <span id="telegram-username-display">Загрузка...</span></p>
@@ -45,28 +51,33 @@
     </div>
 
     <div id="cutscene-screen" class="full-screen-overlay" style="display: none;">
-        <div class="cutscene-slide" id="slide1" style="display: none;"><div class="cutscene-logo-placeholder">💡</div><h2>Мечта о Вершине</h2><p>Вы всегда хотели свой популярный канал...</p></div>
-        <div class="cutscene-slide" id="slide2" style="display: none;"><div class="cutscene-logo-placeholder">🚀</div><h2>Время Действовать!</h2><p>Путь к тысячам подписчиков начинается прямо сейчас!</p></div>
+        <div class="cutscene-slide" id="slide1" style="display: none;">
+            <div class="cutscene-logo-placeholder">💡</div>
+            <h2>Мечта о Вершине</h2>
+            <p>Вы всегда хотели свой популярный канал...</p>
+        </div>
+        <div class="cutscene-slide" id="slide2" style="display: none;">
+            <div class="cutscene-logo-placeholder">🚀</div>
+            <h2>Время Действовать!</h2>
+            <p>Путь к тысячам подписчиков начинается прямо сейчас!</p>
+        </div>
     </div>
 
-    <!-- СТАРЫЙ КОНТЕЙНЕР ИГРЫ (до вкладок) -->
-    <div class="studio-container" style="display: none;"> <!-- Раньше был .container, теперь studio-container -->
-        <header class="studio-header"> <!-- Раньше был header -->
-            <h1 id="channel-name-header">Мой Канал</h1> <!-- Раньше был channel-name -->
-            <p>Подписчики: <span id="subscribers-count">0</span></p>
-            <p>Баланс: $<span id="balance-count">100</span></p>
-            <p>Настроение: <span id="audience-mood-display">75</span>%</p>
+    <div class="studio-container" style="display: none;">
+        <header class="studio-header">
+            <div class="stats-block">
+                <p>Подписчики: <span id="subscribers-count">0</span></p>
+                <p>Баланс: $<span id="balance-count">100</span></p>
+            </div>
+            <div class="mood-block">
+                <p>Настроение: <span id="audience-mood-display">75</span>%</p>
+            </div>
         </header>
 
         <main class="studio-main">
-             <div id="current-trend-display" class="trend-banner" style="display: none;">
-                <p>🔥 В ТРЕНДЕ: <span id="trend-description"></span> (Бонус: x<span id="trend-bonus"></span>, осталось: <span id="trend-duration"></span> постов)</p>
-            </div>
-            
             <div class="character-wrapper">
                 <div id="character-sprite"></div> 
             </div>
-
             <div class="computer-area">
                 <div class="monitor-screen">
                     <div id="channel-feed-placeholder">
@@ -76,21 +87,18 @@
                         </div>
                     </div>
                     <div class="monitor-actions">
-                        <button id="create-post-button-monitor">Создать Пост</button> 
+                        <button id="create-post-button-monitor">Создать Пост</button>
                     </div>
                 </div>
             </div>
-            
-            <div class="side-panel"> <!-- Боковая панель оставалась -->
+            <div class="side-panel">
                 <button class="icon-button" id="open-upgrades-button" title="Улучшения">⚙️</button>
                 <button class="icon-button" id="open-log-button" title="Лог событий">📜</button>
             </div>
-
-             <div id="live-feedback-container"></div> <!-- Для всплывающих комментариев -->
         </main>
         
         <footer class="studio-footer">
-            <p class="footer-text">Игра в разработке <span id="game-version">v0.8.0_stable</span></p>
+            <p class="footer-text">Игра в разработке <span id="game-version">v0.8.0</span></p>
         </footer>
     </div>
 
@@ -99,10 +107,10 @@
         <div class="modal-content">
             <span class="close-modal-button" data-modal-id="create-post-modal">×</span>
             <h2>Создать Новый Пост</h2>
-            <div class="modal-actions"> <!-- Эти кнопки будут вызывать handlePostAction -->
-                <button id="post-text-button-modal">Текстовый Пост</button>
-                <button id="post-meme-button-modal">Мем</button>
-                <button id="post-video-button-modal">Видеоролик</button>
+            <div class="modal-actions">
+                <button id="post-text-button">Текстовый Пост</button>
+                <button id="post-meme-button">Мем</button>
+                <button id="post-video-button">Видеоролик</button>
             </div>
         </div>
     </div>
@@ -112,7 +120,7 @@
             <span class="close-modal-button" data-modal-id="upgrades-modal">×</span>
             <h2>Улучшения Канала</h2>
             <div class="modal-upgrades">
-                <button id="upgrade-content-quality-modal" data-cost="50">Улучшить качество контента (Стоимость: $50)</button>
+                <button id="upgrade-content-quality" data-cost="50">Улучшить качество контента (Стоимость: $50)</button>
             </div>
         </div>
     </div>

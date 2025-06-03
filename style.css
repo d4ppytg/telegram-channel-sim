@@ -1,179 +1,158 @@
-/* Глобальные переменные ... (как были) ... */
+/* Глобальные переменные для цветов и шрифтов */
 :root {
     --font-primary: 'Montserrat', sans-serif;
-    --color-bg: #16181D; --color-card-bg: #1F232D; --color-card-bg-rgb: 31, 35, 45; 
-    --color-text-primary: #E0E0E0; --color-text-secondary: #A0A0A0;
-    --color-accent-primary: #3B82F6; --color-accent-primary-rgb: 59, 130, 246;
-    --color-accent-secondary: #8A2BE2; --color-accent-secondary-rgb: 138, 43, 226;
-    --color-success: #4ADE80; --color-warning: #FACC15; --color-error: #F87171;
-    --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
-    --header-height: auto; /* Динамическая высота хедера */
-    /* Telegram Theme Vars */
-    --tg-theme-bg-color: var(--color-bg); --tg-theme-text-color: var(--color-text-primary);
-    --tg-theme-hint-color: var(--color-text-secondary); --tg-theme-link-color: var(--color-accent-primary);
-    --tg-theme-button-color: var(--color-accent-primary); --tg-theme-button-text-color: #FFFFFF;
+
+    --color-bg: #16181D;
+    --color-card-bg: #1F232D;
+    --color-card-bg-rgb: 31, 35, 45; 
+    --color-text-primary: #E0E0E0;
+    --color-text-secondary: #A0A0A0;
+    
+    --color-accent-primary: #3B82F6;
+    --color-accent-primary-rgb: 59, 130, 246;
+    --color-accent-secondary: #8A2BE2; 
+    --color-accent-secondary-rgb: 138, 43, 226;
+
+    --color-success: #4ADE80;
+    --color-warning: #FACC15;
+    --color-error: #F87171;
+
+    --border-radius-sm: 6px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 16px;
+
+    --tg-theme-bg-color: var(--color-bg);
+    --tg-theme-text-color: var(--color-text-primary);
+    --tg-theme-hint-color: var(--color-text-secondary);
+    --tg-theme-link-color: var(--color-accent-primary);
+    --tg-theme-button-color: var(--color-accent-primary);
+    --tg-theme-button-text-color: #FFFFFF;
     --tg-theme-secondary-bg-color: var(--color-card-bg);
 }
 
-body { /* ... как было ... */ }
+body {
+    font-family: var(--font-primary); margin: 0; background-color: var(--color-bg); color: var(--color-text-primary);
+    line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;
+}
 
-.full-screen-overlay { /* Убрал #game-interface отсюда */
+.full-screen-overlay, .studio-container {
     width: 100%; height: 100vh; padding: 20px; box-sizing: border-box;
-    opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s;
+    opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: fixed; top: 0; left: 0;
-    overflow-y: auto; 
 }
-.full-screen-overlay.visible { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out; }
+.full-screen-overlay.visible, .studio-container.visible { opacity: 1; visibility: visible; transition: opacity 0.5s ease-in-out; }
+.studio-container { justify-content: flex-start; align-items: stretch; overflow-y: auto; z-index: 1;}
 
-/* Z-INDEX MANAGEMENT */
-#preloader { z-index: 9999; opacity: 1; visibility: visible; }
-#theme-selection-screen { z-index: 9998; }
-#welcome-screen { z-index: 9998; }
-#cutscene-screen { z-index: 9997; padding: 0; }
-.studio-container { /* Основной игровой контейнер (был #game-interface) */
-    width: 100%; min-height: 100vh; 
-    display: none; /* Управляется JS */
-    flex-direction: column;
-    background-color: var(--color-bg);
-    opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
-    z-index: 100; 
-    padding: 0; 
-    overflow-y: auto; 
-    position: fixed; top: 0; left: 0; /* Чтобы занимал весь экран */
+
+/* --- ENHANCED PRELOADER STYLES (Catizen-like) --- */
+#preloader { 
+    z-index: 9999; 
+    opacity: 1; visibility: visible; /* Виден по умолчанию */
+    padding: 30px;
 }
-.studio-container.visible { opacity: 1; visibility: visible; display: flex; }
-
-.modal-overlay { z-index: 10000; padding: 20px; }
-
-
-/* --- PRELOADER, THEME, WELCOME, CUTSCENE --- */
-/* Эти стили остаются такими же, как в последнем полном CSS, который я давал (версия 0.9.0) */
-/* ... (скопируйте сюда стили для #preloader, #theme-selection-screen, #welcome-screen, #cutscene-screen) ... */
-/* ПРИМЕР для прелоадера, остальные аналогично */
 #preloader.hidden { opacity: 0; visibility: hidden; transition: opacity 0.7s ease-out, visibility 0s linear 0.7s; }
+
 .preloader-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 400px; width: 100%;}
-/* ... и так далее ... */
+.preloader-hero-image { max-width: 80%; height: auto; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); animation: 등장HeroImage 0.8s 0.2s ease-out forwards; }
+@keyframes 등장HeroImage { to { opacity: 1; transform: translateY(0); } }
+.preloader-title { font-size: 2.2em; color: var(--color-text-primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 0.5px; opacity: 0; animation: 등장Text 0.6s 0.5s ease-out forwards; }
+.preloader-progress-bar-container { width: 80%; max-width: 300px; height: 10px; background-color: rgba(var(--color-card-bg-rgb), 0.5); border-radius: 5px; margin-bottom: 10px; overflow: hidden; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+.preloader-progress-bar-fill { width: 0%; height: 100%; background-image: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: 5px; animation: 채움ProgressBar 2s 0.3s ease-out forwards; /* Длительность 2s, задержка 0.3s */ }
+@keyframes 채움ProgressBar { from { width: 0%; } to { width: 100%; } }
+.preloader-loading-text { font-size: 1em; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 30px; opacity: 0; animation: 등장Text 0.6s 0.7s ease-out forwards; }
+@keyframes 등장Text { to { opacity: 1; } }
+.preloader-footer { position: absolute; bottom: 25px; left: 0; width: 100%; text-align: center; opacity: 0; animation: 등장Text 0.6s 0.9s ease-out forwards; }
+.preloader-footer p { margin: 0; font-size: 0.9em; color: var(--color-text-secondary); }
+.preloader-footer a { color: var(--color-accent-primary); text-decoration: none; font-weight: 500; }
+.preloader-footer a:hover { text-decoration: underline; }
+/* --- END ENHANCED PRELOADER --- */
 
 
-/* === СТИЛИ ДЛЯ .studio-container И ЕГО СОДЕРЖИМОГО (ВОЗВРАЩАЕМ СТАРУЮ СТРУКТУРУ) === */
-.studio-container .studio-header { /* Это наш старый "header" */
-    text-align: center;
-    padding: 15px 20px; /* Уменьшил вертикальный паддинг */
-    background-color: var(--color-card-bg);
-    border-bottom: 1px solid rgba(var(--color-accent-primary-rgb),0.2); /* Тонкая линия внизу */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    flex-shrink: 0; /* Чтобы хедер не сжимался */
-    z-index: 100;
-    position: sticky; /* Чтобы "прилипал" при скролле студии */
-    top: 0;
-}
-.studio-container .studio-header h1 { margin: 0 0 10px 0; font-size: 1.8em; font-weight: 700; color: #FFFFFF; }
-.studio-container .studio-header p { margin: 5px 0; font-size: 1em; color: var(--color-text-secondary); }
-.studio-container .studio-header p span { font-weight: 600; color: var(--color-text-primary); }
-.studio-container .studio-header #subscribers-count, 
-.studio-container .studio-header #balance-count, 
-.studio-container .studio-header #audience-mood-display { color: var(--color-accent-primary); font-size: 1.1em; }
+/* --- THEME SELECTION & WELCOME --- */
+.theme-selection-content, .welcome-content { background-color: var(--color-card-bg); padding: 30px 40px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 700px; width: 90%; text-align: center; }
+.theme-selection-content h2, .welcome-content h2 { color: #fff; margin-bottom: 15px; font-size: 1.8em; border-bottom: none; }
+.theme-selection-content > p, .welcome-content > p:first-of-type { color: var(--color-text-secondary); margin-bottom: 30px; font-size: 1em; }
+.themes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+.theme-card { background-color: rgba(var(--color-accent-primary-rgb), 0.1); padding: 20px; border-radius: var(--border-radius-md); border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3); cursor: pointer; transition: all 0.2s ease-in-out; text-align: left; }
+.theme-card:hover { transform: translateY(-5px); background-color: rgba(var(--color-accent-primary-rgb), 0.2); box-shadow: 0 5px 15px rgba(var(--color-accent-primary-rgb), 0.2); }
+.theme-icon { font-size: 2.5em; margin-bottom: 10px; text-align: center; }
+.theme-card h3 { color: var(--color-text-primary); font-size: 1.3em; margin-top: 0; margin-bottom: 10px; }
+.theme-card p { color: var(--color-text-secondary); font-size: 0.9em; line-height: 1.4; }
+.user-info-display { margin: 25px 0; padding: 15px; border: 1px dashed rgba(var(--color-accent-primary-rgb), 0.3); border-radius: var(--border-radius-md); }
+.avatar-placeholder { width: 70px; height: 70px; border-radius: 50%; background-color: #4A5568; margin: 0 auto 15px auto; border: 3px solid var(--color-accent-primary); object-fit: cover; }
+#telegram-username-display { font-weight: bold; color: var(--color-accent-primary); }
+.small-note { font-size: 0.85em; color: var(--color-text-secondary); opacity: 0.7; margin-top: 25px; margin-bottom: 25px; }
 
-.studio-container .studio-main { 
-    flex-grow: 1; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    padding: 20px; 
-    position: relative; 
-    width: 100%; 
-    box-sizing: border-box;
-}
+/* --- CUTSCENE --- */
+#cutscene-screen { z-index: 9997; }
+.cutscene-slide { display: none; flex-direction: column; justify-content: center; align-items: center; width: 80%; height: 80%; text-align: center; background-color: var(--color-card-bg); border-radius: var(--border-radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 30px; box-sizing: border-box; opacity: 0; transition: opacity 0.5s ease-in-out; position: absolute; }
+.cutscene-slide.active { display: flex; opacity: 1; z-index: 1; }
+.cutscene-logo-placeholder { font-size: 4em; margin-bottom: 20px; color: var(--color-accent-primary); animation: pulse 2s infinite ease-in-out; } /* Используем ту же анимацию pulse, что и в прелоадере */
+.cutscene-slide h2 { font-size: 2.2em; color: #fff; margin-bottom: 15px; border-bottom: none; }
+.cutscene-slide p { font-size: 1.2em; color: var(--color-text-secondary); max-width: 90%;}
 
-/* Баннер тренда внутри .studio-main */
-.studio-main .trend-banner {
-    background-color: rgba(var(--color-accent-secondary-rgb), 0.15);
-    border: 1px solid var(--color-accent-secondary);
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: var(--border-radius-md);
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(var(--color-accent-secondary-rgb), 0.1);
-    width: 100%;
-    max-width: 500px; /* Ограничиваем ширину баннера */
-    box-sizing: border-box;
-}
-.studio-main .trend-banner p { margin: 0; color: var(--color-text-primary); font-weight: 500; font-size: 0.9em; }
-.studio-main .trend-banner span { font-weight: 700; color: var(--color-accent-secondary); }
-.studio-main .trend-banner p > span:first-of-type { color: var(--color-text-primary); }
+/* --- STUDIO CONTAINER --- */
+.studio-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background-color: rgba(var(--color-card-bg-rgb), 0.85); backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; width:100%; box-sizing: border-box;}
+.stats-block p, .mood-block p { margin: 5px 0; font-size: 0.95em; color: var(--color-text-secondary); }
+.stats-block span, .mood-block span { font-weight: bold; color: var(--color-text-primary); font-size: 1.1em;}
+.studio-header #subscribers-count, .studio-header #balance-count, .studio-header #audience-mood-display { color: var(--color-accent-primary); }
 
+.studio-main { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; position: relative; width: 100%; box-sizing: border-box;}
 
 /* --- CHARACTER STYLES --- */
-.studio-main .character-wrapper { margin-top: 10px; margin-bottom: -20px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
-.studio-main #character-sprite {
-    width: 200px; height: 300px;
-    background-image: url('character_sheet.png'); 
+.character-wrapper { margin-top: auto; margin-bottom: -30px; z-index: 10; display: flex; justify-content: center; align-items: flex-end; }
+#character-sprite {
+    width: 200px;  /* Ширина ОДНОГО кадра */
+    height: 300px; /* Высота ОДНОГО кадра */
+    background-image: url('character_sheet.png'); /* ИМЯ ВАШЕГО ФАЙЛА СПРАЙТ-ЛИСТА */
     background-repeat: no-repeat;
-    background-position: -400px 0px; 
+    background-position: -400px 0px; /* Начальное состояние - "печатает" (3й кадр) */
 }
-/* ... анимации персонажа .char-anim-idle-blink и т.д. как раньше ... */
+/* Порядок кадров: 1.Закр.глаза (0px) 2.Радость (-200px) 3.Печатает (-400px) */
 .char-anim-idle-blink { animation: characterIdleBlinkingAnimation 4s steps(1, end) infinite; }
 @keyframes characterIdleBlinkingAnimation { 0%, 85% { background-position-x: -400px; } 90%, 95% { background-position-x: 0px; } 100% { background-position-x: -400px; } }
 .char-state-typing { background-position-x: -400px !important; animation: none !important; }
 .char-state-happy { background-position-x: -200px !important; animation: none !important; }
 .char-state-sleeping { background-position-x: 0px !important; animation: none !important; }
+/* --- END CHARACTER --- */
 
+.computer-area { padding: 10px 20px 20px 20px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 400px; margin-top: 20px; }
+.monitor-screen { width: 100%; aspect-ratio: 16 / 10; background-color: #0D0F13; border-radius: var(--border-radius-md); box-shadow: 0 0 20px rgba(var(--color-accent-primary-rgb), 0.2), inset 0 0 10px rgba(0,0,0,0.4); padding: 15px; display: flex; flex-direction: column; justify-content: space-between; border: 3px solid #333742; }
+#channel-feed-placeholder { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+#channel-name-on-monitor { font-size: 1.4em; font-weight: bold; color: var(--color-text-primary); margin-bottom: 10px;}
+.trend-banner-monitor { background-color: rgba(var(--color-accent-secondary-rgb), 0.2); border: 1px solid var(--color-accent-secondary); padding: 8px 12px; margin: 10px auto; border-radius: var(--border-radius-sm); font-size: 0.8em; max-width: 90%; }
+.trend-banner-monitor p { margin: 0; font-size: 0.9em; }
+.trend-banner-monitor span { font-weight: bold; color: var(--color-accent-secondary); }
+.monitor-actions button { width: auto; padding: 10px 20px; font-size: 0.95em; margin: 15px auto 0 auto; display: block; }
 
-.studio-main .computer-area { /* ... как в вашем style.css от 0.8.0 ... */ }
-.studio-main .monitor-screen { /* ... как в вашем style.css от 0.8.0 ... */ }
-/* ... и так далее для элементов внутри .studio-main ... */
+.side-panel { position: fixed; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; background-color: rgba(var(--color-card-bg-rgb), 0.7); padding: 15px 10px; border-radius: var(--border-radius-md); backdrop-filter: blur(5px); z-index: 50; }
+.icon-button { background: none; background-image: none; box-shadow: none; border: 1px solid var(--color-text-secondary); color: var(--color-text-primary); font-size: 1.5em; padding: 10px; width: 50px; height: 50px; text-transform: none; }
+.icon-button:hover { background-color: rgba(var(--color-accent-primary-rgb), 0.2); border-color: var(--color-accent-primary); }
 
-.studio-main .side-panel { 
-    position: fixed; /* Fixed относительно вьюпорта */
-    right: 15px; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    display: flex; /* Показываем сразу, если studio-main видим */
-    flex-direction: column; gap: 10px; 
-    background-color: rgba(var(--color-card-bg-rgb), 0.7); 
-    padding: 10px; border-radius: var(--border-radius-md); 
-    backdrop-filter: blur(5px); z-index: 50; 
-}
-.icon-button { /* ... как раньше ... */ }
+/* --- MODAL STYLES --- */
+.modal-overlay { z-index: 1000; }
+.modal-content { background-color: var(--color-card-bg); padding: 30px; border-radius: var(--border-radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.4); width: 90%; max-width: 500px; position: relative; transform: scale(0.9); transition: transform 0.3s ease-in-out; }
+.modal-overlay.visible .modal-content { transform: scale(1); }
+.close-modal-button { position: absolute; top: 15px; right: 20px; font-size: 1.8em; color: var(--color-text-secondary); cursor: pointer; background: none; border: none; padding: 0; }
+.close-modal-button:hover { color: var(--color-text-primary); }
+.modal-content h2 { font-size: 1.6em; color: #fff; margin-bottom: 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;}
+.modal-actions button, .modal-upgrades button { margin-bottom: 10px; }
+#log-modal .modal-content { max-height: 80vh; display: flex; flex-direction: column;}
+#log-modal #event-log { flex-grow: 1; overflow-y: auto; margin-top: 0; max-height: calc(80vh - 150px); }
 
-/* LIVE FEEDBACK */
-#live-feedback-container { /* Позиционируем относительно .studio-main или body */
-    position: fixed; /* Чтобы не скроллился с .studio-main */
-    bottom: 20px; 
-    right: 20px; 
-    width: 250px; 
-    max-height: 200px; 
-    display: flex; flex-direction: column-reverse; 
-    gap: 8px; z-index: 900; /* Выше студии, но ниже модалок */
-    pointer-events: none; 
-}
-/* ... остальные стили для .feedback-item ... */
+button { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 15px 20px; margin: 10px 0; border: none; border-radius: var(--border-radius-md); background-image: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary)); color: #FFFFFF; cursor: pointer; font-size: 1.05em; font-family: var(--font-primary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.25s ease-out; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+button:hover { filter: brightness(1.15); box-shadow: 0 6px 20px rgba(var(--color-accent-primary-rgb), 0.4); }
+button:active { transform: translateY(2px); filter: brightness(0.95); box-shadow: 0 2px 10px rgba(var(--color-accent-primary-rgb), 0.3); }
+button:disabled { background-image: none; background-color: #3A3E4A; color: var(--color-text-secondary); cursor: not-allowed; box-shadow: none; text-transform: none; }
 
-/* МОДАЛЬНЫЕ ОКНА */
-/* ... стили для .modal-overlay, .modal-content и их содержимого как в 0.8.0 ... */
-.modal-overlay .modal-actions button { /* Стили для кнопок внутри модалки */
-     width: 100%; /* На всю ширину модалки */
-     margin-bottom: 10px;
-}
-.modal-overlay .modal-upgrades button { /* Стили для кнопок внутри модалки */
-     width: 100%;
-     margin-bottom: 10px;
-}
+#event-log li { padding: 8px 0; font-size: 0.9em; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: var(--color-text-secondary); }
+#event-log li:last-child { border-bottom: none; }
+#event-log li.log-success { color: var(--color-success); font-weight: 500; }
+#event-log li.log-error { color: var(--color-error); font-weight: 500; }
+#event-log li.log-warning { color: var(--color-warning); font-weight: 500; }
+#event-log li.log-info { color: var(--color-text-secondary); }
 
-
-/* ОБЩИЕ СТИЛИ КНОПОК */
-button { /* ... как раньше ... */ }
-
-/* ЛОГ СОБЫТИЙ (внутри модалки) */
-#log-modal #event-log { /* ... как раньше ... */ }
-#event-log li { /* ... как раньше ... */ }
-/* ... стили для .log-success, .log-error и т.д. ... */
-
-.studio-container .studio-footer { /* Был: .studio-footer */
-    text-align: center; padding: 10px; 
-    width:100%; box-sizing: border-box; 
-    margin-top:auto; flex-shrink: 0; 
-    background-color: rgba(var(--color-card-bg-rgb), 0.3); 
-}
-.studio-container .footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}
+.studio-footer { text-align: center; padding: 15px; background-color: rgba(var(--color-card-bg-rgb), 0.5); width:100%; box-sizing: border-box; margin-top:auto; }
+.footer-text { font-size: 0.85em; color: var(--color-text-secondary); margin:0;}

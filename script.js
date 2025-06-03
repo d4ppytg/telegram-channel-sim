@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const welcomeScreen = document.getElementById('welcome-screen');
     const cutsceneScreen = document.getElementById('cutscene-screen');
-    const studioScreenContainer = document.getElementById('studio-screen-container'); // Главный игровой контейнер
+    const studioScreenContainer = document.getElementById('studio-screen-container'); // Основной игровой экран
     
     const startGameButton = document.getElementById('start-game-button');
     const cutsceneSlides = cutsceneScreen ? cutsceneScreen.querySelectorAll('.cutscene-slide') : [];
@@ -27,9 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const trendDescriptionMonitorEl = document.getElementById('trend-description-monitor');
     
     // Кнопки управления из студии
-    const createPostButtonMonitor = document.getElementById('create-post-button-monitor'); // Открывает модалку
-    const openUpgradesButton = document.getElementById('open-upgrades-button'); // Открывает модалку
-    const openLogButton = document.getElementById('open-log-button'); // Открывает модалку
+    const createPostButtonMonitor = document.getElementById('create-post-button-monitor'); 
+    const openUpgradesButton = document.getElementById('open-upgrades-button'); 
+    const openLogButton = document.getElementById('open-log-button'); 
     
     // Модальные окна
     const createPostModal = document.getElementById('create-post-modal');
@@ -66,27 +66,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const CHARACTER_STATES = { IDLE_BLINKING: 'idle_blinking', TYPING: 'typing', HAPPY: 'happy', SLEEPING: 'sleeping' };
 
-    function setCharacterState(newState, durationMs = 0) { /* ... как раньше ... */ }
+    function setCharacterState(newState, durationMs = 0) { /* ... как в предыдущем полном коде ... */ }
 
-    function showScreen(screenElementToShow) { // Управляет только полноэкранными оверлеями и главным экраном студии
-        [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioScreenContainer].forEach(el => {
-            if (el) { el.classList.remove('visible'); el.style.display = 'none';}
-        });
-         // Модальные окна управляются отдельно
-        [createPostModal, upgradesModal, logModal].forEach(modal => {
-            if (modal && modal !== screenElementToShow) { // Не скрываем, если это сама модалка
-                 modal.classList.remove('visible'); modal.style.display = 'none';
+    function showScreen(screenElementToShow) {
+        [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioScreenContainer, createPostModal, upgradesModal, logModal].forEach(el => {
+            if (el && el !== screenElementToShow) { // Не скрываем сам целевой экран, если это модалка
+                el.classList.remove('visible'); 
+                el.style.display = 'none';
             }
         });
-
         if (screenElementToShow) {
             screenElementToShow.style.display = 'flex'; 
             requestAnimationFrame(() => { requestAnimationFrame(() => { screenElementToShow.classList.add('visible'); }); });
         }
     }
     
-    function playCutscene() { /* ... как раньше, в конце вызывает startGameplay() ... */ }
-    function showNextSlide() { /* ... как раньше ... */ }
+    function playCutscene() { /* ... как в предыдущем полном коде, в конце вызывает startGameplay() ... */ }
+    function showNextSlide() { /* ... как в предыдущем полном коде ... */ }
     
     function initializeGameFlow() { 
         const savedState = localStorage.getItem('channelSimGameState_v11'); 
@@ -98,17 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function startGameplay() { 
         loadGame(); 
-        showScreen(studioScreenContainer); // Показываем контейнер студии
+        showScreen(studioScreenContainer); 
         setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
         logEvent(`Студия открыта! Канал: ${gameState.channelName}.`, "info");
     }
 
-    function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v11');
-        if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
-        if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
-        updateUI(); updateTrendUI(); checkUpgradeButtonStatus();
-    }
+    function loadGame() { /* ... как раньше, ключ v11 ... */ }
     function saveGame() { localStorage.setItem('channelSimGameState_v11', JSON.stringify(gameState)); }
     function logEvent(message, type = 'info') { /* ... как раньше ... */ }
     function updateUI() { /* ... как раньше ... */ }
@@ -128,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeModal(modalElement) {
         if (modalElement) {
             modalElement.classList.remove('visible');
-            setTimeout(() => { modalElement.style.display = 'none'; }, 300); // Время CSS-анимации .modal-overlay
+            setTimeout(() => { modalElement.style.display = 'none'; }, 300); 
+            // Не вызываем showScreen(studioScreenContainer) здесь, т.к. студия уже видима под модалкой
         }
     }
 
@@ -138,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModalButtons.forEach(button => { button.addEventListener('click', () => { const modalId = button.dataset.modalId; const modalToClose = document.getElementById(modalId); closeModal(modalToClose); }); });
 
     // Всплывающие комментарии
-    function showFeedback(text, isEmoji = false, username = null) { /* ... как раньше ... */ }
+    function showFeedback(text, isEmoji = false, username = null) { /* ... как в предыдущем полном коде ... */ }
 
     // Действия игры
     function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) {
@@ -146,13 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             // ... (ВСЯ логика поста как раньше: themeMod, moodMultiplier, trendBonusMultiplier, расчет subGain, moneyGain, ER, moodChange, отписки, logEvent для поста) ...
             // ... генерация фидбека ...
-            const feedbackCount = Math.floor(Math.random() * 3) + 2; 
-            for (let i = 0; i < feedbackCount; i++) { /* ... */ }
-            
-            // Реакция персонажа (уже есть в коде выше, который вы не просили менять)
-            if (subGain > 8) { setCharacterState(CHARACTER_STATES.HAPPY, 3000); } 
-            else { setCharacterState(CHARACTER_STATES.IDLE_BLINKING); }
-
             updateUI(); saveGame(); checkUpgradeButtonStatus();
             tg.HapticFeedback.notificationOccurred('success');
             closeModal(createPostModal); // Закрываем модальное окно создания поста

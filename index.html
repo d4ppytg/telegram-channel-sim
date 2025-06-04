@@ -80,43 +80,6 @@
             </div>
             <div class="computer-area">
                 <div class="monitor-screen">
-                    <!-- Этот блок будет меняться JS -->
-                    <div id="monitor-content-area">
-                        <!-- Начальное состояние монитора -->
-                        <div id="monitor-idle-content">
-                            <p id="channel-name-on-monitor">Название Канала</p>
-                            <div id="current-trend-display-monitor" class="trend-banner-monitor" style="display: none;">
-                                <p>🔥 <span id="trend-description-monitor"></span></p>
-                            </div>
-                            <button id="start-post-creation-button">Создать Пост</button> 
-                        </div>
-
-                        <!-- Шаг 1: Выбор ТИПА поста (скрыт по умолчанию) -->
-                        <div id="monitor-step1-select-type" class="monitor-creation-step" style="display: none;">
-                            <h4>Выберите тип поста:</h4>
-                            <div class="monitor-button-group">
-                                <button class="monitor-option-button" data-post-type="text">📝 Текст</button>
-                                <button class="monitor-option-button" data-post-type="meme">😂 Мем</button>
-                                <button class="monitor-option-button" data-post-type="video">🎬 Видео</button>
-                            </div>
-                            <button class="monitor-cancel-button" data-step-to-hide="monitor-step1-select-type">Отмена</button>
-                        </div>
-
-                        <!-- Шаг 2: Выбор ТЕМЫ поста (скрыт по умолчанию) -->
-                        <div id="monitor-step2-select-theme" class="monitor-creation-step" style="display: none;">
-                            <h4>Выберите тему для <span id="monitor-selected-post-type-name"></span>:</h4>
-                            <div id="monitor-themes-grid" class="monitor-themes-selection-grid">
-                                <!-- Сюда JS будет добавлять кнопки тем -->
-                            </div>
-                            <button class="monitor-back-button" data-current-step="monitor-step2-select-theme" data-target-step="monitor-step1-select-type">‹ Назад</button>
-                            <button class="monitor-cancel-button" data-step-to-hide="monitor-step2-select-theme">Отмена</button>
-                        </div>
-                        
-                        <!-- Шаг 3: (Будет позже) Настройка качества/усилий или мини-игра -->
-                        
-                    </div>
-                </div>
-            </div>
                     <div id="channel-feed-placeholder">
                         <p id="channel-name-on-monitor">Название Канала</p>
                         <div id="current-trend-display-monitor" class="trend-banner-monitor" style="display: none;">

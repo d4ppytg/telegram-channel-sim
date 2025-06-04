@@ -9,11 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cutsceneScreen = document.getElementById('cutscene-screen');
     const studioContainer = document.querySelector('.studio-container'); 
     
-    console.log("Initial elements query:");
-    console.log({ preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioContainer });
+    const startGameButton = document.getElementById('start-game-button'); 
+    console.log("Start Game Button element (global):", startGameButton);
 
-
-    const startGameButton = document.getElementById('start-game-button');
     const cutsceneSlides = cutsceneScreen ? cutsceneScreen.querySelectorAll('.cutscene-slide') : [];
     let currentSlideIndex = 0;
     const telegramUsernameDisplay = document.getElementById('telegram-username-display');
@@ -22,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterEl = document.getElementById('character-sprite');
     let characterStateTimeout; 
 
-    // Элементы "Студии" 
     const channelNameHeaderEl = document.getElementById('channel-name-header'); 
     const subscribersCountEl = document.getElementById('subscribers-count');
     const balanceCountEl = document.getElementById('balance-count');
@@ -43,9 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openLogButton = document.getElementById('open-log-button');
     
     const studioSidePanel = document.getElementById('studio-side-panel'); 
-    console.log("studioSidePanel element (global declaration):", studioSidePanel);
 
-    // Модальные окна и их элементы
     const createPostModal = document.getElementById('create-post-modal');
     const upgradesModal = document.getElementById('upgrades-modal');
     const logModal = document.getElementById('log-modal');
@@ -71,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultGameState = {
         channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
         audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "0.8.6_full_debug", 
+        gameVersion: "0.8.10_start_btn_fix", 
         theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
         currentTrend: null, trendPostsRemaining: 0,
     };
@@ -98,11 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showScreen(screenElementToShow) {
-        console.log(`[showScreen] Called for: ${screenElementToShow ? screenElementToShow.id : 'null screenElementToShow'}`);
-        const localSidePanel = document.getElementById('studio-side-panel'); // Получаем здесь для актуальности
+        // console.log(`[showScreen] Called for: ${screenElementToShow ? screenElementToShow.id : 'null screenElementToShow'}`);
+        const localSidePanel = document.getElementById('studio-side-panel'); 
         // console.log(`[showScreen] localSidePanel found:`, !!localSidePanel);
 
-        // Сначала СКРЫВАЕМ все главные экраны и модалки
         [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioContainer, createPostModal, upgradesModal, logModal].forEach(el => {
             if (el) { 
                 el.classList.remove('visible'); 
@@ -110,9 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Боковую панель скрываем по умолчанию, покажем только если активна студия
-        if (localSidePanel) {
-            localSidePanel.style.display = 'none';
+        if (localSidePanel) { 
+            localSidePanel.style.display = 'none'; 
         }
 
         if (screenElementToShow) {
@@ -123,33 +116,26 @@ document.addEventListener('DOMContentLoaded', () => {
                  studioContainer.style.alignItems = 'stretch'; 
                  if(localSidePanel) {
                     localSidePanel.style.display = 'flex'; 
-                    console.log(`[showScreen] studioSidePanel for studioContainer: display flex`);
                  } else { console.warn("[showScreen] studioSidePanel is null when trying to show for studioContainer"); }
             } else if (screenElementToShow === createPostModal || screenElementToShow === upgradesModal || screenElementToShow === logModal) {
-                // Если это модальное окно, студия должна быть "под" ним (НЕ через showScreen)
-                // и боковая панель студии тоже должна быть видима, если студия была активна
-                // Важно: studioContainer должен УЖЕ БЫТЬ 'flex' и 'visible' перед открытием модалки
                 if (studioContainer && studioContainer.style.display === 'flex' && localSidePanel) { 
                      localSidePanel.style.display = 'flex';
-                     console.log(`[showScreen] studioSidePanel for modal: display flex`);
-                } else if (studioContainer && studioContainer.style.display === 'flex' && !localSidePanel){
-                     console.warn("[showScreen] studioSidePanel is null when trying to show for modal over studio");
                 }
             }
             
             requestAnimationFrame(() => { 
                 requestAnimationFrame(() => { 
                     screenElementToShow.classList.add('visible'); 
-                    console.log(`[showScreen] Added 'visible' class to: ${screenElementToShow.id}`);
+                    // console.log(`[showScreen] Added 'visible' class to: ${screenElementToShow.id}`);
                 }); 
             });
         } else {
-            console.warn("[showScreen] screenElementToShow was null or undefined.");
+            // console.warn("[showScreen] screenElementToShow was null or undefined.");
         }
     }
     
     function playCutscene() { 
-        console.log("[playCutscene] Called");
+        console.log("[playCutscene] Called.");
         showScreen(cutsceneScreen); currentSlideIndex = 0;
         if (cutsceneSlides.length > 0 && cutsceneSlides[0]) {
              cutsceneSlides[0].style.display = 'flex'; cutsceneSlides[0].classList.add('active'); 
@@ -158,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNextSlide() {
-        console.log(`[showNextSlide] currentSlideIndex: ${currentSlideIndex}`);
+        // console.log(`[showNextSlide] currentSlideIndex: ${currentSlideIndex}`);
         if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { 
             cutsceneSlides[currentSlideIndex].classList.remove('active');
             if (currentSlideIndex > 0 && cutsceneSlides[currentSlideIndex - 1]) { 
@@ -169,27 +155,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { 
             cutsceneSlides[currentSlideIndex].style.display = 'flex'; 
             cutsceneSlides[currentSlideIndex].classList.add('active'); 
-            console.log(`[showNextSlide] Showing slide: ${cutsceneSlides[currentSlideIndex].id}`);
+            // console.log(`[showNextSlide] Showing slide: ${cutsceneSlides[currentSlideIndex].id}`);
             setTimeout(showNextSlide, 3000); 
         } else { console.log("[showNextSlide] Cutscene ended, calling startGameplay."); startGameplay(); }
     }
     
     function initializeGameFlow() { 
         console.log("[initializeGameFlow] Called");
-        const savedState = localStorage.getItem('channelSimGameState_v0.8.6_full_debug'); 
+        const savedState = localStorage.getItem('channelSimGameState_v0.8.10_start_btn_fix'); 
         let proceedToWelcome = false;
         if (savedState) { 
             const parsedState = JSON.parse(savedState); 
             gameState = { ...defaultGameState, ...parsedState }; 
-            if (gameState.theme) { proceedToWelcome = true; console.log("[initializeGameFlow] Theme found in saved state. Proceeding to welcome screen."); }
-            else { gameState = { ...defaultGameState }; saveGame(); console.log("[initializeGameFlow] No theme in saved state. Resetting to default and showing theme selection.");}
-        } else { gameState = { ...defaultGameState }; saveGame(); console.log("[initializeGameFlow] No saved state found. Showing theme selection.");}
+            if (gameState.theme) { proceedToWelcome = true; console.log("[initializeGameFlow] Theme found. To Welcome.");}
+            else { gameState = { ...defaultGameState }; saveGame(); console.log("[initializeGameFlow] No theme. To ThemeSelect.");}
+        } else { gameState = { ...defaultGameState }; saveGame(); console.log("[initializeGameFlow] No saved. To ThemeSelect.");}
         if (proceedToWelcome) { showWelcomeScreen(); } else { showThemeSelectionScreen(); }
     }
 
     function showThemeSelectionScreen() { 
         console.log("[showThemeSelectionScreen] Called.");
-        // logEvent("Требуется выбор тематики канала.", "info"); // logEvent может быть не инициализирован здесь
+        // logEvent("Требуется выбор тематики канала.", "info"); 
         showScreen(themeSelectionScreen); 
     }
     
@@ -216,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v0.8.6_full_debug');
+        const savedState = localStorage.getItem('channelSimGameState_v0.8.10_start_btn_fix');
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
         if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
         if (channelNameHeaderEl) channelNameHeaderEl.textContent = gameState.channelName || `Канал [${getThemeDisplayName(gameState.theme)}]`;
@@ -224,80 +210,59 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("[loadGame] Game state loaded/initialized.");
     }
     function saveGame() { 
-        localStorage.setItem('channelSimGameState_v0.8.6_full_debug', JSON.stringify(gameState)); 
+        localStorage.setItem('channelSimGameState_v0.8.10_start_btn_fix', JSON.stringify(gameState)); 
         console.log("[saveGame] Game state saved.");
     }
     
-    function logEvent(message, type = 'info') { /* ... как раньше ... */ }
-    function updateUI() { /* ... как раньше ... */ }
-    function checkUpgradeButtonStatus() { /* ... как раньше ... */ }
-    function updateTrendUI() { /* ... как раньше ... */ }
-    function generateNewTrend() { /* ... как раньше ... */ }
-    function getThemeDisplayName(themeKey) { /* ... как раньше ... */ }
-    function getPostTypeName(typeKey) { /* ... как раньше ... */ }
+    function logEvent(message, type = 'info') { /* ... как было ... */ }
+    function updateUI() { /* ... как было ... */ }
+    function checkUpgradeButtonStatus() { /* ... как было ... */ }
+    function updateTrendUI() { /* ... как было ... */ }
+    function generateNewTrend() { /* ... как было ... */ }
+    function getThemeDisplayName(themeKey) { /* ... как было ... */ }
+    function getPostTypeName(typeKey) { /* ... как было ... */ }
 
-    function openModal(modalElement) { 
-        console.log(`[openModal] Called for: ${modalElement ? modalElement.id : 'null'}`);
-        if (studioContainer && studioContainer.style.display === 'none') {
-            console.log("[openModal] Studio was hidden, showing it first.");
-            showScreen(studioContainer); 
-        }
-        if (modalElement) { 
-            modalElement.style.display = 'flex'; 
-            requestAnimationFrame(() => requestAnimationFrame(() => modalElement.classList.add('visible'))); 
-        }
-    }
-    function closeModal(modalElement) { 
-        if (modalElement) { 
-            modalElement.classList.remove('visible'); 
-            setTimeout(() => { modalElement.style.display = 'none'; }, 300); 
-            console.log(`[closeModal] Closed modal: ${modalElement.id}`);
-            // Убедимся, что студия и ее панель видимы, если это не один из начальных экранов
-            if (studioContainer && !studioContainer.classList.contains('visible') &&
-                themeSelectionScreen.style.display === 'none' && 
-                welcomeScreen.style.display === 'none' && 
-                cutsceneScreen.style.display === 'none' &&
-                preloader.style.display === 'none' ) {
-                showScreen(studioContainer); 
-            } else if (studioContainer && studioContainer.classList.contains('visible')) {
-                const localSidePanel = document.getElementById('studio-side-panel');
-                if (localSidePanel && localSidePanel.style.display === 'none') {
-                    localSidePanel.style.display = 'flex';
-                }
-            }
-        } 
-    }
+    function openModal(modalElement) { /* ... как было ... */ }
+    function closeModal(modalElement) { /* ... как было ... */ }
 
     if(createPostButtonMonitor) createPostButtonMonitor.addEventListener('click', () => openModal(createPostModal));
     if(openUpgradesButton) openUpgradesButton.addEventListener('click', () => openModal(upgradesModal));
     if(openLogButton) openLogButton.addEventListener('click', () => openModal(logModal));
-    closeModalButtons.forEach(button => { /* ... как раньше ... */ });
+    closeModalButtons.forEach(button => { /* ... как было ... */ });
 
-    function showFeedback(text, isEmoji = false, username = null) { /* ... как раньше ... */ }
-    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) { /* ... как раньше, но в конце closeModal(createPostModal); ... */ }
+    function showFeedback(text, isEmoji = false, username = null) { /* ... как было ... */ }
+    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) { /* ... как было ... */ }
 
      if(postTextButton) postTextButton.addEventListener('click', () => handlePostAction('text', 1, 5, 2, 10, 1, 5));
      if(postMemeButton) postMemeButton.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8));
      if(postVideoButton) postVideoButton.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10));
-     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => { /* ... как раньше ... */ });
+     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => { /* ... как было ... */ });
 
-    if (themeSelectionScreen) {
-        const themeCards = themeSelectionScreen.querySelectorAll('.theme-card');
-        console.log(`[ThemeInit] Found ${themeCards.length} theme cards.`);
-        if (themeCards && themeCards.length > 0) {
-            themeCards.forEach(card => {
-                card.addEventListener('click', function() { 
-                    console.log("Theme card clicked:", this.dataset.theme); 
-                    const selectedTheme = this.dataset.theme; gameState.theme = selectedTheme; gameState.audienceMood = 75;
-                    switch(selectedTheme) { /* ... как раньше ... */ }
-                    logEvent(`Выбрана тема: ${getThemeDisplayName(selectedTheme)}`, "success"); saveGame(); showWelcomeScreen(); 
-                });
-                console.log(`[ThemeInit] Added click listener to card: ${card.dataset.theme}`);
-            });
-        } else { console.error("[ThemeInit] Theme cards (.theme-card) not found!"); }
-    } else { console.error("[ThemeInit] #theme-selection-screen element not found!"); }
+    if (themeSelectionScreen) { /* ... обработчики выбора темы как было ... */ }
     
-    // ИНИЦИАЛИЗАЦИЯ
+    // --- ОБРАБОТЧИК ДЛЯ КНОПКИ "НАЧАТЬ ИГРУ!" ---
+    if (startGameButton) {
+        console.log("[Init] Adding click listener to startGameButton.");
+        startGameButton.addEventListener('click', () => {
+            console.log("[startGameButton] Clicked!");
+            if (welcomeScreen && welcomeScreen.classList.contains('visible')) {
+                console.log("[startGameButton] Hiding welcomeScreen and calling playCutscene.");
+                welcomeScreen.classList.remove('visible');
+                setTimeout(() => { 
+                    if(welcomeScreen) welcomeScreen.style.display = 'none'; 
+                    playCutscene(); 
+                }, 500); // Время на анимацию скрытия welcomeScreen (должно совпадать с transition-duration в CSS)
+            } else {
+                console.error("[startGameButton] welcomeScreen element not found or not visible!", welcomeScreen);
+            }
+        });
+    } else {
+        console.error("[Init] startGameButton element NOT FOUND! Check ID 'start-game-button' in HTML.");
+    }
+    
+    if (tg.BackButton) { /* ... как было ... */ }
+
+    // --- ИНИЦИАЛИЗАЦИЯ ---
     console.log("[Init] Explicitly showing preloader.");
     showScreen(preloader); 
     setTimeout(() => {
@@ -308,8 +273,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         initializeGameFlow();
     }, 2000); 
-
-    if (startGameButton) { /* ... как раньше, вызывает playCutscene() ... */ }
-    
-    if (tg.BackButton) { /* ... как раньше ... */ }
 });

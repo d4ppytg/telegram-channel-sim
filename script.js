@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 user: {
                     username: 'debug_user',
                     first_name: 'Отладка',
-                    photo_url: 'placeholder-avatar.png' // Используем placeholder
+                    photo_url: 'placeholder-avatar.png' 
                 }
             },
             HapticFeedback: {
@@ -21,11 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             BackButton: {
                 show: () => console.log('BackButton show (заглушка)'),
-                onClick: (callback) => console.log('BackButton onClick (заглушка)')
+                hide: () => console.log('BackButton hide (заглушка)'),
+                onClick: (callback) => { 
+                    console.log('BackButton onClick (заглушка)');
+                    // Вызываем callback сразу, чтобы имитировать нажатие в дебаге
+                    // В реальном приложении Telegram сам вызывает callback при нажатии
+                    // Для имитации можно сделать: setTimeout(callback, 500);
+                }
             },
             close: () => console.log('Telegram.WebApp.close() (заглушка)')
         };
-        // Присваиваем заглушку глобально, чтобы другой код мог ее использовать
         window.Telegram = { WebApp: tg };
     } else {
         tg = window.Telegram.WebApp;
@@ -96,10 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
         postInProduction: null,
         contentQualityLevel: 1,
         log: [],
-        gameVersion: '0.8.0' // Добавляем версию для более контролируемых обновлений
+        gameVersion: '0.8.0' 
     };
 
-    let gameState = { ...initialGameState }; // Используем spread для копирования начального состояния
+    let gameState = { ...initialGameState }; 
 
     const gameSettings = {
         preloaderDuration: 3000,
@@ -271,7 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTrend = gameSettings.trends[randomIndex];
         addLogEntry(`Новый тренд: "${currentTrend.name}"!`, 'info');
         updateUI();
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
     function startTrendCycle() {
@@ -289,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameState.energy < gameSettings.maxEnergy) {
             gameState.energy = Math.min(gameSettings.maxEnergy, gameState.energy + gameSettings.energyRestoreAmount);
             updateUI();
-            // console.log(`Energy restored to: ${gameState.energy}`); // Для дебага
         }
     }
 
@@ -301,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateOfflineProgress() {
         console.log('Calculating offline progress...');
         const now = Date.now();
-        const timeOffline = now - (gameState.lastActiveTime || now); // Если lastActiveTime нет, используем now
+        const timeOffline = now - (gameState.lastActiveTime || now);
         if (timeOffline > 0) {
             const energyRestored = Math.floor(timeOffline / gameSettings.energyRestoreRate) * gameSettings.energyRestoreAmount;
             gameState.energy = Math.min(gameSettings.maxEnergy, gameState.energy + energyRestored);
@@ -318,12 +324,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Attempting to create post of type: ${type}`);
         if (gameState.postInProduction) {
             addLogEntry('Нельзя создать новый пост, пока предыдущий в производстве!', 'warning');
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('warning');
+            }
             return;
         }
         if (gameState.energy < 10) {
             addLogEntry('Недостаточно энергии для создания поста!', 'error');
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('error');
+            }
             return;
         }
 
@@ -332,7 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         gameState.energy -= 10;
         updateUI();
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+            tg.HapticFeedback.impactOccurred('light');
+        }
 
         gameState.postInProduction = {
             type: type,
@@ -395,7 +407,9 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.audienceMood = Math.max(0, Math.min(100, gameState.audienceMood + moodImpact + gameSettings.audienceMoodImpact.successfulPost));
 
         addLogEntry(`Пост "${getPostTypeName(type)}" завершен! +${gainedSubscribers} подписчиков, +$${gainedEarnings}.`, 'success');
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
 
         gameState.postInProduction = null;
         if (postProductionStatus) postProductionStatus.style.display = 'none';
@@ -424,12 +438,16 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.contentQualityLevel++;
             gameSettings.upgradeCosts.contentQuality = Math.round(cost * 1.5);
             addLogEntry(`Качество контента улучшено до уровня ${gameState.contentQualityLevel}!`, 'success');
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
             saveGameState();
             updateUI();
         } else {
             addLogEntry('Недостаточно средств для улучшения качества контента.', 'error');
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('error');
+            }
         }
     }
 
@@ -464,18 +482,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parsedState = JSON.parse(savedState);
 
                 // **ВНИМАНИЕ: ЛОГИКА МИГРАЦИИ И СОХРАНЕНИЯ ЦЕЛОСТНОСТИ СОСТОЯНИЯ**
-                // Проходимся по initialGameState, чтобы убедиться, что все ожидаемые поля есть
-                // и добавляем их, если они отсутствуют в загруженном состоянии.
-                // Это также поможет при обновлении версии игры.
                 gameState = { ...initialGameState, ...parsedState };
 
-                // Обновляем версию игры, если она не соответствует текущей
                 if (parsedState.gameVersion !== initialGameState.gameVersion) {
                     console.log(`Game version mismatch. Loaded: ${parsedState.gameVersion}, Current: ${initialGameState.gameVersion}. Applying migration logic if any.`);
                     // Здесь можно добавить логику миграции данных между версиями, если потребуется
                     // Например: if (parsedState.gameVersion === '0.7.0') { gameState.newField = defaultValue; }
-                    gameState.gameVersion = initialGameState.gameVersion; // Обновляем версию до текущей
-                    saveGameState(); // Сохраняем обновленное состояние
+                    gameState.gameVersion = initialGameState.gameVersion; 
+                    saveGameState(); 
                 }
 
                 // Если есть пост в производстве, восстанавливаем его таймер
@@ -495,19 +509,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log('No saved game state found. Starting new game.');
                 addLogEntry('Начинаем новую игру (сохраненных данных нет).', 'info');
-                gameState = { ...initialGameState }; // Сбрасываем к начальному
+                gameState = { ...initialGameState }; 
             }
         } catch (e) {
             console.error('Error loading or parsing game state from Local Storage:', e);
             addLogEntry('Ошибка загрузки игры. Начинаем новую игру.', 'error');
-            localStorage.removeItem('channelControlGameState'); // Удаляем поврежденные данные
-            gameState = { ...initialGameState }; // Сбрасываем к начальному
+            localStorage.removeItem('channelControlGameState'); 
+            gameState = { ...initialGameState }; 
         }
     }
 
     function startPostProductionTimer(type, timeLeft) {
         if (!gameState.postInProduction) {
-            gameState.postInProduction = {}; // Инициализируем, если по какой-то причине null
+            gameState.postInProduction = {}; 
         }
         gameState.postInProduction.type = type;
         gameState.postInProduction.timeLeft = timeLeft;
@@ -541,7 +555,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         modalElement.style.display = 'flex';
         setTimeout(() => modalElement.classList.add('visible'), 10);
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        // Показываем кнопку "Назад" Telegram при открытии модалки
+        if (tg.BackButton && typeof tg.BackButton.show === 'function') {
+            tg.BackButton.show();
+        }
     }
 
     function hideModal(modalElement) {
@@ -551,7 +571,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         modalElement.classList.remove('visible');
         setTimeout(() => modalElement.style.display = 'none', 300);
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        // Если нет других открытых модалок и мы в студии, можно скрыть BackButton
+        // Или оставить ее постоянно видимой, если так задумано
+        if (!isAnyModalOpen() && studioContainer && studioContainer.classList.contains('visible') && tg.BackButton && typeof tg.BackButton.hide === 'function') {
+            // tg.BackButton.hide(); // можно раскомментировать, если хотите скрывать кнопку "Назад" в студии без модалок
+        }
+    }
+
+    function isAnyModalOpen() {
+        return (createPostModal && createPostModal.classList.contains('visible')) ||
+               (upgradesModal && upgradesModal.classList.contains('visible')) ||
+               (logModal && logModal.classList.contains('visible'));
     }
 
 
@@ -561,8 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tg) {
             if (typeof tg.ready === 'function') tg.ready();
             if (typeof tg.expand === 'function') tg.expand();
-            if (tg.BackButton && typeof tg.BackButton.show === 'function') tg.BackButton.show();
-
+            
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 const user = tg.initDataUnsafe.user;
                 if (telegramUsernameDisplay) telegramUsernameDisplay.textContent = user.username || user.first_name || 'Дорогой Игрок';
@@ -572,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     userPhotoEl.src = 'placeholder-avatar.png';
                 }
             } else {
-                console.warn('Telegram user data not available or incomplete in initDataUnsafe.');
+                console.warn('Telegram user data not available or incomplete in initDataUnsafe. Using placeholder.');
                 if (telegramUsernameDisplay) telegramUsernameDisplay.textContent = 'Дорогой Игрок';
                 if (userPhotoEl) userPhotoEl.src = 'placeholder-avatar.png';
             }
@@ -580,16 +612,19 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('Telegram WebApp object is not available.');
         }
 
-
         if (gameVersionEl) {
             gameVersionEl.textContent = `v${gameState.gameVersion}`;
         }
 
-        loadGameState(); // Попытка загрузить состояние игры
+        loadGameState(); 
 
         if (!gameState.gameStarted) {
             console.log('Game not started yet. Showing theme selection screen.');
             showScreen(themeSelectionScreen);
+            // Скрываем BackButton, если начинаем с выбора темы (там обычно нет возврата)
+            if (tg && tg.BackButton && typeof tg.BackButton.hide === 'function') {
+                tg.BackButton.hide();
+            }
         } else {
             console.log('Game already started. Showing studio container.');
             showScreen(studioContainer);
@@ -597,6 +632,10 @@ document.addEventListener('DOMContentLoaded', () => {
             startTrendCycle();
             startEnergyRestoreCycle();
             calculateOfflineProgress();
+            // Показываем BackButton только когда мы уже в "студии" или на других основных экранах
+            if (tg && tg.BackButton && typeof tg.BackButton.show === 'function') {
+                tg.BackButton.show();
+            }
         }
         console.log('initGame finished.');
     }
@@ -612,10 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
         setTimeout(() => {
             preloader.classList.add('hidden');
-            // Убедимся, что preloader полностью скрыт перед инициализацией
             preloader.addEventListener('transitionend', () => {
                 initGame();
-            }, { once: true }); // Запускаем initGame только один раз после завершения анимации
+            }, { once: true });
         }, gameSettings.preloaderDuration);
     } else {
         console.warn('Preloader elements not found or preloader is null. Initializing game immediately.');
@@ -632,7 +670,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('selected');
                 gameState.selectedTheme = card.dataset.theme;
                 if (selectThemeButton) selectThemeButton.disabled = false;
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
             });
         });
 
@@ -641,7 +681,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (gameState.selectedTheme) {
                     addLogEntry(`Выбрана тема: ${gameState.selectedTheme}.`, 'info');
                     showScreen(welcomeScreen);
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
                 }
             });
         }
@@ -653,7 +695,9 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.gameStarted = true;
             saveGameState();
             showScreen(cutsceneScreen);
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
             startCutscene();
         });
     }
@@ -667,31 +711,60 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();
             startTrendCycle();
             startEnergyRestoreCycle();
+            if (tg && tg.BackButton && typeof tg.BackButton.show === 'function') {
+                tg.BackButton.show(); // Показываем кнопку "Назад" при переходе в студию
+            }
             return;
         }
 
         currentSlideIndex = 0;
+        // Скрываем кнопку "Вперед, к Студии!" в начале катсцены
+        if (continueToStudioButton) {
+            continueToStudioButton.style.display = 'none';
+            continueToStudioButton.classList.remove('visible'); // Убедиться, что класс тоже удален
+        }
+
         showCutsceneSlide(currentSlideIndex);
 
         const cutsceneTimer = setInterval(() => {
             currentSlideIndex++;
-            if (currentSlideIndex < cutsceneSlides.length - 1) {
+            console.log(`Cutscene: advancing to slide index ${currentSlideIndex}`);
+            if (currentSlideIndex < cutsceneSlides.length) { 
                 showCutsceneSlide(currentSlideIndex);
+                // Если это последний слайд (где должна быть кнопка)
+                if (currentSlideIndex === cutsceneSlides.length - 1) {
+                    console.log('Cutscene: Reached last slide, showing continue button.');
+                    if (continueToStudioButton) {
+                        continueToStudioButton.style.display = 'block'; 
+                        setTimeout(() => {
+                            if (continueToStudioButton) continueToStudioButton.classList.add('visible');
+                        }, 50);
+                    }
+                    clearInterval(cutsceneTimer); // Очищаем таймер, так как дошли до конца
+                }
             } else {
                 clearInterval(cutsceneTimer);
+                console.warn('Cutscene: Timer finished, but continue button might not have appeared. Forcing display.');
+                if (continueToStudioButton && continueToStudioButton.style.display === 'none') {
+                     continueToStudioButton.style.display = 'block';
+                     setTimeout(() => {
+                        if (continueToStudioButton) continueToStudioButton.classList.add('visible');
+                    }, 50);
+                }
             }
         }, gameSettings.cutsceneSlideDuration);
     }
 
     function showCutsceneSlide(index) {
         cutsceneSlides.forEach((slide, i) => {
+            slide.classList.remove('active'); 
             if (i === index) {
-                slide.classList.add('active');
-            } else {
-                slide.classList.remove('active');
+                slide.classList.add('active'); 
             }
         });
+        console.log(`Cutscene: Showing slide ${index + 1}/${cutsceneSlides.length}`);
     }
+
 
     // Переход в студию из катсцены
     if (continueToStudioButton) {
@@ -700,7 +773,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();
             startTrendCycle();
             startEnergyRestoreCycle();
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (tg && tg.BackButton && typeof tg.BackButton.show === 'function') {
+                tg.BackButton.show();
+            }
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
         });
     }
 
@@ -746,27 +824,53 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tg.BackButton && typeof tg.BackButton.onClick === 'function') {
         tg.BackButton.onClick(() => {
             console.log('Telegram BackButton clicked.');
+            // Логика закрытия модалок
             if (createPostModal && createPostModal.classList.contains('visible')) {
                 hideModal(createPostModal);
-            } else if (upgradesModal && upgradesModal.classList.contains('visible')) {
+                return; 
+            }
+            if (upgradesModal && upgradesModal.classList.contains('visible')) {
                 hideModal(upgradesModal);
-            } else if (logModal && logModal.classList.contains('visible')) {
+                return;
+            }
+            if (logModal && logModal.classList.contains('visible')) {
                 hideModal(logModal);
+                return;
             }
-            else if (welcomeScreen && welcomeScreen.classList.contains('visible')) {
+
+            // Логика навигации между экранами
+            if (welcomeScreen && welcomeScreen.classList.contains('visible')) {
                 showScreen(themeSelectionScreen);
+                // Если переходим назад к выбору темы, скрываем BackButton, т.к. там он обычно не нужен
+                if (tg.BackButton && typeof tg.BackButton.hide === 'function') {
+                    tg.BackButton.hide();
+                }
+                return;
             }
-            else if (cutsceneScreen && cutsceneScreen.classList.contains('visible')) {
+            if (cutsceneScreen && cutsceneScreen.classList.contains('visible')) {
                 if (currentSlideIndex > 0) {
                     currentSlideIndex--;
                     showCutsceneSlide(currentSlideIndex);
+                    // Если вернулись со "Шага 4" на "Шаг 3", скрываем кнопку "Продолжить"
+                    if (continueToStudioButton) continueToStudioButton.style.display = 'none'; 
                 } else {
                     showScreen(welcomeScreen);
                 }
+                return;
             }
-            else if (studioContainer && studioContainer.classList.contains('visible')) {
-                 console.log('Пользователь нажал "Назад" в студии. Ничего не происходит.');
-                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            // Если мы в студии и нет открытых модалок
+            if (studioContainer && studioContainer.classList.contains('visible')) {
+                 console.log('Пользователь нажал "Назад" в студии. Ничего не происходит (или можно предложить закрыть).');
+                 if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                     tg.HapticFeedback.notificationOccurred('error');
+                 }
+                 // tg.close(); // Можно раскомментировать, если хотите, чтобы кнопка "Назад" закрывала приложение из студии
+                 return;
+            }
+
+            // Если никакой активный экран или модалка не были обработаны, можно попробовать закрыть
+            if (tg && typeof tg.close === 'function') {
+                // tg.close(); 
             }
         });
     } else {

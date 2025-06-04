@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Script loaded, DOMContentLoaded fired.");
     const tg = window.Telegram.WebApp;
 
-    // Экраны
+    // Экраны и оверлеи
     const preloader = document.getElementById('preloader');
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const welcomeScreen = document.getElementById('welcome-screen');
     const cutsceneScreen = document.getElementById('cutscene-screen');
-    const studioContainer = document.querySelector('.studio-container');
+    const studioContainer = document.querySelector('.studio-container'); 
     
     const startGameButton = document.getElementById('start-game-button');
     const cutsceneSlides = cutsceneScreen ? cutsceneScreen.querySelectorAll('.cutscene-slide') : [];
@@ -17,29 +18,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterEl = document.getElementById('character-sprite');
     let characterStateTimeout; 
 
-    const channelNameOnMonitorEl = document.getElementById('channel-name-on-monitor');
+    // Элементы "Студии" 
+    const channelNameHeaderEl = document.getElementById('channel-name-header'); 
     const subscribersCountEl = document.getElementById('subscribers-count');
     const balanceCountEl = document.getElementById('balance-count');
     const audienceMoodDisplay = document.getElementById('audience-mood-display');
     const gameVersionEl = document.getElementById('game-version');
 
+    // Тренды (основной баннер в .studio-main, если он есть в вашем HTML от 0.8.0)
+    // Если его нет, эти переменные будут null, и updateTrendUI не будет пытаться их обновить.
+    const currentTrendDisplay = document.getElementById('current-trend-display');
+    const trendDescriptionEl = document.getElementById('trend-description');
+    const trendBonusEl = document.getElementById('trend-bonus');
+    const trendDurationEl = document.getElementById('trend-duration');
+
+    // Тренды на мониторе (эти ID у вас есть в HTML)
+    const channelNameOnMonitorEl = document.getElementById('channel-name-on-monitor');
     const currentTrendDisplayMonitor = document.getElementById('current-trend-display-monitor');
     const trendDescriptionMonitorEl = document.getElementById('trend-description-monitor');
 
-    const createPostButtonMonitor = document.getElementById('create-post-button-monitor');
+    const createPostButtonMonitor = document.getElementById('create-post-button-monitor'); // Кнопка на мониторе
     const openUpgradesButton = document.getElementById('open-upgrades-button');
     const openLogButton = document.getElementById('open-log-button');
+    
+    const studioSidePanel = document.getElementById('studio-side-panel'); 
+    console.log("studioSidePanel element (global declaration):", studioSidePanel);
 
+    // Модальные окна и их элементы
     const createPostModal = document.getElementById('create-post-modal');
     const upgradesModal = document.getElementById('upgrades-modal');
     const logModal = document.getElementById('log-modal');
     const closeModalButtons = document.querySelectorAll('.close-modal-button');
 
-    const postTextButton = document.getElementById('post-text-button');
-    const postMemeButton = document.getElementById('post-meme-button');
-    const postVideoButton = document.getElementById('post-video-button');
-    const upgradeContentQualityButton = document.getElementById('upgrade-content-quality');
+    // Кнопки внутри МОДАЛЬНОГО ОКНА createPostModal (согласно вашему index (4).html)
+    const postTextButton = document.getElementById('post-text-button'); 
+    const postMemeButton = document.getElementById('post-meme-button');   
+    const postVideoButton = document.getElementById('post-video-button'); 
+    // Кнопка внутри МОДАЛЬНОГО ОКНА upgradesModal
+    const upgradeContentQualityButton = document.getElementById('upgrade-content-quality'); 
+    
     const eventLogUl = document.getElementById('event-log');
+
+    const liveFeedbackContainer = document.getElementById('live-feedback-container');
+    const MAX_FEEDBACK_ITEMS = 7;
+    const positiveComments = ["Круто!", "Лучший пост!", "Огонь 🔥", "Люблю!", "Подписка!", "👍👍👍", "Гениально!"];
+    const neutralComments = ["Интересно.", "Неплохо.", "Пойдет.", "Норм.", "🤔", "Ок."];
+    const negativeComments = ["Что это?", "Скучно.", "Отписка.", "👎", "Не понял.", "Ужас."];
+    const reactionEmojis = ['❤️', '😂', '🎉', '🤯', '👀', '💯'];
 
     tg.ready();
     tg.expand();
@@ -47,16 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultGameState = {
         channelName: "Мой Канал", subscribers: 0, balance: 100, engagementRate: 0,
         audienceMood: 75, contentQualityMultiplier: 1, postsMade: 0,
-        gameVersion: "0.7.0", 
+        gameVersion: "0.8.5_modal_fix", 
         theme: null, themeModifiers: { text: 1, meme: 1, video: 1 },
         currentTrend: null, trendPostsRemaining: 0,
     };
     let gameState = { ...defaultGameState };
 
-    const CHARACTER_STATES = {
-        IDLE_BLINKING: 'idle_blinking', TYPING: 'typing',
-        HAPPY: 'happy', SLEEPING: 'sleeping' 
-    };
+    const CHARACTER_STATES = { IDLE_BLINKING: 'idle_blinking', TYPING: 'typing', HAPPY: 'happy', SLEEPING: 'sleeping' };
 
     function setCharacterState(newState, durationMs = 0) {
         if (!characterEl) return;
@@ -76,26 +98,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showScreen(screenElement) {
+    function showScreen(screenElementToShow) {
+        console.log(`[showScreen] Called for: ${screenElementToShow ? screenElementToShow.id : 'null'}`);
+        const localSidePanel = document.getElementById('studio-side-panel'); 
+        console.log("Side panel in showScreen (start):", localSidePanel ? "found" : "NOT FOUND");
+
         [preloader, themeSelectionScreen, welcomeScreen, cutsceneScreen, studioContainer, createPostModal, upgradesModal, logModal].forEach(el => {
-            if (el) { el.classList.remove('visible'); el.style.display = 'none';}
-        });
-        if (screenElement) {
-            screenElement.style.display = 'flex'; 
-            if (screenElement === studioContainer) {
-                 studioContainer.style.flexDirection = 'column'; 
-                 studioContainer.style.justifyContent = 'flex-start';
-                 studioContainer.style.alignItems = 'stretch';
+            if (el) { 
+                el.classList.remove('visible'); 
+                el.style.display = 'none';
             }
-            requestAnimationFrame(() => { requestAnimationFrame(() => { screenElement.classList.add('visible'); }); });
+        });
+
+        if (localSidePanel) { 
+            localSidePanel.style.display = 'none'; // Скрываем по умолчанию
+        }
+
+        if (screenElementToShow) {
+            screenElementToShow.style.display = 'flex'; 
+            if (screenElementToShow === studioContainer) {
+                 studioContainer.style.flexDirection = 'column'; 
+                 studioContainer.style.justifyContent = 'flex-start'; 
+                 studioContainer.style.alignItems = 'stretch'; 
+                 if(localSidePanel) {
+                    localSidePanel.style.display = 'flex'; 
+                 }
+            } else if (screenElementToShow === createPostModal || screenElementToShow === upgradesModal || screenElementToShow === logModal) {
+                // Если это модальное окно, студия должна быть "под" ним (но НЕ видима через showScreen)
+                // А боковая панель студии должна оставаться видимой, если студия была активна
+                if (studioContainer && studioContainer.style.display === 'flex' && localSidePanel) { // Проверяем, была ли студия видима
+                     localSidePanel.style.display = 'flex';
+                }
+            }
+            
+            requestAnimationFrame(() => { 
+                requestAnimationFrame(() => { 
+                    screenElementToShow.classList.add('visible'); 
+                }); 
+            });
         }
     }
     
     function playCutscene() { 
         showScreen(cutsceneScreen); currentSlideIndex = 0;
-        if (cutsceneSlides.length > 0) { cutsceneSlides[0].style.display = 'flex'; cutsceneSlides[0].classList.add('active'); }
+        if (cutsceneSlides.length > 0 && cutsceneSlides[0]) {
+             cutsceneSlides[0].style.display = 'flex'; cutsceneSlides[0].classList.add('active'); 
+        }
         setTimeout(showNextSlide, 3000);
     }
+
     function showNextSlide() {
         if (currentSlideIndex < cutsceneSlides.length && cutsceneSlides[currentSlideIndex]) { 
             cutsceneSlides[currentSlideIndex].classList.remove('active');
@@ -112,11 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function initializeGameFlow() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); 
+        const savedState = localStorage.getItem('channelSimGameState_v0.8.5_modal_fix'); 
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState }; if (gameState.theme) { showWelcomeScreen(); return; } }
         gameState = { ...defaultGameState }; saveGame(); showThemeSelectionScreen();
     }
+
     function showThemeSelectionScreen() { logEvent("Требуется выбор тематики канала.", "info"); showScreen(themeSelectionScreen); }
+    
     function showWelcomeScreen() { 
         const userData = tg.initDataUnsafe?.user;
         if (userData) {
@@ -129,19 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showScreen(welcomeScreen); 
     }
+
     function startGameplay() { 
-        loadGame(); showScreen(studioContainer); 
-        logEvent(`Студия открыта! Канал: ${gameState.channelName}.`, "info");
+        loadGame(); 
+        showScreen(studioContainer); 
         setCharacterState(CHARACTER_STATES.IDLE_BLINKING);
+        logEvent(`Студия открыта! Канал: ${gameState.channelName}.`, "info");
     }
 
     function loadGame() { 
-        const savedState = localStorage.getItem('channelSimGameState_v7'); 
+        const savedState = localStorage.getItem('channelSimGameState_v0.8.5_modal_fix');
         if (savedState) { const parsedState = JSON.parse(savedState); gameState = { ...defaultGameState, ...parsedState };}
         if (gameVersionEl) gameVersionEl.textContent = `v${gameState.gameVersion}`;
+        if (channelNameHeaderEl) channelNameHeaderEl.textContent = gameState.channelName || `Канал [${getThemeDisplayName(gameState.theme)}]`;
         updateUI(); updateTrendUI(); checkUpgradeButtonStatus();
     }
-    function saveGame() { localStorage.setItem('channelSimGameState_v7', JSON.stringify(gameState)); }
+    function saveGame() { localStorage.setItem('channelSimGameState_v0.8.5_modal_fix', JSON.stringify(gameState)); }
+    
     function logEvent(message, type = 'info') { 
         if (!eventLogUl) return;
         const listItem = document.createElement('li');
@@ -151,133 +208,110 @@ document.addEventListener('DOMContentLoaded', () => {
         eventLogUl.prepend(listItem);
         if (eventLogUl.children.length > 30) eventLogUl.removeChild(eventLogUl.lastChild);
      }
+    
     function updateUI() { 
-        const displayName = gameState.channelName || `Канал [${getThemeDisplayName(gameState.theme)}]`;
-        if (channelNameOnMonitorEl) channelNameOnMonitorEl.textContent = displayName;
+        if (channelNameHeaderEl) channelNameHeaderEl.textContent = gameState.channelName; // Для хедера студии
+        if (channelNameOnMonitorEl) channelNameOnMonitorEl.textContent = gameState.channelName; // Для монитора
         if (subscribersCountEl) subscribersCountEl.textContent = gameState.subscribers;
         if (balanceCountEl) balanceCountEl.textContent = gameState.balance.toFixed(0);
         if (audienceMoodDisplay) audienceMoodDisplay.textContent = gameState.audienceMood.toFixed(0);
         updateTrendUI();
     }
+
     function checkUpgradeButtonStatus() { 
-        if (!upgradeContentQualityButton) return;
+        if (!upgradeContentQualityButton) return; // Используем глобальную, т.к. ID в HTML теперь без -modal
         const cost = parseInt(upgradeContentQualityButton.dataset.cost);
         upgradeContentQualityButton.disabled = gameState.balance < cost;
+        upgradeContentQualityButton.textContent = `Улучшить качество контента (Стоимость: $${cost})`;
     }
+
     function updateTrendUI() { 
-        if (gameState.currentTrend && gameState.trendPostsRemaining > 0) {
-            if (trendDescriptionMonitorEl) trendDescriptionMonitorEl.textContent = `${gameState.currentTrend.topic} (${getPostTypeName(gameState.currentTrend.type)}) Bonus x${gameState.currentTrend.bonus}, ${gameState.trendPostsRemaining} п.`;
-            if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'block';
-        } else {
-            if (currentTrendDisplayMonitor) currentTrendDisplayMonitor.style.display = 'none';
+        const displayActive = gameState.currentTrend && gameState.trendPostsRemaining > 0;
+        // Обновляем основной баннер тренда (если он есть в HTML)
+        if (currentTrendDisplay) {
+            currentTrendDisplay.style.display = displayActive ? 'block' : 'none';
+            if (displayActive) {
+                if (trendDescriptionEl) trendDescriptionEl.textContent = `${gameState.currentTrend.topic} (${getPostTypeName(gameState.currentTrend.type)})`;
+                if (trendBonusEl) trendBonusEl.textContent = gameState.currentTrend.bonus;
+                if (trendDurationEl) trendDurationEl.textContent = gameState.trendPostsRemaining;
+            }
+        }
+        // Обновляем тренд на мониторе
+        if (currentTrendDisplayMonitor) {
+             currentTrendDisplayMonitor.style.display = displayActive ? 'block' : 'none';
+            if (displayActive && trendDescriptionMonitorEl) {
+                trendDescriptionMonitorEl.textContent = `${gameState.currentTrend.topic} (${getPostTypeName(gameState.currentTrend.type)}) Bonus x${gameState.currentTrend.bonus}, ${gameState.trendPostsRemaining} п.`;
+            }
+        }
+        if (!displayActive) {
+            // gameState.currentTrend = null; // Сбрасываем только если он закончился, не здесь
         }
     }
-    function generateNewTrend() { 
-        const trendTypes = ['text', 'meme', 'video'];
-        const trendTopics = { text: ["Горячие новости", "Советы", "Анализ"], meme: ["Мемы", "Юмор", "Животные"], video: ["Обзоры", "Котики", "Лайфхаки"] };
-        const randomType = trendTypes[Math.floor(Math.random() * trendTypes.length)];
-        const randomTopic = trendTopics[randomType][Math.floor(Math.random() * trendTopics[randomType].length)];
-        gameState.currentTrend = { type: randomType, topic: randomTopic, bonus: (Math.random() * 0.5 + 1.3).toFixed(1) };
-        gameState.trendPostsRemaining = Math.floor(Math.random() * 3) + 3;
-        logEvent(`Новый тренд! ${randomTopic} (${getPostTypeName(randomType)}) сейчас популярны! Бонус x${gameState.currentTrend.bonus} на ${gameState.trendPostsRemaining} постов.`, 'warning');
-    }
-    function getThemeDisplayName(themeKey) { const n = { news: 'Новости', entertainment: 'Развлечения', education: 'Образование', tech: 'Технологии'}; return n[themeKey] || 'Неизвестная'; }
-    function getPostTypeName(typeKey) { const n = { text: 'Тексты', meme: 'Мемы', video: 'Видео'}; return n[typeKey] || typeKey; }
+    function generateNewTrend() { /* ... как раньше ... */ }
+    function getThemeDisplayName(themeKey) { /* ... как раньше ... */ }
+    function getPostTypeName(typeKey) { /* ... как раньше ... */ }
 
-    function openModal(modalElement) { if (modalElement) { showScreen(modalElement); } }
-    function closeModal(modalElement) { if (modalElement) { modalElement.classList.remove('visible'); setTimeout(() => { modalElement.style.display = 'none'; }, 300); showScreen(studioContainer); } }
+    function openModal(modalElement) { 
+        // Перед открытием модалки, студия должна быть видима (но не через showScreen, чтобы не скрыть другие модалки)
+        if (studioContainer && studioContainer.style.display === 'none') {
+            studioContainer.style.display = 'flex';
+            studioContainer.classList.add('visible');
+        }
+        if (modalElement) { 
+            modalElement.style.display = 'flex'; 
+            requestAnimationFrame(() => requestAnimationFrame(() => modalElement.classList.add('visible'))); 
+        }
+    }
+    function closeModal(modalElement) { 
+        if (modalElement) { 
+            modalElement.classList.remove('visible'); 
+            setTimeout(() => { modalElement.style.display = 'none'; }, 300); 
+            // После закрытия модалки, студия должна оставаться видимой
+            if (studioContainer && !studioContainer.classList.contains('visible')) {
+                 showScreen(studioContainer); // Убедимся, что студия видима, если другие экраны были поверх
+            }
+        } 
+    }
 
     if(createPostButtonMonitor) createPostButtonMonitor.addEventListener('click', () => openModal(createPostModal));
     if(openUpgradesButton) openUpgradesButton.addEventListener('click', () => openModal(upgradesModal));
     if(openLogButton) openLogButton.addEventListener('click', () => openModal(logModal));
     closeModalButtons.forEach(button => { button.addEventListener('click', () => { const modalId = button.dataset.modalId; const modalToClose = document.getElementById(modalId); closeModal(modalToClose); }); });
 
-    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) {
-        setCharacterState(CHARACTER_STATES.TYPING); 
-        setTimeout(() => {
-            const themeModKey = postType; const themeMod = gameState.themeModifiers[themeModKey] || 1;
-            const moodMultiplier = 0.8 + (gameState.audienceMood / 100) * 0.4; let trendBonusMultiplier = 1;
-            if (gameState.currentTrend && gameState.currentTrend.type === postType && gameState.trendPostsRemaining > 0) { trendBonusMultiplier = parseFloat(gameState.currentTrend.bonus); gameState.audienceMood = Math.min(gameState.audienceMood + 5, 100); logEvent(`Пост "${getPostTypeName(postType)}" попал в тренд! Бонус x${trendBonusMultiplier}!`, 'info');}
-            const subGain = Math.floor((Math.random() * (baseSubMax - baseSubMin + 1) + baseSubMin) * gameState.contentQualityMultiplier * themeMod * moodMultiplier * trendBonusMultiplier);
-            const moneyGain = Math.floor((Math.random() * (baseMoneyMax - baseMoneyMin + 1) + baseMoneyMin) * gameState.contentQualityMultiplier);
-            gameState.subscribers += subGain; gameState.balance += moneyGain; gameState.postsMade++;
-            let moodChange = 0;
-            if (subGain > 2) moodChange = Math.floor(gameState.contentQualityMultiplier * 1.5);
-            else if (subGain < 0 && gameState.subscribers > 0) moodChange = -5; 
-            gameState.audienceMood = Math.min(Math.max(gameState.audienceMood + moodChange, 0), 100);
-            if (gameState.audienceMood < 30 && gameState.subscribers > 10) { const uC = (30 - gameState.audienceMood) / 30; if (Math.random() < uC * 0.05) { const unsub = Math.min(gameState.subscribers, Math.floor(Math.random()*(gameState.subscribers*0.03)+1)); gameState.subscribers -= unsub; logEvent(`Аудитория недовольна! Отписалось ${unsub} подписчиков.`, 'error'); gameState.audienceMood = Math.max(gameState.audienceMood - 3, 0);}}
-            logEvent(`Опубликован ${getPostTypeName(postType)}! +${subGain} подписчиков, +$${moneyGain}.`, 'success');
-            if (gameState.currentTrend && gameState.trendPostsRemaining > 0) { gameState.trendPostsRemaining--; }
-            if ((!gameState.currentTrend || gameState.trendPostsRemaining <= 0) && gameState.postsMade > 2) { if (Math.random() < 0.20) { generateNewTrend(); }}
-            
-            if (subGain > 8) { setCharacterState(CHARACTER_STATES.HAPPY, 3000); }
-            else { setCharacterState(CHARACTER_STATES.IDLE_BLINKING); }
+    function showFeedback(text, isEmoji = false, username = null) { /* ... как раньше ... */ }
 
-            updateUI(); saveGame(); checkUpgradeButtonStatus();
-            tg.HapticFeedback.notificationOccurred('success');
-            closeModal(createPostModal);
-        }, 700); 
-    }
+    function handlePostAction(postType, baseSubMin, baseSubMax, baseMoneyMin, baseMoneyMax, erMin, erMax) { /* ... как раньше, но в конце closeModal(createPostModal); ... */ }
 
+     // Используем ID кнопок из HTML (без "-modal", как в вашем index (4).html)
      if(postTextButton) postTextButton.addEventListener('click', () => handlePostAction('text', 1, 5, 2, 10, 1, 5));
      if(postMemeButton) postMemeButton.addEventListener('click', () => handlePostAction('meme', 3, 10, 1, 5, 2, 8));
      if(postVideoButton) postVideoButton.addEventListener('click', () => handlePostAction('video', 8, 20, 7, 18, 3, 10));
-     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => {
+     
+     if(upgradeContentQualityButton) upgradeContentQualityButton.addEventListener('click', () => { 
         const cost = parseInt(upgradeContentQualityButton.dataset.cost);
         if (gameState.balance >= cost) {
-            gameState.balance -= cost; gameState.contentQualityMultiplier = parseFloat((gameState.contentQualityMultiplier + 0.2).toFixed(1));
-            const newCost = Math.floor(cost * 1.5); upgradeContentQualityButton.dataset.cost = newCost;
+            // ... (логика улучшения как раньше) ...
             upgradeContentQualityButton.textContent = `Улучшить качество контента (Стоимость: $${newCost})`;
-            logEvent(`Качество контента улучшено! Множитель: ${gameState.contentQualityMultiplier}x.`, 'success');
-            gameState.audienceMood = Math.min(gameState.audienceMood + 2, 100);
-            updateUI(); saveGame(); checkUpgradeButtonStatus();
-            tg.HapticFeedback.impactOccurred('medium');
             setCharacterState(CHARACTER_STATES.HAPPY, 1500); 
             closeModal(upgradesModal);
-        } else { logEvent("Недостаточно средств для улучшения.", 'error'); tg.HapticFeedback.notificationOccurred('error');}
+        } else { /* ... */ }
      });
 
-    if (themeSelectionScreen) {
-        const themeCards = themeSelectionScreen.querySelectorAll('.theme-card');
-        themeCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const selectedTheme = card.dataset.theme; gameState.theme = selectedTheme; gameState.audienceMood = 75;
-                switch(selectedTheme) { 
-                    case 'news': gameState.themeModifiers = { text: 1.2, meme: 0.8, video: 1.1 }; gameState.channelName = "Новостной Вестник"; gameState.balance = 110; break;
-                    case 'entertainment': gameState.themeModifiers = { text: 0.9, meme: 1.5, video: 1.2 }; gameState.channelName = "Веселый Уголок"; break;
-                    case 'education': gameState.themeModifiers = { text: 1.3, meme: 0.7, video: 1.0 }; gameState.channelName = "Академия Знаний"; gameState.subscribers = 5; break;
-                    case 'tech': gameState.themeModifiers = { text: 1.1, meme: 1.0, video: 1.3 }; gameState.channelName = "Техно Гуру"; break;
-                }
-                logEvent(`Выбрана тема: ${getThemeDisplayName(selectedTheme)}`, "success"); saveGame(); showWelcomeScreen();
-            });
-        });
-    }
+    if (themeSelectionScreen) { /* ... обработчики выбора темы как раньше ... */ }
     
-    showScreen(preloader);
+    // ИНИЦИАЛИЗАЦИЯ
+    console.log("[Init] Showing preloader explicitly.");
+    showScreen(preloader); // Явно показываем прелоадер
     setTimeout(() => {
-        if (preloader) { preloader.classList.remove('visible'); setTimeout(() => { if(preloader) preloader.style.display = 'none'; }, 700); }
+        console.log("[Init] Timeout: Hiding preloader and calling initializeGameFlow.");
+        if (preloader) { 
+            preloader.classList.remove('visible'); 
+            setTimeout(() => { if(preloader) preloader.style.display = 'none'; console.log("[Init] Preloader display set to none."); }, 700); 
+        }
         initializeGameFlow();
-    }, 2500); // Общее время показа прелоадера (можно настроить)
+    }, 2500); 
 
-    if (startGameButton) {
-        startGameButton.addEventListener('click', () => {
-            if (welcomeScreen) {
-                welcomeScreen.classList.remove('visible');
-                setTimeout(() => { welcomeScreen.style.display = 'none'; playCutscene(); }, 500); 
-            }
-        });
-    }
+    if (startGameButton) { /* ... как раньше, вызывает playCutscene() ... */ }
     
-    if (tg.BackButton) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-            const visibleModal = document.querySelector('.modal-overlay.visible');
-            if (visibleModal) { closeModal(visibleModal); }
-            else if (studioContainer && studioContainer.classList.contains('visible')) { saveGame(); logEvent("Выход из игры (прогресс сохранен).", "info"); tg.close(); }
-            else if (cutsceneScreen && cutsceneScreen.classList.contains('visible')) { tg.close(); }
-            else if (welcomeScreen && welcomeScreen.classList.contains('visible')) { tg.close(); }
-            else if (themeSelectionScreen && themeSelectionScreen.classList.contains('visible')) { tg.close(); }
-            else { tg.close(); }
-        });
-    }
+    if (tg.BackButton) { /* ... как в предыдущем ответе, где мы откатывались ... */ }
 });

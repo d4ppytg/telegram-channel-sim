@@ -139,7 +139,6 @@ body {
     background-image: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
     border-radius: 5px;
     animation: 채움ProgressBar 2s 0.3s ease-out forwards;
-    /* Длительность 2s, задержка 0.3s */
 }
 @keyframes 채움ProgressBar {
     from {
@@ -392,21 +391,20 @@ body {
     height: 300px; /* Высота ОДНОГО кадра */
     background-image: url('character_sheet.png'); /* ИМЯ ВАШЕГО ФАЙЛА СПРАЙТ-ЛИСТА */
     background-repeat: no-repeat;
-    /* Убедитесь, что эта позиция соответствует вашему IDLE состоянию по умолчанию */
-    background-position: -400px 0px; /* Начальное состояние - "печатает" (3й кадр) */
+    background-position: 0px 0px; /* Начальное состояние - IDLE (1й кадр) */
 }
-/* Порядок кадров: 1.IDLE (0px) 2.HAPPY (-200px) 3.TYPING (-400px) */
+/* Порядок кадров (предполагаемый): 1.IDLE (0px) 2.HAPPY (-200px) 3.TYPING (-400px) */
 /* Если 'sleeping' будет на 4м кадре: -600px */
-.character-sprite.idle { background-position-x: 0px; }
-.character-sprite.happy { background-position-x: -200px; }
-.character-sprite.typing { background-position-x: -400px; }
-.character-sprite.sleeping { background-position-x: -600px; } /* Пример, если добавится спящий */
+.char-state-idle { background-position-x: 0px !important; animation: none !important; } /* Добавлено, если нужно принудительно ставить */
+.char-state-happy { background-position-x: -200px !important; animation: none !important; }
+.char-state-typing { background-position-x: -400px !important; animation: none !important; }
+.char-state-sleeping { background-position-x: -600px !important; animation: none !important; } /* Пример, если добавится спящий */
 
 /* Анимация мигания для состояния idle */
-.character-sprite.idle { animation: characterIdleBlinkingAnimation 4s steps(1, end) infinite; }
+.char-anim-idle-blink { animation: characterIdleBlinkingAnimation 4s steps(1, end) infinite; }
 @keyframes characterIdleBlinkingAnimation {
     0%, 85% { background-position-x: 0px; } /* IDLE (открытые глаза) */
-    90%, 95% { background-position-x: 0px; } /* IDLE (открытые глаза) */ /* Adjust this if you have a blink frame */
+    90%, 95% { background-position-x: 0px; } /* Кадр мигания (можно изменить на другой кадр, если есть) */
     100% { background-position-x: 0px; }
 }
 /* --- END CHARACTER --- */

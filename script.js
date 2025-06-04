@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 user: {
                     username: 'debug_user',
                     first_name: 'Отладка',
-                    photo_url: 'placeholder-avatar.png' 
+                    photo_url: 'placeholder-avatar.png'
                 }
             },
             HapticFeedback: {
@@ -22,11 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
             BackButton: {
                 show: () => console.log('BackButton show (заглушка)'),
                 hide: () => console.log('BackButton hide (заглушка)'),
-                onClick: (callback) => { 
+                onClick: (callback) => {
                     console.log('BackButton onClick (заглушка)');
-                    // Вызываем callback сразу, чтобы имитировать нажатие в дебаге
                     // В реальном приложении Telegram сам вызывает callback при нажатии
-                    // Для имитации можно сделать: setTimeout(callback, 500);
                 }
             },
             close: () => console.log('Telegram.WebApp.close() (заглушка)')
@@ -59,9 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const logModal = document.getElementById('log-modal');
     const closeModalButtons = document.querySelectorAll('.close-modal-button');
 
-    const postTextButton = document.getElementById('post-text-button');
-    const postMemeButton = document.getElementById('post-meme-button');
-    const postVideoButton = document.getElementById('post-video-button');
+    // Новые элементы для выбора идей контента
+    const contentIdeasList = document.getElementById('content-ideas-list');
+
     const upgradeContentQualityButton = document.getElementById('upgrade-content-quality');
 
     // Элементы UI
@@ -95,60 +93,122 @@ document.addEventListener('DOMContentLoaded', () => {
         balance: 0,
         audienceMood: 100,
         energy: 100,
-        selectedTheme: null,
+        selectedTheme: null, // Будет 'gaming', 'lifestyle', 'tech'
         gameStarted: false,
         lastActiveTime: Date.now(),
         postInProduction: null,
         contentQualityLevel: 1,
         log: [],
-        gameVersion: '0.8.0' 
+        gameVersion: '0.8.0' // Обновленная версия игры
     };
 
-    let gameState = { ...initialGameState }; 
+    let gameState = { ...initialGameState };
 
+    // === НАСТРОЙКИ ИГРЫ (ОБНОВЛЕНО) ===
     const gameSettings = {
         preloaderDuration: 3000,
         cutsceneSlideDuration: 2500,
         energyRestoreRate: 1000 * 60 * 5, // 5 минут на 1 единицу энергии
         energyRestoreAmount: 1,
         maxEnergy: 100,
-        basePostProductionTime: {
-            text: 5,
-            meme: 8,
-            video: 15
-        },
-        basePostEarnings: {
-            text: 5,
-            meme: 10,
-            video: 25
-        },
-        basePostSubscribers: {
-            text: 2,
-            meme: 5,
-            video: 10
+        // Базовые параметры для форматов, если нужны универсальные множители (влияют на базовые значения идей)
+        formatModifiers: {
+            text: { subscriberMultiplier: 0.8, earningsMultiplier: 0.7, durationMultiplier: 0.5, moodImpact: -5, icon: '✍️' },
+            meme: { subscriberMultiplier: 1.0, earningsMultiplier: 0.9, durationMultiplier: 0.7, moodImpact: -8, icon: '😂' },
+            video: { subscriberMultiplier: 1.2, earningsMultiplier: 1.1, durationMultiplier: 1.0, moodImpact: -12, icon: '🎥' }
         },
         audienceMoodImpact: {
-            text: -5,
-            meme: -8,
-            video: -12,
-            successfulPost: 10,
-            failedPost: -15
+            successfulPostBase: 10, // Базовое изменение настроения при успешном посте
+            failedPost: -15 // Если решим позже добавить механику провала
         },
         upgradeCosts: {
             contentQuality: 50
         },
         upgradeBenefits: {
             contentQuality: {
-                subscriberMultiplier: 1.15,
-                earningsMultiplier: 1.1,
-                moodBonus: 5
+                subscriberMultiplier: 1.15, // +15% подписчиков от качества
+                earningsMultiplier: 1.1,   // +10% дохода от качества
+                moodBonus: 5               // +5 к настроению аудитории от качества
             }
         },
         trends: [
-            { name: "Вирусные Челленджи", bonus: { subscribers: 1.5, earnings: 1.2 }, type: ['meme', 'video'] },
-            { name: "Глубокие Обзоры", bonus: { subscribers: 1.3, earnings: 1.4 }, type: ['video', 'text'] },
-            { name: "Быстрые Новости", bonus: { subscribers: 1.2, earnings: 1.1 }, type: ['text', 'meme'] }
-        ]
+            { name: "Вирусные Челленджи", bonus: { subscribers: 1.5, earnings: 1.2 }, types: ['meme', 'video'] },
+            { name: "Глубокие Обзоры", bonus: { subscribers: 1.3, earnings: 1.4 }, types: ['video', 'text'] },
+            { name: "Быстрые Новости", bonus: { subscribers: 1.2, earnings: 1.1 }, types: ['text', 'meme'] },
+            { name: "Летсплеи и Стримы", bonus: { subscribers: 1.6, earnings: 1.3 }, types: ['video'] }, // Игровой
+            { name: "DIY и Лайфхаки", bonus: { subscribers: 1.2, earnings: 1.1 }, types: ['video', 'text'] }, // Лайфстайл/Техно
+            { name: "Путешествия и Влоги", bonus: { subscribers: 1.7, earnings: 1.5 }, types: ['video'] }, // Лайфстайл
+            { name: "Распаковки", bonus: { subscribers: 1.4, earnings: 1.3 }, types: ['video'] } // Техно
+        ],
+        // === УНИКАЛЬНЫЕ ИДЕИ КОНТЕНТА ПО ТЕМАМ ===
+        contentIdeas: {
+            gaming: [
+                {
+                    id: 'game_review', name: 'Обзор новой игры', description: 'Подробный анализ свежего релиза.',
+                    baseSubscribers: 15, baseEarnings: 30, energyCost: 20, baseDuration: 20,
+                    formats: ['video', 'text'] // Список доступных форматов для этой идеи
+                },
+                {
+                    id: 'boss_guide', name: 'Гайд по боссу', description: 'Помогите пройти сложного босса!',
+                    baseSubscribers: 10, baseEarnings: 20, energyCost: 15, baseDuration: 12,
+                    formats: ['video', 'text']
+                },
+                {
+                    id: 'meme_compilation', name: 'Игровая подборка мемов', description: 'Смешные моменты и шутки из игр.',
+                    baseSubscribers: 8, baseEarnings: 15, energyCost: 10, baseDuration: 8,
+                    formats: ['meme']
+                },
+                {
+                    id: 'live_stream', name: 'Прямой эфир с прохождением', description: 'Интерактивный стрим с вашей аудиторией.',
+                    baseSubscribers: 20, baseEarnings: 40, energyCost: 25, baseDuration: 30, // Более долгое производство
+                    formats: ['video']
+                }
+            ],
+            lifestyle: [
+                {
+                    id: 'daily_vlog', name: 'Мой день из жизни', description: 'Покажите, как проходит ваш обычный день.',
+                    baseSubscribers: 12, baseEarnings: 25, energyCost: 18, baseDuration: 18,
+                    formats: ['video', 'text']
+                },
+                {
+                    id: 'fashion_tips', name: 'Советы по стилю', description: 'Поделитесь модными рекомендациями.',
+                    baseSubscribers: 9, baseEarnings: 18, energyCost: 12, baseDuration: 10,
+                    formats: ['text', 'meme']
+                },
+                {
+                    id: 'travel_story', name: 'Рассказ о путешествии', description: 'Поделитесь впечатлениями и советами из поездки.',
+                    baseSubscribers: 18, baseEarnings: 35, energyCost: 25, baseDuration: 25,
+                    formats: ['video']
+                },
+                {
+                    id: 'cooking_recipe', name: 'Кулинарный рецепт', description: 'Приготовьте что-то вкусное для подписчиков.',
+                    baseSubscribers: 10, baseEarnings: 20, energyCost: 15, baseDuration: 15,
+                    formats: ['video', 'text']
+                }
+            ],
+            tech: [
+                {
+                    id: 'gadget_review', name: 'Обзор нового гаджета', description: 'Всесторонний анализ новой техники.',
+                    baseSubscribers: 20, baseEarnings: 40, energyCost: 25, baseDuration: 25,
+                    formats: ['video', 'text']
+                },
+                {
+                    id: 'software_guide', name: 'Гайд по ПО', description: 'Полезные советы и хитрости по использованию программ.',
+                    baseSubscribers: 10, baseEarnings: 22, energyCost: 15, baseDuration: 15,
+                    formats: ['text', 'video']
+                },
+                {
+                    id: 'tech_news_digest', name: 'Дайджест тех. новостей', description: 'Коротко о главном в мире технологий.',
+                    baseSubscribers: 7, baseEarnings: 12, energyCost: 8, baseDuration: 7,
+                    formats: ['text', 'meme']
+                },
+                {
+                    id: 'pc_build_guide', name: 'Сборка ПК', description: 'Пошаговый гайд по сборке компьютера.',
+                    baseSubscribers: 25, baseEarnings: 50, energyCost: 30, baseDuration: 35,
+                    formats: ['video']
+                }
+            ]
+        }
     };
     let currentTrend = null;
     let trendInterval;
@@ -190,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Обновление состояния кнопки улучшения
         const upgradeCost = gameSettings.upgradeCosts.contentQuality;
         if (upgradeContentQualityButton) {
-            upgradeContentQualityButton.textContent = `Улучшить качество контента (Стоимость: $${upgradeCost})`;
+            upgradeContentQualityButton.textContent = `Улучшить качество контента (Уровень ${gameState.contentQualityLevel + 1}): $${upgradeCost}`;
             upgradeContentQualityButton.disabled = gameState.balance < upgradeCost;
         }
 
@@ -222,26 +282,30 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(characterStateTimeout);
         }
 
-        characterEl.classList.remove('char-state-idle', 'char-state-happy', 'char-state-typing', 'char-state-sleeping', 'char-anim-idle-blink');
+        // Удаляем все классы состояний и анимаций перед добавлением нового
+        characterEl.classList.remove(
+            'char-state-idle', 'char-state-happy', 'char-state-typing', 'char-state-sleeping',
+            'char-anim-idle-blink', 'bounce', 'typing-animation', 'fade-in-out' // Удаляем классы анимаций тоже
+        );
 
         switch (state) {
             case 'idle':
                 characterEl.classList.add('char-state-idle', 'char-anim-idle-blink');
                 break;
             case 'happy':
-                characterEl.classList.add('char-state-happy');
-                if (duration === 0) {
+                characterEl.classList.add('char-state-happy', 'bounce');
+                if (duration === 0) { // Если не указана длительность, возвращаемся в idle через 2 секунды
                     characterStateTimeout = setTimeout(() => updateCharacterState('idle'), 2000);
                 }
                 break;
             case 'typing':
-                characterEl.classList.add('char-state-typing');
+                characterEl.classList.add('char-state-typing', 'typing-animation');
                 if (duration > 0) {
                     characterStateTimeout = setTimeout(() => updateCharacterState('idle'), duration * 1000);
                 }
                 break;
             case 'sleeping':
-                characterEl.classList.add('char-state-sleeping');
+                characterEl.classList.add('char-state-sleeping', 'fade-in-out');
                 break;
             default:
                 characterEl.classList.add('char-state-idle', 'char-anim-idle-blink');
@@ -249,21 +313,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     function addLogEntry(message, type = 'info') {
         if (!eventLogList) {
             console.warn('Event log list element not found, cannot add log entry:', message);
             return;
         }
         const li = document.createElement('li');
-        li.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+        li.textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: ${message}`;
         li.classList.add(`log-${type}`);
-        eventLogList.prepend(li);
-        gameState.log.push({ message, type, timestamp: Date.now() });
+        eventLogList.prepend(li); // Добавляем в начало списка
+
+        // Ограничиваем количество записей в логе
+        gameState.log.unshift({ message, type, timestamp: Date.now() }); // Добавляем в начало массива
         if (gameState.log.length > 50) {
-            gameState.log.shift();
-            if (eventLogList.children.length > 50) {
-                eventLogList.removeChild(eventLogList.lastChild);
-            }
+            gameState.log.pop(); // Удаляем старейшую запись из массива
+        }
+        // Также удаляем старейший элемент из DOM, если их слишком много
+        while (eventLogList.children.length > 50) {
+            eventLogList.removeChild(eventLogList.lastChild);
         }
         saveGameState();
     }
@@ -286,9 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trendInterval) {
             clearInterval(trendInterval);
         }
-        generateRandomTrend();
+        // Меняем тренд каждые 1-3 минуты
         const trendChangeTime = (Math.random() * 2 + 1) * 60 * 1000;
         trendInterval = setInterval(generateRandomTrend, trendChangeTime);
+        // Генерируем первый тренд сразу при старте цикла
+        generateRandomTrend();
     }
 
 
@@ -310,8 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeOffline = now - (gameState.lastActiveTime || now);
         if (timeOffline > 0) {
             const energyRestored = Math.floor(timeOffline / gameSettings.energyRestoreRate) * gameSettings.energyRestoreAmount;
-            gameState.energy = Math.min(gameSettings.maxEnergy, gameState.energy + energyRestored);
             if (energyRestored > 0) {
+                gameState.energy = Math.min(gameSettings.maxEnergy, gameState.energy + energyRestored);
                 addLogEntry(`Восстановлено ${energyRestored} энергии пока вы отсутствовали.`, 'info');
             }
         }
@@ -320,41 +390,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function createPost(type) {
-        console.log(`Attempting to create post of type: ${type}`);
+    // === НОВАЯ ЛОГИКА СОЗДАНИЯ ПОСТА ===
+    function populateContentIdeas() {
+        if (!contentIdeasList) {
+            console.error('contentIdeasList element not found.');
+            return;
+        }
+        contentIdeasList.innerHTML = ''; // Очищаем список
+        const ideasForTheme = gameSettings.contentIdeas[gameState.selectedTheme];
+
+        if (!ideasForTheme || ideasForTheme.length === 0) {
+            contentIdeasList.innerHTML = '<p class="placeholder-text">Для вашей темы пока нет идей контента. Это странно!</p>';
+            console.warn(`No content ideas found for theme: ${gameState.selectedTheme}`);
+            return;
+        }
+
+        ideasForTheme.forEach(idea => {
+            const button = document.createElement('button');
+            button.className = 'content-idea-button';
+            
+            // Выбираем первый доступный формат для отображения его иконки и базовых затрат/длительности.
+            // В будущем здесь можно добавить выбор формата.
+            const defaultFormatType = idea.formats[0]; // Берем первый формат
+            const formatMod = gameSettings.formatModifiers[defaultFormatType];
+
+            // Рассчитываем отображаемые затраты и длительность с учетом формата
+            const displayEnergyCost = idea.energyCost; // Энергия берется от идеи
+            const displayDuration = Math.round(idea.baseDuration * formatMod.durationMultiplier);
+
+            button.innerHTML = `
+                <div class="idea-icon">${formatMod.icon}</div>
+                <div class="idea-details">
+                    <h3>${idea.name}</h3>
+                    <p>${idea.description}</p>
+                    <span class="idea-cost">Энергия: ${displayEnergyCost}⚡</span>
+                    <span class="idea-duration">Длительность: ~${displayDuration}сек</span>
+                </div>
+            `;
+            button.dataset.ideaId = idea.id;
+            button.dataset.formatType = defaultFormatType; // Сохраняем выбранный формат
+
+            // Проверяем, достаточно ли энергии для создания поста
+            button.disabled = gameState.energy < displayEnergyCost;
+            if (button.disabled) {
+                 button.title = 'Недостаточно энергии!';
+            }
+
+            button.addEventListener('click', () => {
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                startContentProduction(idea.id, defaultFormatType); // Передаем и идею, и выбранный формат
+            });
+            contentIdeasList.appendChild(button);
+        });
+        // Добавим стили для этих кнопок в style.css
+    }
+
+    // startContentProduction теперь принимает ideaId И formatType
+    function startContentProduction(ideaId, formatType) {
+        console.log(`Attempting to start content production for idea: ${ideaId}, format: ${formatType}`);
         if (gameState.postInProduction) {
             addLogEntry('Нельзя создать новый пост, пока предыдущий в производстве!', 'warning');
-            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
-                tg.HapticFeedback.notificationOccurred('warning');
-            }
-            return;
-        }
-        if (gameState.energy < 10) {
-            addLogEntry('Недостаточно энергии для создания поста!', 'error');
-            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
-                tg.HapticFeedback.notificationOccurred('error');
-            }
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
             return;
         }
 
-        const baseDuration = gameSettings.basePostProductionTime[type];
-        const productionDuration = baseDuration;
+        const idea = gameSettings.contentIdeas[gameState.selectedTheme].find(i => i.id === ideaId);
+        if (!idea) {
+            console.error(`Idea with ID "${ideaId}" not found for theme "${gameState.selectedTheme}".`);
+            addLogEntry('Ошибка: Неизвестная идея контента.', 'error');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+        
+        // Проверяем, поддерживает ли идея выбранный формат
+        if (!idea.formats.includes(formatType)) {
+            console.error(`Idea "${ideaId}" does not support format "${formatType}".`);
+            addLogEntry(`Ошибка: Идея "${idea.name}" не поддерживает формат "${formatType}".`, 'error');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
 
-        gameState.energy -= 10;
+        const formatMod = gameSettings.formatModifiers[formatType];
+        if (!formatMod) {
+            console.error(`Format modifiers for "${formatType}" not found.`);
+            addLogEntry('Ошибка: Неизвестный формат контента.', 'error');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+
+        const energyRequired = idea.energyCost;
+        if (gameState.energy < energyRequired) {
+            addLogEntry('Недостаточно энергии для создания этой идеи!', 'error');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+
+        gameState.energy -= energyRequired;
         updateUI();
-        if (tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
-            tg.HapticFeedback.impactOccurred('light');
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+        // Расчет финальных значений с учетом идеи, формата и качества контента
+        let productionDuration = Math.round(idea.baseDuration * formatMod.durationMultiplier);
+        let finalSubscribers = Math.round(idea.baseSubscribers * formatMod.subscriberMultiplier);
+        let finalEarnings = Math.round(idea.baseEarnings * formatMod.earningsMultiplier);
+        let moodChange = formatMod.moodImpact; // Базовый эффект настроения от формата
+
+
+        // Применяем модификаторы качества контента (если уровень > 1)
+        if (gameState.contentQualityLevel > 1) {
+            const qualityBenefit = gameSettings.upgradeBenefits.contentQuality;
+            finalSubscribers = Math.round(finalSubscribers * qualityBenefit.subscriberMultiplier);
+            finalEarnings = Math.round(finalEarnings * qualityBenefit.earningsMultiplier);
+            moodChange += qualityBenefit.moodBonus;
         }
 
         gameState.postInProduction = {
-            type: type,
+            ideaId: idea.id,
+            formatType: formatType,
             duration: productionDuration,
             timeLeft: productionDuration,
-            timer: null
+            timer: null,
+            results: { // Сохраняем уже рассчитанные результаты для завершения поста
+                subscribers: finalSubscribers,
+                earnings: finalEarnings,
+                moodChange: moodChange // Изменено на moodChange для ясности
+            }
         };
         saveGameState();
 
-        if (postTypeInProduction) postTypeInProduction.textContent = getPostTypeName(type);
+        if (postTypeInProduction) postTypeInProduction.textContent = `${idea.name} (${formatType})`; // Отображаем название идеи и формат
         if (postProductionStatus) postProductionStatus.style.display = 'block';
         if (createPostButton) createPostButton.disabled = true;
         updateCharacterState('typing', productionDuration);
@@ -362,11 +526,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const startTime = Date.now();
         gameState.postInProduction.timer = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            gameState.postInProduction.timeLeft = productionDuration - elapsed;
+            gameState.postInProduction.timeLeft = Math.max(0, productionDuration - elapsed);
 
             if (gameState.postInProduction.timeLeft <= 0) {
                 clearInterval(gameState.postInProduction.timer);
-                completePost(type);
+                completePost(gameState.postInProduction.ideaId, gameState.postInProduction.formatType, gameState.postInProduction.results);
             } else {
                 if (postProductionTimeRemaining) postProductionTimeRemaining.textContent = gameState.postInProduction.timeLeft;
                 const progress = ((productionDuration - gameState.postInProduction.timeLeft) / productionDuration) * 100;
@@ -374,39 +538,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 1000);
 
-        addLogEntry(`Начато создание "${getPostTypeName(type)}".`, 'info');
+        addLogEntry(`Начато создание "${idea.name}" в формате ${formatType}.`, 'info');
         if (createPostModal) hideModal(createPostModal);
     }
 
-    function completePost(type) {
-        console.log(`Completing post of type: ${type}`);
-        const baseSubscribers = gameSettings.basePostSubscribers[type];
-        const baseEarnings = gameSettings.basePostEarnings[type];
-        let moodImpact = gameSettings.audienceMoodImpact[type];
-
-        let gainedSubscribers = baseSubscribers;
-        let gainedEarnings = baseEarnings;
-
-        if (gameState.contentQualityLevel > 1) {
-            gainedSubscribers *= gameSettings.upgradeBenefits.contentQuality.subscriberMultiplier;
-            gainedEarnings *= gameSettings.upgradeBenefits.contentQuality.earningsMultiplier;
-            moodImpact += gameSettings.upgradeBenefits.contentQuality.moodBonus;
+    // `completePost` теперь принимает ideaId, formatType, и pre-calculated results
+    function completePost(ideaId, formatType, results) {
+        console.log(`Completing post for idea: ${ideaId}, format: ${formatType}`);
+        const idea = gameSettings.contentIdeas[gameState.selectedTheme].find(i => i.id === ideaId);
+        if (!idea) {
+            console.error(`Idea with ID "${ideaId}" not found during completion.`);
+            addLogEntry('Ошибка: Не удалось завершить пост (идея не найдена).', 'error');
+            return;
         }
 
-        if (currentTrend && currentTrend.type.includes(type)) {
-            gainedSubscribers *= currentTrend.bonus.subscribers;
-            gainedEarnings *= currentTrend.bonus.earnings;
-            addLogEntry(`Пост в тренде "${currentTrend.name}"! Получены бонусы.`, 'success');
+        let gainedSubscribers = results.subscribers;
+        let gainedEarnings = results.earnings;
+        let moodChange = results.moodChange; // Используем рассчитанное изменение настроения
+
+        // Применяем тренды
+        if (currentTrend && currentTrend.types.includes(formatType)) { // Используем 'types'
+            gainedSubscribers = Math.round(gainedSubscribers * currentTrend.bonus.subscribers);
+            gainedEarnings = Math.round(gainedEarnings * currentTrend.bonus.earnings);
+            addLogEntry(`Пост "${idea.name}" в тренде "${currentTrend.name}"! Получены бонусы.`, 'success');
         }
 
-        gainedSubscribers = Math.round(gainedSubscribers);
-        gainedEarnings = Math.round(gainedEarnings);
+        // Применяем базовый бонус за успешный пост
+        moodChange += gameSettings.audienceMoodImpact.successfulPostBase;
 
         gameState.subscribers += gainedSubscribers;
         gameState.balance += gainedEarnings;
-        gameState.audienceMood = Math.max(0, Math.min(100, gameState.audienceMood + moodImpact + gameSettings.audienceMoodImpact.successfulPost));
+        gameState.audienceMood = Math.max(0, Math.min(100, gameState.audienceMood + moodChange));
 
-        addLogEntry(`Пост "${getPostTypeName(type)}" завершен! +${gainedSubscribers} подписчиков, +$${gainedEarnings}.`, 'success');
+        addLogEntry(`"${idea.name}" (${formatType}) завершен! +${gainedSubscribers} подписчиков, +$${gainedEarnings}. Настроение: ${getMoodText(gameState.audienceMood)} (${moodChange > 0 ? '+' : ''}${moodChange}).`, 'success');
         if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
             tg.HapticFeedback.notificationOccurred('success');
         }
@@ -414,21 +578,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.postInProduction = null;
         if (postProductionStatus) postProductionStatus.style.display = 'none';
         if (createPostButton) createPostButton.disabled = false;
-        updateCharacterState('happy');
+        updateCharacterState('happy'); // Персонаж счастлив после успешного поста
 
         saveGameState();
         updateUI();
     }
-
-    function getPostTypeName(type) {
-        switch (type) {
-            case 'text': return 'Текстового поста';
-            case 'meme': return 'Мема';
-            case 'video': return 'Видеоролика';
-            default: return 'неизвестного поста';
-        }
-    }
-
 
     function upgradeContentQuality() {
         console.log('Attempting to upgrade content quality.');
@@ -436,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameState.balance >= cost) {
             gameState.balance -= cost;
             gameState.contentQualityLevel++;
-            gameSettings.upgradeCosts.contentQuality = Math.round(cost * 1.5);
+            gameSettings.upgradeCosts.contentQuality = Math.round(cost * 1.5); // Увеличиваем стоимость следующего улучшения
             addLogEntry(`Качество контента улучшено до уровня ${gameState.contentQualityLevel}!`, 'success');
             if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
                 tg.HapticFeedback.notificationOccurred('success');
@@ -482,26 +636,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parsedState = JSON.parse(savedState);
 
                 // **ВНИМАНИЕ: ЛОГИКА МИГРАЦИИ И СОХРАНЕНИЯ ЦЕЛОСТНОСТИ СОСТОЯНИЯ**
+                // Сначала берем initialGameState, затем накладываем сохраненные данные.
+                // Это гарантирует, что новые поля будут инициализированы, если их нет в старом сохранении.
                 gameState = { ...initialGameState, ...parsedState };
 
+                // Проверка версии для миграции
                 if (parsedState.gameVersion !== initialGameState.gameVersion) {
-                    console.log(`Game version mismatch. Loaded: ${parsedState.gameVersion}, Current: ${initialGameState.gameVersion}. Applying migration logic if any.`);
-                    // Здесь можно добавить логику миграции данных между версиями, если потребуется
-                    // Например: if (parsedState.gameVersion === '0.7.0') { gameState.newField = defaultValue; }
-                    gameState.gameVersion = initialGameState.gameVersion; 
-                    saveGameState(); 
+                    console.log(`Game version mismatch. Loaded: ${parsedState.gameVersion || 'older'}, Current: ${initialGameState.gameVersion}. Applying migration logic if any.`);
+                    // Пример миграции: если в старой версии не было contentQualityLevel
+                    if (!parsedState.contentQualityLevel) {
+                        gameState.contentQualityLevel = 1;
+                        addLogEntry('Обновлены игровые данные до новой версии.', 'info');
+                    }
+                    // Обновляем версию игры в сохраненном состоянии до текущей
+                    gameState.gameVersion = initialGameState.gameVersion;
+                    saveGameState(); // Сразу сохраняем обновленное состояние
                 }
+
+                // Восстановление лога
+                if (parsedState.log && Array.isArray(parsedState.log)) {
+                    // Ограничиваем количество записей при загрузке, если их слишком много
+                    gameState.log = parsedState.log.slice(0, 50);
+                    // Добавляем записи в DOM
+                    gameState.log.forEach(entry => {
+                        const li = document.createElement('li');
+                        // Форматируем время при отображении, если в логе только timestamp
+                        const date = new Date(entry.timestamp);
+                        li.textContent = `${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: ${entry.message}`;
+                        li.classList.add(`log-${entry.type}`);
+                        eventLogList.prepend(li);
+                    });
+                }
+
 
                 // Если есть пост в производстве, восстанавливаем его таймер
                 if (gameState.postInProduction && gameState.postInProduction.timeLeft > 0) {
+                    // Рассчитываем, сколько времени прошло с момента последнего сохранения
                     const timePassedSinceLastSave = (Date.now() - (gameState.lastActiveTime || Date.now())) / 1000;
                     gameState.postInProduction.timeLeft = Math.max(0, gameState.postInProduction.timeLeft - timePassedSinceLastSave);
                     console.log(`Post in production found. Time left: ${gameState.postInProduction.timeLeft}s`);
+
                     if (gameState.postInProduction.timeLeft <= 0) {
                         console.log('Post completed offline.');
-                        completePost(gameState.postInProduction.type);
+                        // Убедимся, что все необходимые данные для completePost присутствуют
+                        // Если в старом сохранении не было results, нужно их рассчитать или добавить дефолт
+                        if (!gameState.postInProduction.results) {
+                            const idea = gameSettings.contentIdeas[gameState.selectedTheme]?.find(i => i.id === gameState.postInProduction.ideaId);
+                            const formatMod = gameSettings.formatModifiers[gameState.postInProduction.formatType];
+                            if (idea && formatMod) {
+                                let finalSubscribers = Math.round(idea.baseSubscribers * formatMod.subscriberMultiplier);
+                                let finalEarnings = Math.round(idea.baseEarnings * formatMod.earningsMultiplier);
+                                let moodChange = formatMod.moodImpact;
+                                if (gameState.contentQualityLevel > 1) {
+                                    const qualityBenefit = gameSettings.upgradeBenefits.contentQuality;
+                                    finalSubscribers = Math.round(finalSubscribers * qualityBenefit.subscriberMultiplier);
+                                    finalEarnings = Math.round(finalEarnings * qualityBenefit.earningsMultiplier);
+                                    moodChange += qualityBenefit.moodBonus;
+                                }
+                                gameState.postInProduction.results = {
+                                    subscribers: finalSubscribers,
+                                    earnings: finalEarnings,
+                                    moodChange: moodChange
+                                };
+                            } else {
+                                console.error('Could not reconstruct post results during offline completion. Defaulting to 0.');
+                                gameState.postInProduction.results = { subscribers: 0, earnings: 0, moodChange: 0 };
+                            }
+                        }
+                        completePost(gameState.postInProduction.ideaId, gameState.postInProduction.formatType, gameState.postInProduction.results);
                     } else {
-                        startPostProductionTimer(gameState.postInProduction.type, gameState.postInProduction.timeLeft);
+                        // Возобновляем таймер с оставшимся временем
+                        startPostProductionTimer(
+                            gameState.postInProduction.ideaId,
+                            gameState.postInProduction.formatType,
+                            gameState.postInProduction.duration, // Оригинальная длительность
+                            gameState.postInProduction.results,
+                            gameState.postInProduction.timeLeft
+                        );
                     }
                 }
                 addLogEntry('Состояние игры загружено.', 'info');
@@ -509,39 +720,52 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log('No saved game state found. Starting new game.');
                 addLogEntry('Начинаем новую игру (сохраненных данных нет).', 'info');
-                gameState = { ...initialGameState }; 
+                gameState = { ...initialGameState };
             }
         } catch (e) {
             console.error('Error loading or parsing game state from Local Storage:', e);
             addLogEntry('Ошибка загрузки игры. Начинаем новую игру.', 'error');
-            localStorage.removeItem('channelControlGameState'); 
-            gameState = { ...initialGameState }; 
+            localStorage.removeItem('channelControlGameState'); // Очищаем битое сохранение
+            gameState = { ...initialGameState };
         }
     }
 
-    function startPostProductionTimer(type, timeLeft) {
+    // startPostProductionTimer теперь принимает больше аргументов для корректного восстановления
+    function startPostProductionTimer(ideaId, formatType, originalDuration, results, timeLeft) {
         if (!gameState.postInProduction) {
-            gameState.postInProduction = {}; 
+            gameState.postInProduction = {};
         }
-        gameState.postInProduction.type = type;
+        gameState.postInProduction.ideaId = ideaId;
+        gameState.postInProduction.formatType = formatType;
+        gameState.postInProduction.duration = originalDuration; // Сохраняем оригинальную длительность для расчета прогресса
         gameState.postInProduction.timeLeft = timeLeft;
-        gameState.postInProduction.duration = timeLeft;
-        if (postTypeInProduction) postTypeInProduction.textContent = getPostTypeName(type);
+        gameState.postInProduction.results = results; // Сохраняем результаты
+        
+        if (postTypeInProduction) {
+            const idea = gameSettings.contentIdeas[gameState.selectedTheme]?.find(i => i.id === ideaId);
+            postTypeInProduction.textContent = idea ? `${idea.name} (${formatType})` : 'Пост';
+        }
         if (postProductionStatus) postProductionStatus.style.display = 'block';
         if (createPostButton) createPostButton.disabled = true;
         updateCharacterState('typing', timeLeft);
 
-        const startTime = Date.now() - (gameState.postInProduction.duration - gameState.postInProduction.timeLeft) * 1000;
+        // Если timeLeft уже 0 или меньше, не запускаем таймер, а сразу завершаем
+        if (timeLeft <= 0) {
+            completePost(ideaId, formatType, results);
+            return;
+        }
+
+        const startTime = Date.now() - (originalDuration - timeLeft) * 1000; // Корректное startTime для возобновления
         gameState.postInProduction.timer = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            gameState.postInProduction.timeLeft = Math.max(0, gameState.postInProduction.duration - elapsed);
+            gameState.postInProduction.timeLeft = Math.max(0, originalDuration - elapsed);
 
             if (gameState.postInProduction.timeLeft <= 0) {
                 clearInterval(gameState.postInProduction.timer);
-                completePost(type);
+                completePost(ideaId, formatType, results); // Передаем все нужные данные
             } else {
                 if (postProductionTimeRemaining) postProductionTimeRemaining.textContent = gameState.postInProduction.timeLeft;
-                const progress = ((gameState.postInProduction.duration - gameState.postInProduction.timeLeft) / gameState.postInProduction.duration) * 100;
+                const progress = ((originalDuration - gameState.postInProduction.timeLeft) / originalDuration) * 100;
                 if (postProductionProgressFill) updateProgressBar(postProductionProgressFill, progress);
             }
         }, 1000);
@@ -561,6 +785,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Показываем кнопку "Назад" Telegram при открытии модалки
         if (tg.BackButton && typeof tg.BackButton.show === 'function') {
             tg.BackButton.show();
+        }
+
+        // Если это модалка создания поста, заполняем ее идеями
+        if (modalElement === createPostModal) {
+            populateContentIdeas();
         }
     }
 
@@ -594,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tg) {
             if (typeof tg.ready === 'function') tg.ready();
             if (typeof tg.expand === 'function') tg.expand();
-            
+
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 const user = tg.initDataUnsafe.user;
                 if (telegramUsernameDisplay) telegramUsernameDisplay.textContent = user.username || user.first_name || 'Дорогой Игрок';
@@ -613,10 +842,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (gameVersionEl) {
-            gameVersionEl.textContent = `v${gameState.gameVersion}`;
+            gameVersionEl.textContent = `v${initialGameState.gameVersion}`; // Используем версию из initialGameState
         }
 
-        loadGameState(); 
+        loadGameState(); // Загрузка состояния игры
 
         if (!gameState.gameStarted) {
             console.log('Game not started yet. Showing theme selection screen.');
@@ -729,13 +958,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const cutsceneTimer = setInterval(() => {
             currentSlideIndex++;
             console.log(`Cutscene: advancing to slide index ${currentSlideIndex}`);
-            if (currentSlideIndex < cutsceneSlides.length) { 
+            if (currentSlideIndex < cutsceneSlides.length) {
                 showCutsceneSlide(currentSlideIndex);
                 // Если это последний слайд (где должна быть кнопка)
                 if (currentSlideIndex === cutsceneSlides.length - 1) {
                     console.log('Cutscene: Reached last slide, showing continue button.');
                     if (continueToStudioButton) {
-                        continueToStudioButton.style.display = 'block'; 
+                        continueToStudioButton.style.display = 'block';
                         setTimeout(() => {
                             if (continueToStudioButton) continueToStudioButton.classList.add('visible');
                         }, 50);
@@ -757,9 +986,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showCutsceneSlide(index) {
         cutsceneSlides.forEach((slide, i) => {
-            slide.classList.remove('active'); 
+            slide.classList.remove('active');
             if (i === index) {
-                slide.classList.add('active'); 
+                slide.classList.add('active');
             }
         });
         console.log(`Cutscene: Showing slide ${index + 1}/${cutsceneSlides.length}`);
@@ -804,17 +1033,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Действия по созданию поста
-    if (postTextButton) {
-        postTextButton.addEventListener('click', () => createPost('text'));
-    }
-    if (postMemeButton) {
-        postMemeButton.addEventListener('click', () => createPost('meme'));
-    }
-    if (postVideoButton) {
-        postVideoButton.addEventListener('click', () => createPost('video'));
-    }
-
     // Действие по улучшению качества контента
     if (upgradeContentQualityButton) {
         upgradeContentQualityButton.addEventListener('click', upgradeContentQuality);
@@ -827,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Логика закрытия модалок
             if (createPostModal && createPostModal.classList.contains('visible')) {
                 hideModal(createPostModal);
-                return; 
+                return;
             }
             if (upgradesModal && upgradesModal.classList.contains('visible')) {
                 hideModal(upgradesModal);
@@ -852,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentSlideIndex--;
                     showCutsceneSlide(currentSlideIndex);
                     // Если вернулись со "Шага 4" на "Шаг 3", скрываем кнопку "Продолжить"
-                    if (continueToStudioButton) continueToStudioButton.style.display = 'none'; 
+                    if (continueToStudioButton) continueToStudioButton.style.display = 'none';
                 } else {
                     showScreen(welcomeScreen);
                 }
@@ -870,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Если никакой активный экран или модалка не были обработаны, можно попробовать закрыть
             if (tg && typeof tg.close === 'function') {
-                // tg.close(); 
+                // tg.close();
             }
         });
     } else {

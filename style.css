@@ -413,11 +413,11 @@ body {
 /* Персонаж (позиционируем относительно центра экрана) */
 .character-sprite {
     position: absolute;
-    bottom: 220px; /* Регулируйте, чтобы персонаж был над кнопками и ниже блока "Ваш Канал" */
+    bottom: 0; /* ИЗМЕНЕНО: Прижимаем к самому низу */
     left: 50%;
     transform: translateX(-50%);
     width: auto;
-    height: 350px; /* Примерный размер, регулируйте */
+    height: 400px; /* ИЗМЕНЕНО: Увеличен размер персонажа */
     object-fit: contain;
     z-index: 2;
     transition: all 0.3s ease-out;
@@ -516,7 +516,7 @@ body {
     max-width: 450px;
     display: flex;
     justify-content: space-around;
-    gap: var(--gap-sm);
+    gap: 5px; /* ИЗМЕНЕНО: Уменьшен отступ между кнопками */
     position: relative;
     z-index: 5;
     background-color: var(--color-secondary);
@@ -535,12 +535,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px 5px;
+    padding: 8px 3px; /* ИЗМЕНЕНО: Уменьшен padding */
     background-color: var(--color-primary);
     color: var(--color-text-primary);
     border: none; /* Убираем стандартный бордер */
     border-radius: var(--border-radius-md);
-    font-size: 0.8em;
+    font-size: 0.75em; /* ИЗМЕНЕНО: Уменьшен шрифт */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;

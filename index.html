@@ -2,149 +2,155 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Social Media Tycoon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Channel Control SIM</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@404&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="preloader-screen" class="screen visible">
+    <div id="preloader" class="preloader">
         <div class="preloader-content">
             <img src="assets/logo.png" alt="Logo" class="preloader-logo">
             <div class="preloader-progress-bar">
                 <div class="preloader-progress-bar-fill"></div>
             </div>
-            <p class="preloader-version">v0.1.0</p>
+            <p id="game-version" class="preloader-version">v0.8.0</p>
         </div>
     </div>
 
     <div id="theme-selection-screen" class="screen">
         <div class="screen-content">
-            <h1 class="screen-title">Выберите Тему Канала</h1>
+            <h1 class="screen-title">Выберите Тему Вашего Канала</h1>
             <div class="theme-selection-grid">
                 <div class="theme-card" data-theme="gaming">
                     <img src="assets/theme_gaming.png" alt="Игровой Канал">
                     <h3>Игровой Канал</h3>
-                    <p>Обзоры, прохождения, летсплеи.</p>
+                    <p>Обзоры игр, прохождения, летсплеи. Для настоящих геймеров!</p>
                 </div>
                 <div class="theme-card" data-theme="lifestyle">
                     <img src="assets/theme_lifestyle.png" alt="Лайфстайл Блог">
                     <h3>Лайфстайл Блог</h3>
-                    <p>Путешествия, мода, кулинария.</p>
+                    <p>Путешествия, мода, кулинария, личные влоги. Жизнь на полную!</p>
                 </div>
                 <div class="theme-card" data-theme="tech">
                     <img src="assets/theme_tech.png" alt="Техноблог">
                     <h3>Техноблог</h3>
-                    <p>Обзоры гаджетов, новости технологий.</p>
+                    <p>Обзоры гаджетов, новости технологий, гайды и лайфхаки.</p>
                 </div>
             </div>
             <button id="select-theme-button" class="btn" disabled>Выбрать тему</button>
         </div>
     </div>
 
-    <div id="main-dashboard-screen" class="screen">
-        <div class="top-stats-panel">
-            <div class="stat-item">
-                <i class="fas fa-bolt stat-icon"></i> <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-smile stat-icon"></i> <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
+    <div id="welcome-screen" class="screen">
+        <div class="screen-content">
+            <img id="user-photo" src="placeholder-avatar.png" alt="User Avatar" class="user-avatar">
+            <h1 class="screen-title">Добро пожаловать, <span id="telegram-username-display">Дорогой Игрок</span>!</h1>
+            <p class="welcome-text">Вы готовы начать свою карьеру в мире контента и построить медиа-империю?</p>
+            <button id="start-game-button" class="btn">Начать игру</button>
+        </div>
+    </div>
+
+    <div id="cutscene-screen" class="screen cutscene-screen">
+        <div class="cutscene-slide active">
+            <img src="assets/cutscene_1.png" alt="Idea" class="cutscene-image">
+            <p class="cutscene-text">У каждого великого канала начинается с **идеи**.<br>Что вы хотите донести миру?</p>
+        </div>
+        <div class="cutscene-slide">
+            <img src="assets/cutscene_2.png" alt="Creation" class="cutscene-image">
+            <p class="cutscene-text">Затем приходит **создание**.<br>Каждый пост, каждое видео — это часть вашей мечты.</p>
+        </div>
+        <div class="cutscene-slide">
+            <img src="assets/cutscene_3.png" alt="Growth" class="cutscene-image">
+            <p class="cutscene-text">Терпение и упорство приводят к **росту**.<br>Ваша аудитория ждет вашего контента.</p>
+        </div>
+        <div class="cutscene-slide">
+            <img src="assets/cutscene_4.png" alt="Monetization" class="cutscene-image">
+            <p class="cutscene-text">И наконец, **монетизация**.<br>Превратите страсть в успешный бизнес!</p>
+        </div>
+        <button id="continue-to-studio-button" class="btn cutscene-continue-button">Вперед, к Студии!</button>
+    </div>
+
+    <div class="studio-container" id="studio-container">
+        <div class="studio-background">
+            <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
+            <div class="monitor-screen">
+                <h2 id="channel-name-on-monitor">Ваш Канал</h2>
+                <div class="monitor-stats">
+                    <p>Подписчики: <span id="subscribers-count">0</span></p>
+                    <p>Баланс: $<span id="balance-count">0</span></p>
+                </div>
+                <div class="trend-display-monitor" id="current-trend-display-monitor" style="display: none;">
+                    <p>В тренде: <span id="trend-description-monitor">Нет</span></p>
+                </div>
             </div>
         </div>
 
-        <div class="middle-content-wrapper">
-            <div class="channel-info-block">
-                <div class="channel-header">
-                    <h2 id="channel-name">TECHTRENDS 2025</h2>
-                    <div class="live-trends">LIVE-ТРЕНДЫ</div>
-                </div>
-                <div class="channel-stats">
-                    <p>Подписчики: <span id="subscribers-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="subscribers-change" class="trend-change">+0</span></p>
-                    <p>Просмотры: <span id="views-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="views-change" class="trend-change">+0</span></p>
-                    <p>Доход: <span id="balance-value">0</span> <span class="currency-icon">₽</span></p>
-                </div>
-                <div id="warning-message" class="warning-message hidden">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span id="warning-text">Предупреждение: Конкуренты запустили VR-серию!</span>
-                </div>
+        <div class="main-stats">
+            <div class="stat-item">
+                <img src="assets/icon_mood.png" alt="Настроение" class="stat-icon">
+                <span id="audience-mood-display">Отличное</span>
             </div>
-
-            <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
-
-            <div id="post-production-status" class="post-production-status hidden">
-                <p>Создание поста: <span id="post-in-production-type"></span></p>
-                <div class="post-production-progress-bar">
-                    <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
-                </div>
-                <p>Осталось: <span id="post-production-time-left"></span> сек</p>
+            <div class="stat-item">
+                <img src="assets/icon_energy.png" alt="Энергия" class="stat-icon">
+                <span id="energy-count">100</span> / 100
             </div>
         </div>
 
         <div class="action-buttons">
-            <button class="action-button" id="create-post-btn">
-                <i class="fas fa-edit action-icon"></i>
-                <span>Создать Контент</span>
+            <button id="create-post-button" class="btn action-button">
+                <img src="assets/icon_create_post.png" alt="Создать Пост">
+                Создать Пост
             </button>
-            <button class="action-button" id="analytics-btn">
-                <i class="fas fa-chart-line action-icon"></i>
-                <span>Аналитика</span>
+            <button id="upgrades-button" class="btn action-button">
+                <img src="assets/icon_upgrades.png" alt="Улучшения">
+                Улучшения
             </button>
-            <button class="action-button" id="team-btn">
-                <i class="fas fa-users action-icon"></i>
-                <span>Команда</span>
+            <button id="log-button" class="btn action-button">
+                <img src="assets/icon_log.png" alt="Журнал">
+                Журнал
             </button>
-            <button class="action-button" id="monetization-btn">
-                <i class="fas fa-dollar-sign action-icon"></i>
-                <span>Монетизация</span>
-            </button>
+        </div>
+
+        <div id="post-production-status" class="post-production-status" style="display: none;">
+            <p>Производство: <span id="post-type-in-production"></span></p>
+            <div class="post-production-progress-bar">
+                <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
+            </div>
+            <p>Осталось: <span id="post-production-time-remaining"></span> сек</p>
         </div>
     </div>
 
-    <div id="create-content-screen" class="screen">
-        <h1 class="screen-title">Создание Контента</h1>
-        <div class="content-creation-panel">
-            <h3>Выберите тип контента:</h3>
-            <div class="content-type-selection">
-                <button class="btn content-type-btn active" data-type="post"><i class="fas fa-pencil-alt"></i> Пост</button>
-                <button class="btn content-type-btn" data-type="video"><i class="fas fa-video"></i> Видео</button>
-                <button class="btn content-type-btn" data-type="story"><i class="fas fa-camera"></i> Сторис</button>
-                <button class="btn content-type-btn" data-type="podcast"><i class="fas fa-microphone-alt"></i> Подкаст</button>
-            </div>
-
-            <h3>Выберите тему:</h3>
-            <div id="content-ideas-list" class="content-ideas-list">
+    <div id="create-post-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal-button" data-modal-id="create-post-modal">×</span>
+            <h2>Выберите Идею для Поста</h2>
+            <div id="content-ideas-list" class="modal-actions">
                 <p class="placeholder-text">Загрузка идей...</p>
             </div>
-            <button id="generate-idea-btn" class="btn full-width-btn mt-4">Сгенерировать Идею через ИИ</button>
+             <p class="hint-text">Идеи зависят от темы вашего канала и текущего уровня.</p>
         </div>
     </div>
 
-    <div id="analytics-screen" class="screen">
-        <h1 class="screen-title">Аналитика Канала</h1>
-        <p class="placeholder-text">Здесь будут графики и аналитика по росту, охвату и доходу.</p>
-        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
-    </div>
-    <div id="team-screen" class="screen">
-        <h1 class="screen-title">Управление Командой</h1>
-        <p class="placeholder-text">Здесь будет список вашей команды, их уровень и возможности найма.</p>
-        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
-    </div>
-    <div id="monetization-screen" class="screen">
-        <h1 class="screen-title">Монетизация</h1>
-        <p class="placeholder-text">Здесь будут опции спонсорских интеграций, мерча и платных подписок.</p>
-        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
+    <div id="upgrades-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal-button" data-modal-id="upgrades-modal">×</span>
+            <h2>Улучшения</h2>
+            <div class="modal-actions">
+                <button id="upgrade-content-quality" class="btn">Улучшить качество контента (Стоимость: $50)</button>
+                </div>
+        </div>
     </div>
 
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div id="modal-content" class="modal-content">
-            <span class="close-modal-button">&times;</span>
-            <h2 id="modal-title">Модальное окно</h2>
-            <div id="modal-body">
-                </div>
-            <div id="modal-actions" class="modal-actions">
-                </div>
+    <div id="log-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal-button" data-modal-id="log-modal">×</span>
+            <h2>Журнал Событий</h2>
+            <ul id="event-log">
+                </ul>
         </div>
     </div>
 

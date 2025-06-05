@@ -1,818 +1,756 @@
-/* Общие стили для всего приложения */
-html, body {
-    height: 100vh; /* Занимает всю высоту видимой области */
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background-color: #1a1a2e; /* Темно-синий фон */
-    color: #e0e0e0; /* Светлый текст */
-    overflow: hidden; /* Предотвращаем прокрутку всей страницы и масштабирование */
-    -webkit-user-select: none; /* Отключаем выделение текста */
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none; /* Отключаем вызов меню при долгом нажатии на iOS */
-    -webkit-tap-highlight-color: transparent; /* Убираем подсветку при тапе */
+:root {
+    --color-primary: #1a1a2e; /* Dark Blue */
+    --color-secondary: #0f3460; /* Medium Blue */
+    --color-accent-primary: #e94560; /* Red-Pink Accent */
+    --color-accent-secondary: #ffad00; /* Yellow Accent */
+    --color-text-primary: #e0e0e0; /* Light Gray */
+    --color-text-secondary: #a0a0a0; /* Medium Gray */
+    --color-background: #000; /* Black */
+    --color-card-bg: #16213e; /* Slightly lighter than secondary */
+    --color-success: #4CAF50; /* Green */
+    --color-error: #F44336; /* Red */
+    --color-warning: #FFC107; /* Amber */
+    --color-info: #2196F3; /* Blue */
+
+    /* RGB для полупрозрачных фонов */
+    --color-card-bg-rgb: 22, 33, 62;
+    --color-accent-primary-rgb: 233, 69, 96;
+
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    --padding-md: 20px;
+    --gap-md: 15px;
 }
 
-/* Стили для основных экранов */
+/* Base Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for better scrolling on mobile */
+    min-height: 100vh;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: pan-y; /* Optimize for vertical scrolling */
+}
+
+/* Global Container for screens */
 .screen {
     width: 100%;
-    height: 100vh; /* Занимает всю высоту видимой области */
+    max-width: 500px; /* Max width for mobile-like experience */
+    min-height: 100vh; /* Ensure screen takes full height */
+    background-color: var(--color-primary);
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Распределяет элементы по вертикали */
+    justify-content: center;
     align-items: center;
-    padding: 0;
-    padding-top: env(safe-area-inset-top, 0); /* Учет "челки" и панели статуса */
-    padding-bottom: env(safe-area-inset-bottom, 0); /* Учет домашней кнопки/жестов */
-    box-sizing: border-box; /* padding не увеличивает размер */
-    position: absolute; /* Позиционируем экраны абсолютно */
+    padding: var(--padding-md);
+    box-sizing: border-box;
+    position: absolute; /* Allows stacking and transitions */
     top: 0;
     left: 0;
-    opacity: 0; /* Изначально скрыты */
-    transform: translateX(100%); /* Сдвинуты вправо для анимации */
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Плавная анимация перехода */
-    z-index: 1;
-    overflow-y: auto; /* ПОЗВОЛЯЕМ ВЕРТИКАЛЬНУЮ ПРОКРУТКУ ПО УМОЛЧАНИЮ */
-    overflow-x: hidden; /* Запрещаем горизонтальную прокрутку */
-    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    z-index: 1; /* Default z-index */
+    overflow-y: auto; /* Enable scrolling for content that exceeds screen height */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 .screen.visible {
-    opacity: 1; /* Делаем видимым */
-    transform: translateX(0); /* Сдвигаем на место */
-    z-index: 2; /* Выводим на передний план */
+    opacity: 1;
+    transform: translateX(0);
+    z-index: 2; /* Bring active screen to front */
 }
 
-/* Стили для прелоадера */
-#preloader-screen {
-    background-color: #1a1a2e;
+/* Preloader */
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-background);
+    display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    z-index: 100; /* Всегда на переднем плане */
+    z-index: 100; /* Always on top */
+    transition: opacity 0.5s ease-out;
+    opacity: 1;
+}
+
+.preloader.hidden {
+    opacity: 0;
+    pointer-events: none; /* Disable interaction after fade out */
 }
 
 .preloader-content {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: var(--gap-md);
 }
 
 .preloader-logo {
     width: 150px;
-    height: 150px;
-    animation: pulse 1.5s infinite alternate; /* Анимация пульсации */
+    height: auto;
+    animation: pulse 1.5s infinite alternate; /* Simple animation */
 }
 
 .preloader-progress-bar {
-    width: 80%;
-    max-width: 300px;
-    height: 10px;
-    background-color: #333;
-    border-radius: 5px;
-    margin-top: 20px;
+    width: 200px;
+    height: 8px;
+    background-color: var(--color-secondary);
+    border-radius: var(--border-radius-sm);
     overflow: hidden;
-    position: relative;
-    box-shadow: 0 0 8px rgba(0, 255, 255, 0.7); /* Неоновое свечение */
 }
 
 .preloader-progress-bar-fill {
     height: 100%;
     width: 0%;
-    background-color: #00ffff; /* Неоновый голубой */
-    border-radius: 5px;
-    transition: width 0.1s linear;
+    background-color: var(--color-accent-primary);
+    border-radius: var(--border-radius-sm);
+    transition: width 0.5s ease-out;
 }
 
 .preloader-version {
-    margin-top: 10px;
-    color: #777;
+    font-family: 'Press Start 2P', cursive;
+    color: var(--color-text-secondary);
     font-size: 0.8em;
 }
 
-/* Стили для экрана выбора темы */
-#theme-selection-screen {
-    background-color: #1a1a2e;
-    justify-content: flex-start; /* Выравнивание элементов по верху */
-    padding-top: 20px;
-}
-
-#theme-selection-screen .screen-content {
+/* General Screen Content */
+.screen-content {
+    text-align: center;
     width: 100%;
-    max-width: 600px; /* Ограничиваем ширину контента */
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    max-width: 400px; /* Limit content width */
 }
 
 .screen-title {
     font-family: 'Press Start 2P', cursive;
     font-size: 1.5em;
-    color: #00ffff; /* Неоновый голубой */
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-    margin-bottom: 30px;
-    text-align: center;
+    color: var(--color-accent-secondary);
+    margin-bottom: var(--padding-md);
 }
 
+/* Theme Selection Screen */
 .theme-selection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Адаптивная сетка */
-    gap: 15px;
-    width: 100%;
-    margin-bottom: 30px;
-    padding-bottom: 20px; /* Отступ снизу для прокрутки */
+    grid-template-columns: 1fr; /* Single column for mobile */
+    gap: var(--gap-md);
+    margin-bottom: var(--padding-md);
+}
+
+@media (min-width: 400px) {
+    .theme-selection-grid {
+        grid-template-columns: 1fr 1fr; /* Two columns on wider screens */
+    }
 }
 
 .theme-card {
-    background-color: #2a2a4a; /* Более темный фон для карточек */
-    border: 2px solid #3a3a6a;
-    border-radius: 15px;
-    padding: 15px;
-    text-align: center;
+    background-color: var(--color-card-bg);
+    border: 2px solid var(--color-secondary);
+    border-radius: var(--border-radius-md);
+    padding: var(--padding-md);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    text-align: center;
 }
 
 .theme-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .theme-card.selected {
-    border-color: #00ffff; /* Неоновая обводка при выборе */
-    box-shadow: 0 0 20px #00ffff, 0 0 30px rgba(0, 255, 255, 0.7);
-    background-color: #3a3a6a; /* Немного светлее при выборе */
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 20px rgba(var(--color-accent-primary-rgb), 0.5);
+    transform: scale(1.02);
 }
 
 .theme-card img {
     width: 80px;
     height: 80px;
     margin-bottom: 10px;
-    border-radius: 10px;
+    border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--color-accent-secondary);
 }
 
 .theme-card h3 {
-    color: #e0e0e0;
+    margin: 5px 0;
+    color: var(--color-text-primary);
     font-size: 1.1em;
-    margin-bottom: 5px;
 }
 
 .theme-card p {
-    color: #b0b0b0;
     font-size: 0.8em;
-    line-height: 1.3;
+    color: var(--color-text-secondary);
+    flex-grow: 1; /* Pushes content down if description is short */
 }
 
-/* Кнопка "Выбрать тему" */
-#select-theme-button {
-    width: 80%;
-    max-width: 300px;
-    padding: 15px 20px;
-    font-size: 1.1em;
-    font-weight: bold;
-    background: linear-gradient(45deg, #00ffff, #00bfff); /* Градиент */
-    color: #1a1a2e;
+/* Welcome Screen */
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-accent-primary);
+    margin-bottom: var(--padding-md);
+}
+
+.welcome-text {
+    font-size: 1em;
+    line-height: 1.5;
+    margin-bottom: var(--padding-md);
+    color: var(--color-text-secondary);
+}
+
+/* Buttons */
+.btn {
+    background-color: var(--color-accent-primary);
+    color: white;
+    padding: 12px 25px;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    box-shadow: 0 4px 8px rgba(var(--color-accent-primary-rgb), 0.3);
+    background-image: linear-gradient(45deg, var(--color-accent-primary) 0%, #ff6f8a 100%);
 }
 
-#select-theme-button:disabled {
-    background: linear-gradient(45deg, #333, #555);
-    color: #888;
+.btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(var(--color-accent-primary-rgb), 0.4);
+    filter: brightness(1.1);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(var(--color-accent-primary-rgb), 0.2);
+    filter: brightness(0.9);
+}
+
+.btn:disabled {
+    background-color: var(--color-secondary);
     cursor: not-allowed;
+    opacity: 0.6;
     box-shadow: none;
+    background-image: none;
 }
 
-#select-theme-button:not(:disabled):active {
-    transform: translateY(2px);
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-}
-
-
-/* --- Главное меню (Dashboard) --- */
-#main-dashboard-screen {
-    background-color: #1a1a2e;
-    justify-content: space-between;
-    overflow: hidden !important; /* ВАЖНО: ОТКЛЮЧАЕМ ПРОКРУТКУ ТОЛЬКО ДЛЯ ДАШБОРДА */
-}
-
-.top-stats-panel {
+/* Cutscene Screen */
+.cutscene-screen {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-primary);
     display: flex;
-    justify-content: space-around;
+    flex-direction: column; /* Stack content vertically */
+    justify-content: center;
+    align-items: center;
+}
+
+.cutscene-slide {
+    position: absolute;
     width: 100%;
-    padding: 10px 0;
-    background-color: #2a2a4a; /* Более темный фон для панели */
-    box-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
-    z-index: 10; /* Над остальным контентом */
+    height: 100%; /* Take full height of the cutscene-screen */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    text-align: center;
+    padding: var(--padding-md);
+    box-sizing: border-box;
+}
+
+.cutscene-slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    position: relative; /* Keep active slide in document flow */
+}
+
+.cutscene-image {
+    max-width: 80%;
+    max-height: 50vh; /* Limit image height to prevent overflow */
+    object-fit: contain;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.cutscene-text {
+    font-size: 1.1em;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    max-width: 80%;
+}
+
+.cutscene-continue-button {
+    position: absolute;
+    bottom: var(--padding-md);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    display: none; /* Hidden by default, shown by JS */
+}
+
+.cutscene-continue-button.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Studio Container */
+.studio-container {
+    background-color: var(--color-secondary);
+    display: grid;
+    grid-template-rows: 1fr auto auto; /* Background, stats, actions */
+    height: 100vh;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    overflow: hidden;
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    box-sizing: border-box;
+    padding-bottom: env(safe-area-inset-bottom, 0); /* For notch phones */
+    padding-top: env(safe-area-inset-top, 0);
+}
+
+.studio-background {
+    background-image: url('assets/studio_bg.png'); /* Replace with your studio image */
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.character-sprite {
+    position: absolute;
+    bottom: 120px; /* Adjust based on character sprite size and background */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px; /* Adjust as needed */
+    height: 400px; /* Adjust as needed */
+    object-fit: contain;
+    z-index: 2;
+    transition: all 0.3s ease-out;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+
+/* Character States */
+.char-state-idle {
+    content: url('assets/character_idle.png');
+}
+.char-state-happy {
+    content: url('assets/character_happy.png'); /* Создайте этот спрайт */
+    animation: bounce 0.5s ease-out;
+}
+.char-state-typing {
+    content: url('assets/character_typing.png'); /* Создайте этот спрайт */
+    animation: typing-animation 0.3s infinite alternate;
+}
+.char-state-sleeping {
+    content: url('assets/character_sleeping.png'); /* Создайте этот спрайт */
+    animation: fade-in-out 2s infinite alternate;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0) translateX(-50%); }
+    50% { transform: translateY(-10px) translateX(-50%); }
+}
+
+@keyframes typing-animation {
+    0% { transform: translateY(0) translateX(-50%); }
+    50% { transform: translateY(-2px) translateX(-50%); }
+    100% { transform: translateY(0) translateX(-50%); }
+}
+
+@keyframes fade-in-out {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes idle-blink {
+    0%, 20%, 40%, 60%, 80%, 100% { opacity: 1; }
+    21%, 41%, 61%, 81% { opacity: 0.9; } /* Minor blink effect */
+}
+.char-anim-idle-blink {
+    animation: idle-blink 5s infinite;
+}
+
+.monitor-screen {
+    position: absolute;
+    top: 50px; /* Adjust position on background */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%; /* Adjust size to fit monitor on bg */
+    height: 35%; /* Adjust size */
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 3px solid var(--color-text-primary);
+    border-radius: var(--border-radius-md);
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    font-family: 'Press Start 2P', cursive;
+    text-shadow: 0 0 5px var(--color-accent-secondary);
+}
+
+.monitor-screen h2 {
+    font-size: 1.1em;
+    color: var(--color-accent-secondary);
+    margin-bottom: 5px;
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis */
+}
+
+.monitor-stats p {
+    font-size: 0.8em;
+    margin: 3px 0;
+    color: var(--color-text-primary);
+}
+
+.monitor-stats span {
+    color: var(--color-accent-primary);
+}
+
+.trend-display-monitor {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: var(--color-accent-primary);
+    color: white;
+    padding: 5px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.7em;
+    font-weight: bold;
+    text-shadow: none;
+    text-transform: uppercase;
+}
+
+.main-stats {
+    position: absolute;
+    top: env(safe-area-inset-top, 10px); /* Adjust for notch */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--gap-md);
+    background-color: rgba(var(--color-card-bg-rgb), 0.8);
+    padding: 8px 15px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 5;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #e0e0e0;
+    gap: 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--color-text-primary);
 }
 
-.stat-icon {
-    margin-right: 5px;
-    color: #00ffff; /* Неоновый цвет */
-    text-shadow: 0 0 5px #00ffff;
+.stat-item .stat-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
 }
 
-.stat-value {
-    color: #fff;
-    text-shadow: 0 0 3px #fff;
+.action-buttons {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0) + 20px); /* Adjust for notch and padding */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    z-index: 5;
 }
 
-/* НОВОЕ: Обертка для основного содержимого дашборда */
-.middle-content-wrapper {
-    flex-grow: 1; /* Занимает все доступное пространство по центру */
-    width: 100%;
-    position: relative; /* Для позиционирования персонажа и статуса поста */
+.action-button {
+    flex: 1; /* Distribute space evenly */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Центрируем контент по вертикали */
-    padding: 10px; /* Небольшой отступ */
-    box-sizing: border-box;
-    /* overflow: hidden;  Уже установлено на #main-dashboard-screen */
+    padding: 10px 5px;
+    font-size: 0.8em;
+    border-radius: var(--border-radius-md);
+    min-width: 80px; /* Ensure buttons don't get too small */
+    text-transform: capitalize; /* Better for button labels */
 }
 
-.channel-info-block {
-    background-color: #2a2a4a;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 10px;
-    width: calc(100% - 40px); /* Учитываем padding */
-    max-width: 400px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    text-align: center;
-    position: relative; /* Для Live-трендов */
-    z-index: 5; /* Над персонажем, но под панелями */
-}
-
-.channel-header {
-    margin-bottom: 15px;
-}
-
-.channel-info-block h2 {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 1.3em;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff;
+.action-button img {
+    width: 40px;
+    height: 40px;
     margin-bottom: 5px;
 }
 
-.live-trends {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: #ff00ff; /* Неоновый розовый */
-    color: #fff;
-    font-size: 0.7em;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
-    animation: pulse-pink 1.5s infinite alternate; /* Анимация пульсации */
-}
-
-.channel-stats p {
-    font-size: 1em;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.channel-stats p:last-child {
-    margin-bottom: 0;
-}
-
-.trend-arrow {
-    margin-left: 8px;
-    margin-right: 3px;
-    font-size: 0.9em;
-}
-
-.trend-arrow.up {
-    color: #00ff00; /* Зеленый для роста */
-    text-shadow: 0 0 5px #00ff00;
-}
-
-.trend-arrow.down {
-    color: #ff0000; /* Красный для падения */
-    text-shadow: 0 0 5px #ff0000;
-}
-
-.trend-change {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: #fff;
-}
-
-.currency-icon {
-    margin-left: 5px;
-    color: #00ff00; /* Зеленый для денег */
-    text-shadow: 0 0 5px #00ff00;
-}
-
-.warning-message {
-    background-color: #ffcc00;
-    color: #333;
-    padding: 8px 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
-    animation: flash-yellow 1s infinite alternate;
-}
-
-.warning-message .fa-exclamation-triangle {
-    margin-right: 8px;
-    color: #b38f00;
-}
-
-/* Спрайт персонажа */
-.character-sprite {
-    position: absolute;
-    bottom: 0; /* Прижимаем к низу middle-content-wrapper */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px; /* Размер персонажа */
-    height: auto;
-    z-index: 1; /* Под блоком информации и статусом поста */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Плавные переходы для состояний */
-}
-
-/* Состояния персонажа (для JS) */
-.char-state-idle {
-    /* Дополнительные стили для состояния покоя, если нужны */
-}
-
-.char-state-typing {
-    /* Стили для состояния печати */
-    transform: translateX(-50%) translateY(-10px); /* Немного приподнимается */
-}
-
-.char-state-happy {
-    /* Стили для счастливого состояния */
-    transform: translateX(-50%) translateY(-20px) scale(1.05); /* Приподнимается и немного увеличивается */
-    filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.7)); /* Зеленое свечение */
-}
-
-.char-state-sleeping {
-    /* Стили для спящего состояния */
-    opacity: 0.8;
-    filter: grayscale(50%);
-}
-
-/* Анимации персонажа */
-@keyframes char-blink {
-    0%, 20%, 24%, 100% {
-        transform: scaleY(1);
-    }
-    22% {
-        transform: scaleY(0.1);
-    }
-}
-
-.char-anim-idle-blink {
-    animation: char-blink 3s infinite; /* Применяем анимацию моргания к спрайту */
-    transform-origin: bottom; /* Центр трансформации для реалистичного моргания */
-}
-
-
-/* Статус производства поста */
+/* Post Production Status */
 .post-production-status {
     position: absolute;
-    top: 50%; /* Центрируем по вертикали относительно middle-content-wrapper */
+    bottom: calc(env(safe-area-inset-bottom, 0) + 120px); /* Above action buttons */
     left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(42, 42, 74, 0.9); /* Прозрачный темный фон */
-    border-radius: 10px;
-    padding: 15px;
+    transform: translateX(-50%);
     width: 90%;
-    max-width: 300px;
+    max-width: 350px;
+    background-color: rgba(var(--color-card-bg-rgb), 0.9);
+    border-radius: var(--border-radius-md);
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     text-align: center;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-    z-index: 20; /* Поверх всего */
+    font-size: 0.9em;
+    z-index: 6;
 }
 
 .post-production-status p {
-    margin-bottom: 10px;
-    font-size: 0.95em;
-    color: #e0e0e0;
-}
-
-.post-production-status #post-in-production-type {
-    font-weight: bold;
-    color: #00ffff;
+    margin: 0 0 10px 0;
+    color: var(--color-text-primary);
 }
 
 .post-production-progress-bar {
-    width: 90%;
-    height: 12px;
-    background-color: #333;
-    border-radius: 6px;
-    margin: 0 auto 10px auto;
+    width: 100%;
+    height: 10px;
+    background-color: var(--color-secondary);
+    border-radius: var(--border-radius-sm);
     overflow: hidden;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
 }
 
 .post-production-progress-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #00ffff, #ff00ff); /* Градиент прогресса */
-    border-radius: 6px;
-    transition: width 0.1s linear;
+    background-color: var(--color-accent-secondary);
+    border-radius: var(--border-radius-sm);
+    transition: width 0.3s linear;
 }
 
-
-/* Нижняя панель с кнопками действий */
-.action-buttons {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    padding: 10px 0;
-    background-color: #2a2a4a;
-    box-shadow: 0 -2px 10px rgba(0, 255, 255, 0.3);
-    z-index: 10;
-}
-
-.action-button {
-    background: none;
-    border: none;
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.8em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 5px;
-    flex: 1; /* Равномерное распределение кнопок */
-}
-
-.action-button:hover {
-    color: #00ffff; /* Неоновый эффект при наведении */
-    text-shadow: 0 0 5px #00ffff;
-}
-
-.action-button.active {
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
-}
-
-.action-icon {
-    font-size: 1.8em;
-    margin-bottom: 5px;
-}
-
-/* Стили для экрана создания контента */
-#create-content-screen {
-    background-color: #1a1a2e;
-    justify-content: flex-start;
-    padding-top: 20px;
-    padding-bottom: 20px; /* Дополнительный отступ для нижних кнопок */
-}
-
-#create-content-screen .screen-title {
-    margin-bottom: 20px;
-}
-
-.content-creation-panel {
-    width: 100%;
-    max-width: 600px;
-    padding: 0 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1; /* Панель занимает все доступное место */
-    overflow-y: auto; /* Позволяет прокручивать саму панель, если контента много */
-}
-
-.content-creation-panel h3 {
-    color: #00ffff;
-    text-shadow: 0 0 5px #00ffff;
-    margin-bottom: 15px;
-    text-align: center;
-    font-size: 1.2em;
-}
-
-.content-type-selection {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 25px;
-    flex-wrap: wrap; /* Перенос кнопок на новую строку, если не помещаются */
-}
-
-.content-type-btn {
-    background-color: #2a2a4a;
-    border: 2px solid #3a3a6a;
-    color: #e0e0e0;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    flex-shrink: 0; /* Не сжимать кнопки */
-}
-
-.content-type-btn:hover {
-    border-color: #00ffff;
-    color: #00ffff;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
-}
-
-.content-type-btn.active {
-    background-color: #00ffff;
-    color: #1a1a2e;
-    border-color: #00ffff;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-    font-weight: bold;
-}
-
-.content-ideas-list {
-    flex-grow: 1; /* Список идей занимает оставшееся место */
-    overflow-y: auto; /* ВНУТРЕННЯЯ ПРОКРУТКА списка идей */
-    padding-right: 5px; /* Для скроллбара */
-    margin-bottom: 20px; /* Отступ от кнопки */
-}
-
-.content-idea-button {
-    width: 100%;
-    background-color: #2a2a4a;
-    border: 1px solid #3a3a6a;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 10px;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
-}
-
-.content-idea-button:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-    background-color: #3a3a6a;
-}
-
-.content-idea-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #1f1f3a;
-}
-
-.idea-icon {
-    font-size: 2.2em;
-    color: #ff00ff; /* Неоновый розовый */
-    text-shadow: 0 0 10px #ff00ff;
-    flex-shrink: 0;
-}
-
-.idea-details {
-    flex-grow: 1;
-}
-
-.idea-details h3 {
-    color: #e0e0e0;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-    text-align: left;
-    text-shadow: none; /* Убираем тень от общего h3 */
-}
-
-.idea-details p {
-    color: #b0b0b0;
-    font-size: 0.85em;
-    margin-bottom: 10px;
-}
-
-.idea-cost, .idea-duration {
-    font-size: 0.8em;
-    font-weight: 600;
-    color: #00ff00; /* Зеленый для стоимости/времени */
-    margin-right: 10px;
-    display: inline-block;
-}
-
-.full-width-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1em;
-    font-weight: bold;
-    background: linear-gradient(45deg, #ff00ff, #ff0077); /* Неоновый розовый градиент */
-    color: #1a1a2e;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
-    margin-top: auto; /* Прижимает к низу контейнера */
-}
-
-.full-width-btn:disabled {
-    background: linear-gradient(45deg, #333, #555);
-    color: #888;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-.full-width-btn:not(:disabled):active {
-    transform: translateY(2px);
-    box-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
-}
-
-
-/* Общие стили для кнопок */
-.btn {
-    /* Стили, которые применяются ко всем кнопкам, которые должны выглядеть как кнопки */
-    font-family: 'Poppins', sans-serif;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-
-/* Модальное окно */
-#modal-overlay {
-    position: absolute;
+/* Modals */
+.modal-overlay {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7); /* Затемненный фон */
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Поверх всего */
+    z-index: 10;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    padding: 20px; /* Add padding for small screens */
+    box-sizing: border-box;
 }
 
-#modal-overlay.visible {
+.modal-overlay.visible {
     opacity: 1;
     visibility: visible;
 }
 
 .modal-content {
-    background-color: #2a2a4a;
-    border-radius: 15px;
-    padding: 25px;
-    width: 90%;
+    background-color: var(--color-card-bg);
+    padding: var(--padding-md);
+    border-radius: var(--border-radius-lg);
     max-width: 400px;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
-    text-align: center;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
     position: relative;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     display: flex;
     flex-direction: column;
-    max-height: 80vh; /* Ограничиваем высоту модалки */
-    overflow-y: auto; /* Включаем прокрутку внутри модалки */
-    padding-right: 5px; /* Для скроллбара */
+    gap: var(--gap-md);
+    max-height: 90vh; /* Limit modal height */
+    overflow-y: auto; /* Enable scrolling within modal */
+    -webkit-overflow-scrolling: touch;
 }
 
-#modal-overlay.visible .modal-content {
-    transform: scale(1);
+.modal-overlay.visible .modal-content {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .close-modal-button {
     position: absolute;
     top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.8em;
-    color: #e0e0e0;
+    right: 15px;
+    font-size: 2em;
+    color: var(--color-text-secondary);
     cursor: pointer;
+    line-height: 1;
     transition: color 0.2s ease;
 }
 
 .close-modal-button:hover {
-    color: #ff00ff;
+    color: var(--color-accent-primary);
 }
 
-#modal-title {
+.modal-content h2 {
     font-family: 'Press Start 2P', cursive;
-    font-size: 1.4em;
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
+    color: var(--color-accent-secondary);
+    margin-top: 0;
     margin-bottom: 15px;
+    font-size: 1.2em;
 }
 
-#modal-body {
-    color: #e0e0e0;
-    font-size: 1em;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    flex-grow: 1; /* Позволяет телу модалки растягиваться */
-    overflow-y: auto; /* Если контента много, прокрутка будет тут */
-    padding-right: 5px; /* Для скроллбара */
-}
-
-#modal-actions {
+.modal-actions {
     display: flex;
-    justify-content: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 10px;
 }
 
-#modal-actions .btn {
-    padding: 12px 25px;
-    font-size: 1em;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex: 1; /* Растягиваем кнопки */
-    max-width: 150px; /* Ограничиваем ширину */
+.modal-actions .btn {
+    width: 100%;
+    box-sizing: border-box; /* Include padding/border in width */
 }
 
-#modal-actions .btn:first-child {
-    background: linear-gradient(45deg, #00ffff, #00bfff);
-    color: #1a1a2e;
-    border: none;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-#modal-actions .btn:first-child:hover {
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-}
-
-/* Анимации */
-@keyframes pulse {
-    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5)); }
-    100% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.9)); }
+/* Event Log */
+#event-log {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    max-height: 300px; /* Limit height of log list */
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 10px;
 }
 
-@keyframes pulse-pink {
-    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 0, 255, 0.5); }
-    100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.9)); }
+#event-log li {
+    padding: 8px 5px;
+    border-bottom: 1px dashed rgba(var(--color-text-secondary-rgb), 0.2);
+    font-size: 0.85em;
+    color: var(--color-text-primary);
 }
 
-@keyframes flash-yellow {
-    0% { background-color: #ffcc00; box-shadow: 0 0 10px rgba(255, 204, 0, 0.7); }
-    100% { background-color: #e6b800; box-shadow: 0 0 15px rgba(255, 204, 0, 0.9); }
+#event-log li:last-child {
+    border-bottom: none;
 }
 
-/* Скрытый класс */
-.hidden {
-    display: none !important;
+.log-info { color: var(--color-info); }
+.log-success { color: var(--color-success); }
+.log-warning { color: var(--color-warning); }
+.log-error { color: var(--color-error); }
+
+/* Стили для новых кнопок идей контента в модалке */
+.content-idea-button {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    padding: 15px 20px;
+    margin-bottom: 10px; /* Отступ между кнопками */
+    background-color: rgba(var(--color-accent-primary-rgb), 0.1);
+    border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3);
+    border-radius: var(--border-radius-md);
+    transition: all 0.2s ease-in-out;
+    box-shadow: none; /* Убираем стандартную тень кнопки */
+    color: var(--color-text-primary);
+    font-size: 1em; /* Переопределяем, так как обычная кнопка может быть больше */
+    text-transform: none; /* Убираем uppercase */
+    background-image: none; /* Убираем градиент по умолчанию */
 }
 
-.placeholder-text {
+.content-idea-button:hover:not(:disabled) {
+    background-color: rgba(var(--color-accent-primary-rgb), 0.2);
+    border-color: var(--color-accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(var(--color-accent-primary-rgb), 0.2);
+    filter: none; /* Убираем яркость из основного стиля кнопок */
+}
+
+.content-idea-button:active:not(:disabled) {
+    transform: translateY(1px);
+    filter: brightness(0.95);
+}
+.content-idea-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(var(--color-card-bg-rgb), 0.5);
+    border-color: rgba(var(--color-secondary-rgb), 0.3);
+}
+
+
+.content-idea-button .idea-icon {
+    font-size: 2.2em;
+    margin-right: 15px;
+    line-height: 1;
+    color: var(--color-accent-secondary); /* Или любой другой яркий цвет */
+}
+
+.content-idea-button .idea-details {
+    flex-grow: 1; /* Занимает доступное пространство */
+}
+
+.content-idea-button .idea-details h3 {
+    font-size: 1.2em;
+    margin: 0 0 5px 0;
+    color: var(--color-text-primary);
+}
+
+.content-idea-button .idea-details p {
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.content-idea-button .idea-cost,
+.content-idea-button .idea-duration {
+    display: inline-block;
+    font-size: 0.8em;
+    color: var(--color-text-secondary);
+    margin-top: 5px;
+    padding: 2px 5px;
+    background-color: rgba(var(--color-card-bg-rgb), 0.5);
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.content-idea-button .idea-cost {
+    color: var(--color-warning); /* Желтый для энергии */
+}
+.content-idea-button .idea-duration {
+    color: var(--color-info); /* Синий для длительности */
+}
+
+/* Стили для плейсхолдеров в модалке */
+.placeholder-text, .hint-text {
     text-align: center;
-    color: #888;
-    margin-top: 20px;
-    font-style: italic;
-}
-
-.mt-4 {
-    margin-top: 20px;
-}
-
-/* Стили для скроллбаров (Webkit browsers) */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #2a2a4a; /* Цвет фона трека */
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #00ffff, #ff00ff); /* Градиент ползунка */
-    border-radius: 10px;
-    border: 2px solid #2a2a4a; /* Обводка ползунка */
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #00e6e6, #e600e6); /* Изменение градиента при наведении */
+    color: var(--color-text-secondary);
+    font-size: 0.9em;
+    margin: 20px 0;
 }

@@ -2,116 +2,169 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechTrends Analytics</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #0f0f12;
-            color: #e0e0e0;
-            padding: 20px;
-        }
-        
-        .analytics-table {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            border-collapse: collapse;
-            background-color: #1a1a23;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .analytics-table thead {
-            background-color: #6a7eff;
-            color: #0f0f12;
-        }
-        
-        .analytics-table th {
-            padding: 15px;
-            text-align: left;
-            font-size: 18px;
-        }
-        
-        .analytics-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #2a2a35;
-        }
-        
-        .analytics-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .analytics-table tr:hover {
-            background-color: #252530;
-        }
-        
-        .value-high {
-            color: #4caf50;
-        }
-        
-        .value-low {
-            color: #f44336;
-        }
-        
-        .footnote {
-            font-size: 12px;
-            color: #a0a0a0;
-            margin-top: 10px;
-            text-align: right;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Social Media Tycoon</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Для иконок Font Awesome (используется версия 6.0.0-beta3 для неоновых эффектов) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Для шрифтов - 'Poppins' (основной) и 'Press Start 2P' (для пиксельных/акцентных заголовков) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
-    <table class="analytics-table">
-        <thead>
-            <tr>
-                <th colspan="2">TechTrends 2025 Analytics</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Systems Online</td>
-                <td class="value-high">3 active</td>
-            </tr>
-            <tr>
-                <td>Data Basins</td>
-                <td>6-60 petaflops</td>
-            </tr>
-            <tr>
-                <td>Transgroups</td>
-                <td>12-19 channels</td>
-            </tr>
-            <tr>
-                <td>Core Nodes</td>
-                <td class="value-high">≥ 242 in nucleus</td>
-            </tr>
-            <tr>
-                <td>Hypocampus Index</td>
-                <td>789 units</td>
-            </tr>
-            <tr>
-                <td>Efficiency</td>
-                <td class="value-high">≥ 12%</td>
-            </tr>
-            <tr>
-                <td>Bacteriomotors</td>
-                <td class="value-low">8.9% capacity</td>
-            </tr>
-            <tr>
-                <td>Error Rate</td>
-                <td class="value-low">≥ 2.1%</td>
-            </tr>
-            <tr>
-                <td>Gestalt Protocols</td>
-                <td>User | Assurance | Nominal | Persona</td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <div class="footnote">
-        <i>Source: 75% census. Humanityfire zoo!</i>
+
+    <!-- Прелоадер -->
+    <div id="preloader-screen" class="screen visible">
+        <div class="preloader-content">
+            <img src="assets/logo.png" alt="Logo" class="preloader-logo">
+            <div class="preloader-progress-bar">
+                <div class="preloader-progress-bar-fill"></div>
+            </div>
+            <p class="preloader-version">v0.1.0</p>
+        </div>
     </div>
+
+    <!-- Экран выбора темы (пока простой) -->
+    <div id="theme-selection-screen" class="screen">
+        <div class="screen-content">
+            <h1 class="screen-title">Выберите Тему Канала</h1>
+            <div class="theme-selection-grid">
+                <div class="theme-card" data-theme="gaming">
+                    <img src="assets/theme_gaming.png" alt="Игровой Канал">
+                    <h3>Игровой Канал</h3>
+                    <p>Обзоры, прохождения, летсплеи.</p>
+                </div>
+                <div class="theme-card" data-theme="lifestyle">
+                    <img src="assets/theme_lifestyle.png" alt="Лайфстайл Блог">
+                    <h3>Лайфстайл Блог</h3>
+                    <p>Путешествия, мода, кулинария.</p>
+                </div>
+                <div class="theme-card" data-theme="tech">
+                    <img src="assets/theme_tech.png" alt="Техноблог">
+                    <h3>Техноблог</h3>
+                    <p>Обзоры гаджетов, новости технологий.</p>
+                </div>
+            </div>
+            <button id="select-theme-button" class="btn" disabled>Выбрать тему</button>
+        </div>
+    </div>
+
+    <!-- Главное меню (Dashboard) -->
+    <div id="main-dashboard-screen" class="screen">
+        <!-- Верхняя панель со статистикой -->
+        <div class="top-stats-panel">
+            <div class="stat-item">
+                <i class="fas fa-bolt stat-icon"></i> <!-- Иконка энергии -->
+                <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-smile stat-icon"></i> <!-- Иконка настроения -->
+                <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
+            </div>
+        </div>
+
+        <!-- Центральный блок информации о канале -->
+        <div class="channel-info-block">
+            <div class="channel-header">
+                <h2 id="channel-name">TECHTRENDS 2025</h2>
+                <div class="live-trends">LIVE-ТРЕНДЫ</div>
+            </div>
+            <div class="channel-stats">
+                <p>Подписчики: <span id="subscribers-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="subscribers-change" class="trend-change">+0</span></p>
+                <p>Просмотры: <span id="views-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="views-change" class="trend-change">+0</span></p>
+                <p>Доход: <span id="balance-value">0</span> <span class="currency-icon">₽</span></p>
+            </div>
+            <div id="warning-message" class="warning-message hidden">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="warning-text">Предупреждение: Конкуренты запустили VR-серию!</span>
+            </div>
+        </div>
+
+        <!-- Персонаж (позиционируется абсолютно внутри .screen) -->
+        <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
+
+        <!-- Статус производства поста -->
+        <div id="post-production-status" class="post-production-status hidden">
+            <p>Создание поста: <span id="post-in-production-type"></span></p>
+            <div class="post-production-progress-bar">
+                <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
+            </div>
+            <p>Осталось: <span id="post-production-time-left"></span> сек</p>
+        </div>
+
+        <!-- Нижняя панель с кнопками действий -->
+        <div class="action-buttons">
+            <button class="action-button" id="create-post-btn">
+                <i class="fas fa-edit action-icon"></i>
+                <span>Создать Контент</span>
+            </button>
+            <button class="action-button" id="analytics-btn">
+                <i class="fas fa-chart-line action-icon"></i>
+                <span>Аналитика</span>
+            </button>
+            <button class="action-button" id="team-btn">
+                <i class="fas fa-users action-icon"></i>
+                <span>Команда</span>
+            </button>
+            <button class="action-button" id="monetization-btn">
+                <i class="fas fa-dollar-sign action-icon"></i>
+                <span>Монетизация</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Экран создания контента (пример) -->
+    <div id="create-content-screen" class="screen">
+        <h1 class="screen-title">Создание Контента</h1>
+        <div class="content-creation-panel">
+            <h3>Выберите тип контента:</h3>
+            <div class="content-type-selection">
+                <button class="btn content-type-btn active" data-type="post"><i class="fas fa-pencil-alt"></i> Пост</button>
+                <button class="btn content-type-btn" data-type="video"><i class="fas fa-video"></i> Видео</button>
+                <button class="btn content-type-btn" data-type="story"><i class="fas fa-camera"></i> Сторис</button>
+                <button class="btn content-type-btn" data-type="podcast"><i class="fas fa-microphone-alt"></i> Подкаст</button>
+            </div>
+
+            <h3>Выберите тему:</h3>
+            <div id="content-ideas-list" class="content-ideas-list">
+                <!-- Идеи будут генерироваться JS -->
+                <p class="placeholder-text">Загрузка идей...</p>
+            </div>
+            <button id="generate-idea-btn" class="btn full-width-btn mt-4">Сгенерировать Идею через ИИ</button>
+        </div>
+    </div>
+
+    <!-- Экраны-заглушки для будущего расширения -->
+    <div id="analytics-screen" class="screen">
+        <h1 class="screen-title">Аналитика Канала</h1>
+        <p class="placeholder-text">Здесь будут графики и аналитика по росту, охвату и доходу.</p>
+        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
+    </div>
+    <div id="team-screen" class="screen">
+        <h1 class="screen-title">Управление Командой</h1>
+        <p class="placeholder-text">Здесь будет список вашей команды, их уровень и возможности найма.</p>
+        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
+    </div>
+    <div id="monetization-screen" class="screen">
+        <h1 class="screen-title">Монетизация</h1>
+        <p class="placeholder-text">Здесь будут опции спонсорских интеграций, мерча и платных подписок.</p>
+        <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
+    </div>
+
+    <!-- Общий оверлей для модальных окон -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div id="modal-content" class="modal-content">
+            <span class="close-modal-button">&times;</span>
+            <h2 id="modal-title">Модальное окно</h2>
+            <div id="modal-body">
+                <!-- Здесь будет динамический контент модальных окон -->
+            </div>
+            <div id="modal-actions" class="modal-actions">
+                <!-- Здесь будут кнопки модальных окон -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

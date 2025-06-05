@@ -1,75 +1,74 @@
+/* Переопределение основных переменных для нового стиля */
 :root {
-    --color-primary: #1a1a2e; /* Dark Blue */
-    --color-secondary: #0f3460; /* Medium Blue */
-    --color-accent-primary: #e94560; /* Red-Pink Accent */
-    --color-accent-secondary: #ffad00; /* Yellow Accent */
-    --color-text-primary: #e0e0e0; /* Light Gray */
-    --color-text-secondary: #a0a0a0; /* Medium Gray */
-    --color-background: #000; /* Black */
-    --color-card-bg: #16213e; /* Slightly lighter than secondary */
-    --color-success: #4CAF50; /* Green */
-    --color-error: #F44336; /* Red */
-    --color-warning: #FFC107; /* Amber */
-    --color-info: #2196F3; /* Blue */
+    --color-primary: #0a0a1a; /* Very Dark Blue / Black */
+    --color-secondary: #0f182a; /* Darker Blue-Gray for cards/elements */
+    --color-accent-blue: #00e0ff; /* Bright Neon Blue */
+    --color-accent-pink: #e000ff; /* Bright Neon Pink */
+    --color-text-primary: #e0e0e0; /* Light Gray for main text */
+    --color-text-secondary: #a0a0a0; /* Medium Gray for secondary text */
+    --color-background: #000000; /* Pure Black */
 
-    /* RGB для полупрозрачных фонов */
-    --color-card-bg-rgb: 22, 33, 62;
-    --color-accent-primary-rgb: 233, 69, 96;
+    /* Градиенты для кнопок и акцентов */
+    --gradient-button: linear-gradient(90deg, var(--color-accent-blue) 0%, var(--color-accent-pink) 100%);
+    --gradient-button-hover: linear-gradient(90deg, #00f0ff 0%, #f000ff 100%);
+    --gradient-border-light: linear-gradient(90deg, rgba(0,224,255,0.8) 0%, rgba(224,0,255,0.8) 100%);
 
     --border-radius-sm: 8px;
     --border-radius-md: 12px;
-    --border-radius-lg: 16px;
+    --border-radius-lg: 20px; /* Немного больше для современного вида */
+    --padding-sm: 10px;
     --padding-md: 20px;
+    --gap-sm: 10px;
     --gap-md: 15px;
 }
 
 /* Base Styles */
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Poppins', sans-serif; /* Более современный шрифт */
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top for better scrolling on mobile */
+    align-items: flex-start;
     min-height: 100vh;
-    background-color: var(--color-background);
+    background-color: var(--color-background); /* Чисто черный фон */
     color: var(--color-text-primary);
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    touch-action: pan-y; /* Optimize for vertical scrolling */
+    touch-action: pan-y;
 }
 
 /* Global Container for screens */
 .screen {
     width: 100%;
-    max-width: 500px; /* Max width for mobile-like experience */
-    min-height: 100vh; /* Ensure screen takes full height */
-    background-color: var(--color-primary);
+    max-width: 500px;
+    min-height: 100vh;
+    background-color: var(--color-background); /* Чтобы экраны тоже были черными */
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Начинаем сверху */
     align-items: center;
     padding: var(--padding-md);
     box-sizing: border-box;
-    position: absolute; /* Allows stacking and transitions */
+    position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
     transform: translateX(100%);
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-    z-index: 1; /* Default z-index */
-    overflow-y: auto; /* Enable scrolling for content that exceeds screen height */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    z-index: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .screen.visible {
     opacity: 1;
     transform: translateX(0);
-    z-index: 2; /* Bring active screen to front */
+    z-index: 2;
 }
 
-/* Preloader */
+/* Preloader (оставляем почти как есть, но с новыми цветами) */
 .preloader {
     position: fixed;
     top: 0;
@@ -80,29 +79,25 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100; /* Always on top */
+    z-index: 100;
     transition: opacity 0.5s ease-out;
     opacity: 1;
 }
-
 .preloader.hidden {
     opacity: 0;
-    pointer-events: none; /* Disable interaction after fade out */
+    pointer-events: none;
 }
-
 .preloader-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--gap-md);
 }
-
 .preloader-logo {
     width: 150px;
     height: auto;
-    animation: pulse 1.5s infinite alternate; /* Simple animation */
+    animation: pulse 1.5s infinite alternate;
 }
-
 .preloader-progress-bar {
     width: 200px;
     height: 8px;
@@ -110,17 +105,15 @@ body {
     border-radius: var(--border-radius-sm);
     overflow: hidden;
 }
-
 .preloader-progress-bar-fill {
     height: 100%;
     width: 0%;
-    background-color: var(--color-accent-primary);
+    background-image: var(--gradient-button);
     border-radius: var(--border-radius-sm);
     transition: width 0.5s ease-out;
 }
-
 .preloader-version {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', cursive; /* Можно оставить пиксельный шрифт */
     color: var(--color-text-secondary);
     font-size: 0.8em;
 }
@@ -129,246 +122,161 @@ body {
 .screen-content {
     text-align: center;
     width: 100%;
-    max-width: 400px; /* Limit content width */
+    max-width: 400px;
 }
 
 .screen-title {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', cursive; /* Можно оставить пиксельный шрифт */
     font-size: 1.5em;
-    color: var(--color-accent-secondary);
+    color: var(--color-accent-blue); /* Используем новый акцентный цвет */
     margin-bottom: var(--padding-md);
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.5); /* Неоновый эффект */
 }
 
-/* Theme Selection Screen */
-.theme-selection-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Single column for mobile */
+/* Studio Container - Основной экран игры */
+.studio-screen {
+    background-color: var(--color-background); /* Черный фон */
+    justify-content: space-between; /* Распределяем элементы по вертикали */
+    padding: var(--padding-md);
+    padding-top: calc(var(--padding-md) + env(safe-area-inset-top, 0));
+    padding-bottom: calc(var(--padding-md) + env(safe-area-inset-bottom, 0));
+}
+
+/* Верхняя панель статистики (Энергия, Настроение) */
+.top-stats-panel {
+    width: 100%;
+    display: flex;
+    justify-content: space-around; /* Равномерное распределение */
+    align-items: center;
+    padding: var(--padding-sm);
+    background-color: rgba(var(--color-primary-rgb), 0.5); /* Полупрозрачный фон */
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.2), 0 0 10px rgba(224, 0, 255, 0.2); /* Неоновое свечение */
+    margin-bottom: var(--padding-md);
+    backdrop-filter: blur(5px); /* Эффект размытия */
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.3); /* Легкий неоновый бордер */
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+    font-weight: 600; /* Poppins Semi-Bold */
+    color: var(--color-text-primary);
+}
+
+.stat-item .stat-icon {
+    font-size: 1.3em;
+    color: var(--color-accent-blue); /* Иконки неонового синего */
+    text-shadow: 0 0 5px var(--color-accent-blue); /* Неоновый эффект */
+}
+
+.stat-item .stat-value {
+    color: var(--color-accent-pink); /* Значения неонового розового */
+    text-shadow: 0 0 5px var(--color-accent-pink); /* Неоновый эффект */
+}
+
+/* Центральный блок информации о канале */
+.channel-info-block {
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--color-secondary); /* Темный фон для блока */
+    border-radius: var(--border-radius-lg);
+    padding: var(--padding-md);
+    box-shadow: 0 0 20px rgba(0, 224, 255, 0.3), 0 0 15px rgba(224, 0, 255, 0.3); /* Сильное неоновое свечение */
+    text-align: center;
+    position: relative;
+    z-index: 3; /* Чтобы был поверх фона */
+    border: 2px solid; /* Градиентный бордер */
+    border-image: var(--gradient-border-light) 1;
+    margin-top: auto; /* Прижимает к центру, если контент сверху короткий */
+    margin-bottom: auto; /* Прижимает к центру, если контент снизу короткий */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: var(--gap-md);
-    margin-bottom: var(--padding-md);
 }
 
-@media (min-width: 400px) {
-    .theme-selection-grid {
-        grid-template-columns: 1fr 1fr; /* Two columns on wider screens */
-    }
-}
-
-.theme-card {
-    background-color: var(--color-card-bg);
-    border: 2px solid var(--color-secondary);
-    border-radius: var(--border-radius-md);
-    padding: var(--padding-md);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+.channel-header {
+    width: 100%;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
+    margin-bottom: var(--gap-sm);
 }
 
-.theme-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.theme-card.selected {
-    border-color: var(--color-accent-primary);
-    box-shadow: 0 0 20px rgba(var(--color-accent-primary-rgb), 0.5);
-    transform: scale(1.02);
-}
-
-.theme-card img {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 10px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--color-accent-secondary);
-}
-
-.theme-card h3 {
-    margin: 5px 0;
+.channel-header h2 {
+    font-family: 'Poppins', sans-serif; /* Можно оставить пиксельный шрифт или использовать Poppins */
+    font-size: 1.4em;
     color: var(--color-text-primary);
-    font-size: 1.1em;
-}
-
-.theme-card p {
-    font-size: 0.8em;
-    color: var(--color-text-secondary);
-    flex-grow: 1; /* Pushes content down if description is short */
-}
-
-/* Welcome Screen */
-.user-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--color-accent-primary);
-    margin-bottom: var(--padding-md);
-}
-
-.welcome-text {
-    font-size: 1em;
-    line-height: 1.5;
-    margin-bottom: var(--padding-md);
-    color: var(--color-text-secondary);
-}
-
-/* Buttons */
-.btn {
-    background-color: var(--color-accent-primary);
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    margin: 0;
     text-transform: uppercase;
-    box-shadow: 0 4px 8px rgba(var(--color-accent-primary-rgb), 0.3);
-    background-image: linear-gradient(45deg, var(--color-accent-primary) 0%, #ff6f8a 100%);
+    text-shadow: 0 0 5px var(--color-accent-blue);
 }
 
-.btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(var(--color-accent-primary-rgb), 0.4);
-    filter: brightness(1.1);
+.live-trends {
+    background-image: var(--gradient-button);
+    padding: 5px 15px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    box-shadow: 0 0 10px rgba(0, 224, 255, 0.5); /* Неоновый эффект */
 }
 
-.btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(var(--color-accent-primary-rgb), 0.2);
-    filter: brightness(0.9);
-}
-
-.btn:disabled {
-    background-color: var(--color-secondary);
-    cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
-    background-image: none;
-}
-
-/* Cutscene Screen */
-.cutscene-screen {
-    position: relative;
-    overflow: hidden;
-    background-color: var(--color-primary);
-    display: flex;
-    flex-direction: column; /* Stack content vertically */
-    justify-content: center;
-    align-items: center;
-}
-
-.cutscene-slide {
-    position: absolute;
-    width: 100%;
-    height: 100%; /* Take full height of the cutscene-screen */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transform: translateY(100%);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    text-align: center;
-    padding: var(--padding-md);
-    box-sizing: border-box;
-}
-
-.cutscene-slide.active {
-    opacity: 1;
-    transform: translateY(0);
-    position: relative; /* Keep active slide in document flow */
-}
-
-.cutscene-image {
-    max-width: 80%;
-    max-height: 50vh; /* Limit image height to prevent overflow */
-    object-fit: contain;
-    margin-bottom: 20px;
-    border-radius: var(--border-radius-md);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-.cutscene-text {
+.channel-stats p {
     font-size: 1.1em;
-    color: var(--color-text-primary);
-    line-height: 1.6;
-    max-width: 80%;
+    margin: 8px 0;
+    color: var(--color-text-secondary);
 }
 
-.cutscene-continue-button {
-    position: absolute;
-    bottom: var(--padding-md);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-    display: none; /* Hidden by default, shown by JS */
+.channel-stats span {
+    font-weight: 700; /* Poppins Bold */
+    color: var(--color-accent-pink);
+    text-shadow: 0 0 5px var(--color-accent-pink);
 }
 
-.cutscene-continue-button.visible {
-    opacity: 1;
-    transform: translateY(0);
+.currency-icon {
+    font-size: 0.9em;
+    color: var(--color-accent-blue);
+    text-shadow: 0 0 3px var(--color-accent-blue);
 }
 
-/* Studio Container */
-.studio-container {
-    background-color: var(--color-secondary);
-    display: grid;
-    grid-template-rows: 1fr auto auto; /* Background, stats, actions */
-    height: 100vh;
-    width: 100%;
-    max-width: 500px;
-    position: relative;
-    overflow: hidden;
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-    box-sizing: border-box;
-    padding-bottom: env(safe-area-inset-bottom, 0); /* For notch phones */
-    padding-top: env(safe-area-inset-top, 0);
-}
 
-.studio-background {
-    background-image: url('assets/studio_bg.png'); /* Replace with your studio image */
-    background-size: cover;
-    background-position: center;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
+/* Персонаж (позиционируем относительно центра экрана) */
 .character-sprite {
     position: absolute;
-    bottom: 120px; /* Adjust based on character sprite size and background */
+    bottom: 180px; /* Регулируйте, чтобы персонаж был над кнопками и ниже блока "Ваш Канал" */
     left: 50%;
     transform: translateX(-50%);
-    width: 300px; /* Adjust as needed */
-    height: 400px; /* Adjust as needed */
+    width: auto;
+    height: 300px; /* Примерный размер, регулируйте */
     object-fit: contain;
     z-index: 2;
     transition: all 0.3s ease-out;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8)); /* Более мягкая тень */
+    pointer-events: none; /* Чтобы не мешал взаимодействовать с элементами под ним */
 }
 
-/* Character States */
+/* Character States (нужно будет обновить пути к спрайтам) */
+/* Убедитесь, что у вас есть эти спрайты в assets/ */
 .char-state-idle {
     content: url('assets/character_idle.png');
 }
 .char-state-happy {
-    content: url('assets/character_happy.png'); /* Создайте этот спрайт */
+    content: url('assets/character_happy.png');
     animation: bounce 0.5s ease-out;
 }
 .char-state-typing {
-    content: url('assets/character_typing.png'); /* Создайте этот спрайт */
+    content: url('assets/character_typing.png');
     animation: typing-animation 0.3s infinite alternate;
 }
 .char-state-sleeping {
-    content: url('assets/character_sleeping.png'); /* Создайте этот спрайт */
+    content: url('assets/character_sleeping.png');
     animation: fade-in-out 2s infinite alternate;
 }
 
@@ -394,142 +302,119 @@ body {
     50% { opacity: 0.6; }
 }
 
-@keyframes idle-blink {
+@keyframes idle-blink { /* Оставляем, но можно сделать менее заметным */
     0%, 20%, 40%, 60%, 80%, 100% { opacity: 1; }
-    21%, 41%, 61%, 81% { opacity: 0.9; } /* Minor blink effect */
+    21%, 41%, 61%, 81% { opacity: 0.9; }
 }
 .char-anim-idle-blink {
     animation: idle-blink 5s infinite;
 }
 
-.monitor-screen {
-    position: absolute;
-    top: 50px; /* Adjust position on background */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70%; /* Adjust size to fit monitor on bg */
-    height: 35%; /* Adjust size */
-    background-color: rgba(0, 0, 0, 0.7);
-    border: 3px solid var(--color-text-primary);
-    border-radius: var(--border-radius-md);
-    padding: 10px;
-    box-sizing: border-box;
+/* Нижняя панель с кнопками действий */
+.action-buttons {
+    width: 90%;
+    max-width: 450px; /* Чтобы кнопки не были слишком широкими */
+    display: flex;
+    justify-content: space-around;
+    gap: var(--gap-sm); /* Меньший отступ между кнопками */
+    position: relative; /* Относительно родителя studio-screen */
+    z-index: 5;
+    background-color: var(--color-secondary); /* Фон для панели кнопок */
+    padding: var(--padding-sm);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.2), 0 0 10px rgba(224, 0, 255, 0.2); /* Неоновое свечение */
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.3); /* Легкий неоновый бордер */
+    margin-top: auto; /* Прижимает к низу, если контент сверху короткий */
+}
+
+.action-button {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 3;
-    font-family: 'Press Start 2P', cursive;
-    text-shadow: 0 0 5px var(--color-accent-secondary);
-}
-
-.monitor-screen h2 {
-    font-size: 1.1em;
-    color: var(--color-accent-secondary);
-    margin-bottom: 5px;
-    white-space: nowrap; /* Prevent wrapping */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Add ellipsis */
-}
-
-.monitor-stats p {
-    font-size: 0.8em;
-    margin: 3px 0;
-    color: var(--color-text-primary);
-}
-
-.monitor-stats span {
-    color: var(--color-accent-primary);
-}
-
-.trend-display-monitor {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: var(--color-accent-primary);
-    color: white;
-    padding: 5px 10px;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.7em;
-    font-weight: bold;
-    text-shadow: none;
-    text-transform: uppercase;
-}
-
-.main-stats {
-    position: absolute;
-    top: env(safe-area-inset-top, 10px); /* Adjust for notch */
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: var(--gap-md);
-    background-color: rgba(var(--color-card-bg-rgb), 0.8);
-    padding: 8px 15px;
-    border-radius: var(--border-radius-md);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    z-index: 5;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    font-weight: bold;
-    color: var(--color-text-primary);
-}
-
-.stat-item .stat-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-}
-
-.action-buttons {
-    position: absolute;
-    bottom: calc(env(safe-area-inset-bottom, 0) + 20px); /* Adjust for notch and padding */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    z-index: 5;
-}
-
-.action-button {
-    flex: 1; /* Distribute space evenly */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 10px 5px;
-    font-size: 0.8em;
+    background-color: var(--color-primary); /* Темный фон кнопки */
+    color: var(--color-text-primary);
+    border: 2px solid transparent; /* Для градиентного бордера */
     border-radius: var(--border-radius-md);
-    min-width: 80px; /* Ensure buttons don't get too small */
-    text-transform: capitalize; /* Better for button labels */
+    font-size: 0.8em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(0, 224, 255, 0.1); /* Легкое свечение */
+    position: relative;
+    overflow: hidden; /* Для эффектов наведения */
 }
 
-.action-button img {
-    width: 40px;
-    height: 40px;
+.action-button::before { /* Градиентная рамка */
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--border-radius-md);
+    padding: 2px; /* Толщина рамки */
+    background: var(--gradient-button);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: all 0.2s ease-in-out;
+}
+
+
+.action-button:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 224, 255, 0.4), 0 0 15px rgba(224, 0, 255, 0.4); /* Усиленное свечение */
+}
+
+.action-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 0 5px rgba(0, 224, 255, 0.2);
+    filter: brightness(0.9);
+}
+
+.action-button:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.action-button .action-icon {
+    font-size: 2.2em; /* Большие иконки */
     margin-bottom: 5px;
+    color: var(--color-accent-blue); /* Цвет иконки */
+    text-shadow: 0 0 8px var(--color-accent-blue); /* Неоновое свечение иконки */
+    transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 
-/* Post Production Status */
+.action-button:hover:not(:disabled) .action-icon {
+    color: var(--color-accent-pink); /* Изменение цвета иконки при наведении */
+    text-shadow: 0 0 10px var(--color-accent-pink);
+}
+
+/* Post Production Status (оставляем почти как есть, но с новыми цветами) */
 .post-production-status {
     position: absolute;
-    bottom: calc(env(safe-area-inset-bottom, 0) + 120px); /* Above action buttons */
+    bottom: calc(var(--padding-md) + 120px); /* Над action-buttons, под персонажем */
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
     max-width: 350px;
-    background-color: rgba(var(--color-card-bg-rgb), 0.9);
+    background-color: var(--color-secondary);
     border-radius: var(--border-radius-md);
-    padding: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    padding: var(--padding-sm);
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.2);
     text-align: center;
     font-size: 0.9em;
     z-index: 6;
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.3);
 }
 
 .post-production-status p {
@@ -540,28 +425,29 @@ body {
 .post-production-progress-bar {
     width: 100%;
     height: 10px;
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     border-radius: var(--border-radius-sm);
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.2);
 }
 
 .post-production-progress-fill {
     height: 100%;
     width: 0%;
-    background-color: var(--color-accent-secondary);
+    background-image: var(--gradient-button); /* Градиент для прогресс-бара */
     border-radius: var(--border-radius-sm);
     transition: width 0.3s linear;
 }
 
-/* Modals */
+/* Modals (обновляем стили модальных окон, чтобы соответствовать новому дизайну) */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8); /* Более темный оверлей */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -569,8 +455,10 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-    padding: 20px; /* Add padding for small screens */
+    padding: var(--padding-md);
     box-sizing: border-box;
+    backdrop-filter: blur(8px); /* Сильное размытие фона */
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-overlay.visible {
@@ -579,12 +467,12 @@ body {
 }
 
 .modal-content {
-    background-color: var(--color-card-bg);
+    background-color: var(--color-secondary);
     padding: var(--padding-md);
     border-radius: var(--border-radius-lg);
     max-width: 400px;
     width: 100%;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 30px rgba(0, 224, 255, 0.5), 0 0 20px rgba(224, 0, 255, 0.5); /* Сильное неоновое свечение */
     position: relative;
     text-align: center;
     transform: translateY(20px);
@@ -593,9 +481,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--gap-md);
-    max-height: 90vh; /* Limit modal height */
-    overflow-y: auto; /* Enable scrolling within modal */
+    max-height: 90vh;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    border: 2px solid;
+    border-image: var(--gradient-border-light) 1;
 }
 
 .modal-overlay.visible .modal-content {
@@ -605,25 +495,29 @@ body {
 
 .close-modal-button {
     position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 2em;
+    top: 15px;
+    right: 20px;
+    font-size: 2.2em; /* Больше */
     color: var(--color-text-secondary);
     cursor: pointer;
     line-height: 1;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Чтобы был виден на фоне */
+    z-index: 1;
 }
 
 .close-modal-button:hover {
-    color: var(--color-accent-primary);
+    color: var(--color-accent-pink);
+    text-shadow: 0 0 8px var(--color-accent-pink);
 }
 
 .modal-content h2 {
-    font-family: 'Press Start 2P', cursive;
-    color: var(--color-accent-secondary);
+    font-family: 'Poppins', sans-serif; /* Изменяем шрифт */
+    color: var(--color-accent-blue);
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 1.2em;
+    font-size: 1.5em; /* Увеличиваем размер */
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.5);
 }
 
 .modal-actions {
@@ -634,25 +528,58 @@ body {
 
 .modal-actions .btn {
     width: 100%;
-    box-sizing: border-box; /* Include padding/border in width */
+    box-sizing: border-box;
+    /* Используем стили action-button, но без иконок */
+    background-image: var(--gradient-button);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Event Log */
+.modal-actions .btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+.modal-actions .btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    filter: brightness(0.9);
+}
+
+.modal-actions .btn:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+    background-image: none;
+}
+
+/* Event Log (обновляем стили, чтобы соответствовать новому дизайну) */
 #event-log {
     list-style: none;
     padding: 0;
     margin: 0;
     text-align: left;
-    max-height: 300px; /* Limit height of log list */
+    max-height: 300px;
     overflow-y: auto;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(var(--color-secondary-rgb), 0.5); /* Более темный полупрозрачный */
     border-radius: var(--border-radius-sm);
     padding: 10px;
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.1);
 }
 
 #event-log li {
     padding: 8px 5px;
-    border-bottom: 1px dashed rgba(var(--color-text-secondary-rgb), 0.2);
+    border-bottom: 1px dashed rgba(var(--color-text-secondary-rgb), 0.1);
     font-size: 0.85em;
     color: var(--color-text-primary);
 }
@@ -661,10 +588,10 @@ body {
     border-bottom: none;
 }
 
-.log-info { color: var(--color-info); }
-.log-success { color: var(--color-success); }
-.log-warning { color: var(--color-warning); }
-.log-error { color: var(--color-error); }
+.log-info { color: var(--color-accent-blue); } /* Используем акцентный синий */
+.log-success { color: #4CAF50; } /* Можно оставить стандартные */
+.log-warning { color: #FFC107; }
+.log-error { color: #F44336; }
 
 /* Стили для новых кнопок идей контента в модалке */
 .content-idea-button {
@@ -673,24 +600,24 @@ body {
     text-align: left;
     width: 100%;
     padding: 15px 20px;
-    margin-bottom: 10px; /* Отступ между кнопками */
-    background-color: rgba(var(--color-accent-primary-rgb), 0.1);
-    border: 1px solid rgba(var(--color-accent-primary-rgb), 0.3);
+    margin-bottom: 10px;
+    background-color: var(--color-primary); /* Темный фон */
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.3);
     border-radius: var(--border-radius-md);
     transition: all 0.2s ease-in-out;
-    box-shadow: none; /* Убираем стандартную тень кнопки */
+    box-shadow: 0 0 10px rgba(0, 224, 255, 0.1); /* Легкое свечение */
     color: var(--color-text-primary);
-    font-size: 1em; /* Переопределяем, так как обычная кнопка может быть больше */
-    text-transform: none; /* Убираем uppercase */
-    background-image: none; /* Убираем градиент по умолчанию */
+    font-size: 1em;
+    text-transform: none;
+    background-image: none;
 }
 
 .content-idea-button:hover:not(:disabled) {
-    background-color: rgba(var(--color-accent-primary-rgb), 0.2);
-    border-color: var(--color-accent-primary);
+    background-color: var(--color-secondary);
+    border-color: var(--color-accent-blue);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(var(--color-accent-primary-rgb), 0.2);
-    filter: none; /* Убираем яркость из основного стиля кнопок */
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.3);
+    filter: none;
 }
 
 .content-idea-button:active:not(:disabled) {
@@ -700,20 +627,20 @@ body {
 .content-idea-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: rgba(var(--color-card-bg-rgb), 0.5);
+    background-color: var(--color-secondary);
     border-color: rgba(var(--color-secondary-rgb), 0.3);
 }
-
 
 .content-idea-button .idea-icon {
     font-size: 2.2em;
     margin-right: 15px;
     line-height: 1;
-    color: var(--color-accent-secondary); /* Или любой другой яркий цвет */
+    color: var(--color-accent-pink); /* Акцентный розовый для иконок */
+    text-shadow: 0 0 8px var(--color-accent-pink);
 }
 
 .content-idea-button .idea-details {
-    flex-grow: 1; /* Занимает доступное пространство */
+    flex-grow: 1;
 }
 
 .content-idea-button .idea-details h3 {
@@ -735,9 +662,10 @@ body {
     color: var(--color-text-secondary);
     margin-top: 5px;
     padding: 2px 5px;
-    background-color: rgba(var(--color-card-bg-rgb), 0.5);
+    background-color: var(--color-primary);
     border-radius: 4px;
     margin-right: 8px;
+    border: 1px solid rgba(var(--color-accent-blue-rgb), 0.1);
 }
 
 .content-idea-button .idea-cost {
@@ -754,3 +682,8 @@ body {
     font-size: 0.9em;
     margin: 20px 0;
 }
+
+/* Удаляем monitor-screen, так как он больше не нужен */
+/* .monitor-screen { display: none; } */
+/* Удаляем studio-background, если фон будет просто черным */
+/* .studio-background { display: none; } */

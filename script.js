@@ -1,250 +1,223 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Элементы DOM ---
-    const preloader = document.querySelector('.preloader');
-    const preloaderProgressBarFill = document.querySelector('.preloader-progress-bar-fill');
-    const studioScreen = document.getElementById('studio-screen');
+// Инициализация данных канала
+const channelData = {
+    name: "TechTrends 2025",
+    level: 3,
+    balance: 8400,
+    subscribers: 12345,
+    views: 45789,
+    engagement: 7.8,
+    reputation: 85,
+    team: {
+        editor: { level: 2, cost: 500 },
+        designer: { level: 1, cost: 300 },
+        manager: { level: 1, cost: 800 }
+    }
+};
 
-    // Кнопки действий
-    const createPostBtn = document.getElementById('create-post-btn');
-    const upgradesBtn = document.getElementById('upgrades-btn');
-    const journalBtn = document.getElementById('journal-btn');
-    const settingsBtn = document.getElementById('settings-btn');
+// DOM элементы
+const elements = {
+    dashboard: document.getElementById('dashboard'),
+    postCreator: document.getElementById('post-creator'),
+    analytics: document.getElementById('analytics'),
+    createPostBtn: document.getElementById('create-post-btn'),
+    analyticsBtn: document.getElementById('analytics-btn'),
+    closePostCreator: document.getElementById('close-post-creator'),
+    closeAnalytics: document.getElementById('close-analytics'),
+    publishBtn: document.getElementById('publish-btn'),
+    channelName: document.getElementById('channel-name'),
+    level: document.getElementById('level'),
+    balance: document.getElementById('balance'),
+    subscribers: document.getElementById('subscribers'),
+    views: document.getElementById('views'),
+    engagement: document.getElementById('engagement'),
+    notification: document.getElementById('notification'),
+    topicSelect: document.getElementById('topic'),
+    headlineOptions: document.querySelectorAll('.headline-option')
+};
 
-    // Элементы статистики
-    const energyValue = document.getElementById('energy-value');
-    const energyMax = document.getElementById('energy-max');
-    const moodValue = document.getElementById('mood-value');
-    const moodMax = document.getElementById('mood-max');
-    const channelName = document.getElementById('channel-name');
-    const subscribersValue = document.getElementById('subscribers-value');
-    const balanceValue = document.getElementById('balance-value');
+// Инициализация данных
+function initData() {
+    elements.channelName.textContent = channelData.name;
+    elements.level.textContent = channelData.level;
+    elements.balance.textContent = channelData.balance.toLocaleString();
+    elements.subscribers.textContent = channelData.subscribers.toLocaleString();
+    elements.views.textContent = channelData.views.toLocaleString();
+    elements.engagement.textContent = channelData.engagement.toFixed(1) + '%';
+    
+    // Инициализация графика
+    initChart();
+}
 
-    // Персонаж
-    const characterImg = document.getElementById('character-img');
-
-    // Статус производства поста
-    const postProductionStatus = document.getElementById('post-production-status');
-    const postProductionProgressBarFill = document.querySelector('.post-production-progress-fill');
-
-    // Модальное окно
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalContent = document.getElementById('modal-content');
-    const closeModalButton = document.querySelector('.close-modal-button');
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
-    const modalActions = document.getElementById('modal-actions');
-
-    // --- Состояние игры (пример) ---
-    const gameState = {
-        energy: 100,
-        maxEnergy: 100,
-        mood: 100,
-        maxMood: 100,
-        channel: {
-            name: "YOUR_CHANNEL",
-            subscribers: 1234567,
-            balance: 123456
+// Инициализация графика роста
+function initChart() {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
+            datasets: [{
+                label: 'Подписчики',
+                data: [5000, 7500, 9200, 11000, 12300, 12345],
+                borderColor: '#6a7eff',
+                backgroundColor: 'rgba(106, 126, 255, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
         },
-        characterState: 'idle', // 'idle', 'typing', 'happy', 'sleeping'
-        postProductionProgress: 0,
-        isProducingPost: false,
-        activeScreen: 'studio-screen' // Текущий видимый экран
-    };
-
-    // --- Функции обновления UI ---
-
-    function updateStatsUI() {
-        energyValue.textContent = gameState.energy;
-        energyMax.textContent = gameState.maxEnergy;
-        moodValue.textContent = gameState.mood;
-        moodMax.textContent = gameState.maxMood;
-        subscribersValue.textContent = formatNumber(gameState.channel.subscribers);
-        balanceValue.textContent = formatNumber(gameState.channel.balance);
-        channelName.textContent = gameState.channel.name; // Обновляем имя канала
-    }
-
-    function setCharacterState(state) {
-        if (gameState.characterState === state) return; // Если состояние не изменилось
-        characterImg.classList.remove(`char-state-${gameState.characterState}`); // Удаляем старый класс
-        characterImg.classList.add(`char-state-${state}`); // Добавляем новый класс
-        gameState.characterState = state;
-
-        // Можно добавить/убрать анимации в зависимости от состояния
-        if (state === 'idle') {
-            characterImg.classList.add('char-anim-idle-blink');
-        } else {
-            characterImg.classList.remove('char-anim-idle-blink');
-        }
-    }
-
-    function updatePostProductionUI() {
-        if (gameState.isProducingPost) {
-            postProductionStatus.classList.remove('hidden');
-            postProductionProgressBarFill.style.width = `${gameState.postProductionProgress}%`;
-        } else {
-            postProductionStatus.classList.add('hidden');
-            postProductionProgressBarFill.style.width = `0%`;
-        }
-    }
-
-    // --- Функции для модальных окон ---
-    function openModal(title, contentHtml, actionsHtml = '') {
-        modalTitle.textContent = title;
-        modalBody.innerHTML = contentHtml;
-        modalActions.innerHTML = actionsHtml;
-        modalOverlay.classList.add('visible');
-    }
-
-    function closeModal() {
-        modalOverlay.classList.remove('visible');
-    }
-
-    // --- Переключение экранов ---
-    function showScreen(screenId) {
-        // Скрываем текущий активный экран
-        const currentActiveScreen = document.getElementById(gameState.activeScreen);
-        if (currentActiveScreen) {
-            currentActiveScreen.classList.remove('visible');
-        }
-
-        // Показываем новый экран
-        const newActiveScreen = document.getElementById(screenId);
-        if (newActiveScreen) {
-            newActiveScreen.classList.add('visible');
-            gameState.activeScreen = screenId;
-        }
-    }
-
-    // --- Вспомогательные функции ---
-    function formatNumber(num) {
-        return num.toLocaleString('ru-RU'); // Форматирование чисел для читабельности
-    }
-
-    // --- Игровая логика (примеры) ---
-
-    // Функция для создания поста
-    function createPost() {
-        if (gameState.energy >= 20 && !gameState.isProducingPost) { // Примерная стоимость энергии
-            gameState.energy -= 20;
-            setCharacterState('typing'); // Персонаж печатает
-            gameState.isProducingPost = true;
-            gameState.postProductionProgress = 0;
-            updateStatsUI();
-            updatePostProductionUI();
-
-            const productionInterval = setInterval(() => {
-                gameState.postProductionProgress += 10; // Увеличиваем на 10% каждые 0.5 сек
-                updatePostProductionUI();
-
-                if (gameState.postProductionProgress >= 100) {
-                    clearInterval(productionInterval);
-                    gameState.isProducingPost = false;
-                    gameState.postProductionProgress = 0;
-                    setCharacterState('happy'); // Персонаж счастлив
-                    setTimeout(() => setCharacterState('idle'), 1500); // Возвращается в режим ожидания через 1.5 сек
-
-                    // Пример результатов поста
-                    const newSubscribers = Math.floor(Math.random() * 10000) + 1000;
-                    const income = Math.floor(Math.random() * 5000) + 500;
-                    gameState.channel.subscribers += newSubscribers;
-                    gameState.channel.balance += income;
-                    updateStatsUI();
-
-                    openModal(
-                        'Пост Готов!',
-                        `<p>Вы выпустили новый пост!</p>
-                        <p>+${formatNumber(newSubscribers)} подписчиков</p>
-                        <p>+${formatNumber(income)} ₽ дохода</p>`,
-                        `<button class="btn" onclick="closeModal()">Отлично!</button>`
-                    );
-                    updatePostProductionUI(); // Скрыть прогресс-бар
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
                 }
-            }, 500); // Прогресс каждые 0.5 секунды
-        } else if (gameState.isProducingPost) {
-            openModal('Внимание', '<p>Вы уже создаете пост!</p>', '<button class="btn" onclick="closeModal()">ОК</button>');
-        } else {
-            openModal('Недостаточно Энергии', '<p>У вас недостаточно энергии для создания поста. Отдохните!</p>', '<button class="btn" onclick="closeModal()">ОК</button>');
-        }
-    }
-
-    function handleUpgrades() {
-        openModal(
-            'Улучшения',
-            `<p>Здесь будут доступны улучшения для вашего канала.</p>
-             <div class="modal-item">
-                <h3>Улучшить компьютер</h3>
-                <p>Увеличивает скорость производства постов.</p>
-                <p>Стоимость: 5000 ₽</p>
-                <button class="btn">Купить</button>
-            </div>
-             <div class="modal-item">
-                <h3>Найм копирайтера</h3>
-                <p>Увеличивает прирост подписчиков.</p>
-                <p>Стоимость: 10000 ₽</p>
-                <button class="btn">Купить</button>
-            </div>
-            `,
-            `<button class="btn" onclick="closeModal()">Закрыть</button>`
-        );
-    }
-
-    function handleJournal() {
-        openModal(
-            'Журнал Событий',
-            `<ul id="event-log">
-                <li class="log-info">Добро пожаловать в игру!</li>
-                <li class="log-success">Вы создали свой канал.</li>
-                <li class="log-warning">Пользователь A начал комментировать ваш пост.</li>
-                <li class="log-error">Упс! Технический сбой.</li>
-            </ul>`,
-            `<button class="btn" onclick="closeModal()">Закрыть</button>`
-        );
-    }
-
-    function handleSettings() {
-        openModal(
-            'Настройки',
-            `<p>Здесь будут настройки игры.</p>
-             <button class="btn" onclick="alert('Звук включен/выключен')">Звук</button>
-             <button class="btn" onclick="alert('Сброс игры')">Сбросить игру</button>
-            `,
-            `<button class="btn" onclick="closeModal()">Закрыть</button>`
-        );
-    }
-
-
-    // --- Обработчики событий ---
-    createPostBtn.addEventListener('click', createPost);
-    upgradesBtn.addEventListener('click', handleUpgrades);
-    journalBtn.addEventListener('click', handleJournal);
-    settingsBtn.addEventListener('click', handleSettings);
-    closeModalButton.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) { // Закрыть модальное окно, если клик по оверлею
-            closeModal();
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        color: '#2a2a35'
+                    },
+                    ticks: {
+                        color: '#a0a0a0'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: '#2a2a35'
+                    },
+                    ticks: {
+                        color: '#a0a0a0'
+                    }
+                }
+            }
         }
     });
+}
 
-    // --- Инициализация при загрузке ---
-    function initializeGame() {
-        updateStatsUI();
-        setCharacterState('idle'); // Начальное состояние персонажа
-        updatePostProductionUI(); // Скрыть прогресс-бар в начале
+// Обработчики событий
+elements.createPostBtn.addEventListener('click', () => {
+    elements.dashboard.style.display = 'none';
+    elements.postCreator.style.display = 'block';
+});
 
-        // Имитация загрузки прелоадера
-        let loadProgress = 0;
-        const loadInterval = setInterval(() => {
-            loadProgress += 10;
-            preloaderProgressBarFill.style.width = `${loadProgress}%`;
-            if (loadProgress >= 100) {
-                clearInterval(loadInterval);
-                setTimeout(() => {
-                    preloader.classList.add('hidden');
-                    showScreen('studio-screen'); // Показываем студийный экран
-                }, 500); // Задержка перед скрытием прелоадера
-            }
-        }, 100);
+elements.analyticsBtn.addEventListener('click', () => {
+    elements.dashboard.style.display = 'none';
+    elements.analytics.style.display = 'block';
+});
+
+elements.closePostCreator.addEventListener('click', () => {
+    elements.postCreator.style.display = 'none';
+    elements.dashboard.style.display = 'block';
+});
+
+elements.closeAnalytics.addEventListener('click', () => {
+    elements.analytics.style.display = 'none';
+    elements.dashboard.style.display = 'block';
+});
+
+// Выбор заголовка
+elements.headlineOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        // Удаляем активный класс у всех вариантов
+        elements.headlineOptions.forEach(opt => opt.classList.remove('active'));
+        
+        // Добавляем активный класс к выбранному варианту
+        this.classList.add('active');
+    });
+});
+
+// Публикация поста
+elements.publishBtn.addEventListener('click', function() {
+    const selectedTopic = elements.topicSelect.options[elements.topicSelect.selectedIndex];
+    const topicBonus = parseInt(selectedTopic.getAttribute('data-bonus'));
+    const topicReputation = selectedTopic.getAttribute('data-reputation') || 0;
+    
+    const selectedHeadline = document.querySelector('.headline-option.active');
+    if (!selectedHeadline) {
+        alert('Выберите заголовок для поста!');
+        return;
     }
+    
+    const reachBonus = parseInt(selectedHeadline.getAttribute('data-reach'));
+    const trustBonus = parseInt(selectedHeadline.getAttribute('data-trust'));
+    
+    // Расчет эффекта от поста
+    const newSubscribers = Math.floor(channelData.subscribers * (reachBonus / 1000));
+    const newViews = Math.floor(newSubscribers * 3.5);
+    const income = Math.floor(newViews * 0.2);
+    
+    // Обновление данных канала
+    channelData.subscribers += newSubscribers;
+    channelData.views += newViews;
+    channelData.balance += income;
+    channelData.reputation += parseInt(topicReputation) + trustBonus;
+    
+    // Обновление отображения
+    elements.subscribers.textContent = channelData.subscribers.toLocaleString();
+    elements.views.textContent = channelData.views.toLocaleString();
+    elements.balance.textContent = channelData.balance.toLocaleString();
+    
+    // Показать уведомление о результате
+    elements.notification.innerHTML = `🎉 Пост опубликован!<br>
+        <strong>Новые подписчики:</strong> +${newSubscribers.toLocaleString()}<br>
+        <strong>Новые просмотры:</strong> +${newViews.toLocaleString()}<br>
+        <strong>Доход:</strong> +${income.toLocaleString()} ₽`;
+    
+    // Вернуться на главный экран
+    elements.postCreator.style.display = 'none';
+    elements.dashboard.style.display = 'block';
+    
+    // Обновить график
+    initChart();
+});
 
-    initializeGame();
+// Случайные события
+function randomEvents() {
+    const events = [
+        { 
+            message: "📈 Ваш пост попал в рекомендации! Подписчики +5%", 
+            effect: () => { 
+                channelData.subscribers = Math.floor(channelData.subscribers * 1.05);
+                elements.subscribers.textContent = channelData.subscribers.toLocaleString();
+            } 
+        },
+        { 
+            message: "⚠️ Изменился алгоритм платформы. Охват -8%", 
+            effect: () => { 
+                channelData.views = Math.floor(channelData.views * 0.92);
+                elements.views.textContent = channelData.views.toLocaleString();
+            } 
+        },
+        { 
+            message: "💼 Получено предложение о рекламе от TechCorp (+2000₽)", 
+            effect: () => { 
+                channelData.balance += 2000;
+                elements.balance.textContent = channelData.balance.toLocaleString();
+            } 
+        }
+    ];
+    
+    const randomEvent = events[Math.floor(Math.random() * events.length)];
+    elements.notification.innerHTML = randomEvent.message;
+    randomEvent.effect();
+    
+    // Повторять каждые 30-60 секунд
+    setTimeout(randomEvents, Math.random() * 30000 + 30000);
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    initData();
+    
+    // Запуск случайных событий
+    setTimeout(randomEvents, 15000);
+    
+    // Инициализация кнопок выбора типа контента
+    const typeButtons = document.querySelectorAll('.type-btn');
+    typeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            typeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
 });

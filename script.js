@@ -69,728 +69,674 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewsValueEl = document.getElementById('views-value');
     const viewsChangeEl = document.getElementById('views-change');
     const balanceValueEl = document.getElementById('balance-value');
-    const warningMessageEl = document.getElementById('warning-message');
-    const warningTextEl = document.getElementById('warning-text');
-
-    // Персонаж
-    const characterSpriteEl = document.getElementById('character-sprite');
+    const characterSprite = document.getElementById('character-sprite');
+    const warningMessage = document.getElementById('warning-message');
+    const warningText = document.getElementById('warning-text');
 
     // Статус производства поста
-    const postProductionStatusEl = document.getElementById('post-production-status');
-    const postInProductionTypeEl = document.getElementById('post-in-production-type');
-    const postProductionProgressFillEl = document.getElementById('post-production-progress-fill');
-    const postProductionTimeLeftEl = document.getElementById('post-production-time-left');
+    const postProductionStatus = document.getElementById('post-production-status');
+    const postInProductionType = document.getElementById('post-in-production-type');
+    const postProductionProgressFill = document.getElementById('post-production-progress-fill');
+    const postProductionTimeLeft = document.getElementById('post-production-time-left');
+    const contentIdeasList = document.getElementById('content-ideas-list');
 
-    // Модальные окна
-    const modalOverlayEl = document.getElementById('modal-overlay');
-    const modalContentEl = document.getElementById('modal-content');
-    const closeModalButtonEl = document.querySelector('.close-modal-button');
-    const modalTitleEl = document.getElementById('modal-title');
-    const modalBodyEl = document.getElementById('modal-body');
-    const modalActionsEl = document.getElementById('modal-actions');
+    // Модальное окно
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalActions = document.getElementById('modal-actions');
+    const closeModalButton = document.querySelector('.close-modal-button');
 
-    const contentIdeasListEl = document.getElementById('content-ideas-list');
-
-
-    // --- Game State (Core) ---
-    const initialGameState = {
+    // --- Game State ---
+    let gameState = {
         currentScreen: 'preloader-screen',
-        userName: 'Игрок',
-        channelTheme: null,
-        channel: {
-            name: 'Мой Канал',
-            subscribers: 0,
-            subscribersChange: 0, // Изменение за последний тик
-            views: 0,
-            viewsChange: 0, // Изменение за последний тик
-            balance: 0,
-            level: 1, // Уровень канала
-            reputation: 100 // Влияет на виральность и приход рекламодателей
-        },
+        selectedTheme: null,
         energy: 100,
         maxEnergy: 100,
         mood: 100,
         maxMood: 100,
-        contentQuality: 1, // Уровень улучшения качества контента
-        team: [], // Массив объектов команды
-        activeTrends: [], // Активные тренды
-        postProduction: {
-            inProgress: false,
-            type: '', // Название поста
-            duration: 0, // Общая длительность
-            timeLeft: 0, // Оставшееся время
-            progress: 0 // Прогресс в процентах
+        subscribers: 0,
+        views: 0,
+        balance: 0,
+        channelName: "Мой Канал",
+        postInProduction: null, // { type: 'post', idea: 'Gaming News', duration: 10, timeLeft: 10, startTime: Date.now() }
+        gameInterval: null,
+        subWaveInterval: null,
+        lastSubWaveTime: Date.now(),
+        initialLoadComplete: false,
+        lastUpdateTime: Date.now(),
+        debugMode: true // Включите для более удобной отладки
+    };
+
+    // --- Game Data (могут быть загружены с сервера) ---
+    const gameData = {
+        themes: {
+            gaming: { name: 'Игровой Канал', channelNames: ['PixelPlay', 'GameVerse', 'LevelUp Hub'] },
+            lifestyle: { name: 'Лайфстайл Блог', channelNames: ['LifeVlog', 'DailyFlow', 'UrbanVibes'] },
+            tech: { name: 'Техноблог', channelNames: ['TechTrends', 'FutureGadgets', 'Digital Pulse'] }
         },
-        activeGrowthEffects: [], // НОВОЕ: Массив для отслеживания активных волн роста подписчиков/просмотров
-        log: [], // Журнал событий
-        lastTickTime: Date.now(),
-        lastIdeaRefreshTime: Date.now(),
-        availableContentIdeas: [], // Идеи, доступные для создания поста
-        gameVersion: 'v0.1.0' // Версия игры для миграции сохранений
+        contentTypes: {
+            post: { name: 'Пост', baseDuration: 10, baseCost: 5, baseEnergy: 10 },
+            video: { name: 'Видео', baseDuration: 30, baseCost: 20, baseEnergy: 30 },
+            story: { name: 'Сторис', baseDuration: 5, baseCost: 2, baseEnergy: 5 },
+            podcast: { name: 'Подкаст', baseDuration: 20, baseCost: 15, baseEnergy: 25 }
+        },
+        contentIdeas: {
+            gaming: [
+                { id: 'gaming-news', name: 'Игровые Новости', description: 'Обзор последних новостей в мире гейминга.', type: 'post', difficulty: 1, baseSubs: 10, baseViews: 50, energyCost: 5, timeCost: 5 },
+                { id: 'game-review', name: 'Обзор новой игры', description: 'Подробный обзор популярной игры.', type: 'video', difficulty: 2, baseSubs: 50, baseViews: 200, energyCost: 20, timeCost: 20 },
+                { id: 'stream-highlights', name: 'Нарезка со стрима', description: 'Лучшие моменты с недавних трансляций.', type: 'story', difficulty: 1, baseSubs: 5, baseViews: 30, energyCost: 3, timeCost: 3 },
+                { id: 'esports-analysis', name: 'Анализ киберспорта', description: 'Разбор текущих турниров и команд.', type: 'podcast', difficulty: 3, baseSubs: 30, baseViews: 150, energyCost: 15, timeCost: 15 }
+            ],
+            lifestyle: [
+                { id: 'travel-vlog', name: 'Влог о путешествии', description: 'Приключения в новом городе.', type: 'video', difficulty: 2, baseSubs: 60, baseViews: 250, energyCost: 25, timeCost: 25 },
+                { id: 'fashion-haul', name: 'Обзор покупок одежды', description: 'Демонстрация последних приобретений.', type: 'post', difficulty: 1, baseSubs: 12, baseViews: 60, energyCost: 7, timeCost: 6 },
+                { id: 'cooking-recipe', name: 'Рецепт дня', description: 'Простой и вкусный рецепт для дома.', type: 'story', difficulty: 1, baseSubs: 7, baseViews: 40, energyCost: 4, timeCost: 4 },
+                { id: 'daily-routine', name: 'Мой день', description: 'Один день из жизни блогера.', type: 'podcast', difficulty: 2, baseSubs: 25, baseViews: 100, energyCost: 12, timeCost: 12 }
+            ],
+            tech: [
+                { id: 'gadget-review', name: 'Обзор нового гаджета', description: 'Тест и мнение о популярном устройстве.', type: 'video', difficulty: 3, baseSubs: 70, baseViews: 300, energyCost: 30, timeCost: 30 },
+                { id: 'tech-news-digest', name: 'Дайджест тех. новостей', description: 'Коротко о главном в мире технологий.', type: 'post', difficulty: 1, baseSubs: 15, baseViews: 70, energyCost: 8, timeCost: 7 },
+                { id: 'quick-tips', name: 'Быстрые советы по ПО', description: 'Лайфхаки для программ.', type: 'story', difficulty: 1, baseSubs: 8, baseViews: 45, energyCost: 5, timeCost: 5 },
+                { id: 'future-tech-talk', name: 'Разговор о будущем технологий', description: 'Обсуждение трендов и инноваций.', type: 'podcast', difficulty: 2, baseSubs: 35, baseViews: 180, energyCost: 18, timeCost: 18 }
+            ]
+        }
     };
 
-    let gameState = JSON.parse(JSON.stringify(initialGameState)); // Глубокая копия
-
-    // --- Game Data (Configuration) ---
-    // Это только примеры, нужно будет расширить
-    const gameConfig = {
-        TICK_INTERVAL_MS: 1000, // Интервал обновления игры в мс
-        SAVE_INTERVAL_MS: 5000, // Интервал автосохранения в мс
-        ENERGY_REGEN_RATE_PER_SEC: 1,
-        MOOD_DECAY_RATE_PER_SEC: 0.1,
-        IDEA_REFRESH_INTERVAL_SEC: 60, // Обновление идей каждую минуту для теста
-        POST_SUBS_WAVE_DURATION_TICKS: 10, // НОВОЕ: Длительность волны прироста подписчиков в тиках
-        POST_VIEWS_WAVE_DURATION_TICKS: 10, // НОВОЕ: Длительность волны прироста просмотров в тиках
-        MOOD_GAIN_ON_POST: 10, // НОВОЕ: Настроение, получаемое после поста
-        // ... другие конфиги (роста, трендов, апгрейдов)
-    };
-
-    const themesData = {
-        gaming: { name: 'Игровой Канал', icon: '🎮', contentIdeas: [] },
-        lifestyle: { name: 'Лайфстайл Блог', icon: '✨', contentIdeas: [] },
-        tech: { name: 'Техноблог', icon: '💻', contentIdeas: [] }
-    };
-
-    // Пример идей контента (реальные данные будут в data/content_ideas_data.js)
-    const allContentIdeas = [
-        // Добавлен icon: '📖' для 'Пост' и другие уточнения
-        { id: 'gaming_review', theme: 'gaming', name: 'Обзор новой игры', description: 'Подробный обзор свежего релиза.', energyCost: 20, duration: 15, baseSubs: 100, baseViews: 500, baseBalance: 50, icon: '🎮', formats: ['Видео', 'Текст'], minQuality: 1 },
-        { id: 'gaming_memes', theme: 'gaming', name: 'Свежие игровые мемы', description: 'Сборник лучших мемов недели.', energyCost: 10, duration: 8, baseSubs: 250, baseViews: 800, baseBalance: 20, icon: '😂', formats: ['Изображение', 'Текст'], minQuality: 1 }, // Увеличил baseSubs/Views для мемов
-        { id: 'tech_review_gadget', theme: 'tech', name: 'Обзор нового гаджета', description: 'Подробный анализ смартфона/ноутбука.', energyCost: 25, duration: 20, baseSubs: 150, baseViews: 800, baseBalance: 70, icon: '📱', formats: ['Видео', 'Текст'], minQuality: 1 },
-        { id: 'tech_lifehacks', theme: 'tech', name: '5 лайфхаков для ПК', description: 'Ускоряем работу компьютера.', energyCost: 15, duration: 12, baseSubs: 80, baseViews: 400, baseBalance: 30, icon: '💡', formats: ['Текст', 'Видео'], minQuality: 1 },
-        { id: 'lifestyle_vlog_day', theme: 'lifestyle', name: 'Мой день влог', description: 'Покажите свой день в городе.', energyCost: 20, duration: 18, baseSubs: 120, baseViews: 600, baseBalance: 60, icon: '🚶‍♀️', formats: ['Видео'], minQuality: 1 },
-        { id: 'lifestyle_food_recipe', theme: 'lifestyle', name: 'Простой рецепт ужина', description: 'Вкусное и быстрое блюдо.', energyCost: 15, duration: 10, baseSubs: 70, baseViews: 350, baseBalance: 25, icon: '🍳', formats: ['Текст', 'Видео'], minQuality: 1 },
-        { id: 'general_qa', theme: 'general', name: 'Вопрос-ответ со зрителями', description: 'Отвечаем на вопросы подписчиков.', energyCost: 18, duration: 14, baseSubs: 90, baseViews: 450, baseBalance: 40, icon: '💬', formats: ['Видео', 'Текст'], minQuality: 1 },
-        { id: 'general_challenge', theme: 'general', name: 'Вызов от подписчиков', description: 'Выполняем интересные задания.', energyCost: 22, duration: 17, baseSubs: 130, baseViews: 700, baseBalance: 55, icon: '🏆', formats: ['Видео'], minQuality: 1 },
-        // ... другие идеи, можно добавить больше
+    // --- Preloader Logic ---
+    const assetsToLoad = [
+        'assets/logo.png',
+        'assets/theme_gaming.png',
+        'assets/theme_lifestyle.png',
+        'assets/theme_tech.png',
+        'assets/character_idle.png',
+        'assets/character_happy.png',
+        'assets/character_typing.png',
+        'assets/character_sleeping.png',
+        // Добавьте другие важные изображения, которые должны быть загружены до старта игры
+        // Например, иконки, фоны, если они не в CSS
     ];
 
+    let assetsLoaded = 0;
 
-    // --- Core Game Functions ---
-
-    // Load game state from LocalStorage
-    function loadGame() {
-        try {
-            const savedState = localStorage.getItem('socialMediaTycoonState');
-            if (savedState) {
-                const parsedState = JSON.parse(savedState);
-                if (parsedState.gameVersion === gameState.gameVersion) {
-                    gameState = { ...initialGameState, ...parsedState };
-                    console.log('Game loaded successfully.');
-                    addLog('Игра загружена.', 'info');
-                } else {
-                    console.warn('Game version mismatch. Starting new game.');
-                    addLog('Обнаружена новая версия игры. Начинаем новую игру.', 'warning');
-                    // Можно реализовать логику миграции данных, если нужно
-                }
-            } else {
-                console.log('No saved game found. Starting new game.');
-                addLog('Новая игра начата.', 'info');
-            }
-        } catch (e) {
-            console.error('Error loading game state:', e);
-            addLog('Ошибка загрузки сохранения. Начинаем новую игру.', 'error');
-            localStorage.removeItem('socialMediaTycoonState'); // Clear corrupted save
-        }
-        gameState.lastTickTime = Date.now(); // Reset last tick time on load
-    }
-
-    // Save game state to LocalStorage
-    function saveGame() {
-        try {
-            localStorage.setItem('socialMediaTycoonState', JSON.stringify(gameState));
-            console.log('Game state saved.');
-        } catch (e) {
-            console.error('Error saving game state:', e);
-            addLog('Ошибка сохранения игры.', 'error');
-        }
-    }
-
-    // Add log entry
-    function addLog(message, type = 'info') {
-        const timestamp = new Date().toLocaleTimeString();
-        gameState.log.unshift({ timestamp, message, type }); // Add to beginning
-        if (gameState.log.length > 50) { // Limit log size
-            gameState.log.pop();
-        }
-        // В будущем здесь можно будет обновлять модалку журнала, если она открыта
-    }
-
-    // Update UI elements
-    function updateUI() {
-        energyValueEl.textContent = Math.floor(gameState.energy); // Округляем для отображения
-        moodValueEl.textContent = Math.floor(gameState.mood);
-        channelNameEl.textContent = gameState.channel.name;
-        subscribersValueEl.textContent = formatNumber(gameState.channel.subscribers);
-        balanceValueEl.textContent = formatNumber(gameState.channel.balance);
-        viewsValueEl.textContent = formatNumber(gameState.channel.views);
-
-        // Обновление изменения подписчиков/просмотров
-        updateTrendArrow(subscribersChangeEl, gameState.channel.subscribersChange, 'subscribers');
-        updateTrendArrow(viewsChangeEl, gameState.channel.viewsChange, 'views');
-
-        // Обновление персонажа
-        updateCharacterSprite();
-
-        // Обновление статуса производства поста
-        if (gameState.postProduction.inProgress) {
-            postProductionStatusEl.classList.remove('hidden');
-            postInProductionTypeEl.textContent = gameState.postProduction.type;
-            const progress = gameState.postProduction.progress;
-            postProductionProgressFillEl.style.width = `${progress}%`;
-            postProductionTimeLeftEl.textContent = Math.ceil(gameState.postProduction.timeLeft);
-        } else {
-            postProductionStatusEl.classList.add('hidden');
-            postProductionProgressFillEl.style.width = `0%`; // Сброс прогресса, когда не в работе
-        }
-
-        // Обновление доступности кнопок (пример)
-        createPostBtn.disabled = gameState.postProduction.inProgress || gameState.energy < 10; // Пример
-    }
-
-    function updateTrendArrow(element, change, type) {
-        if (change > 0) {
-            element.innerHTML = `<i class="fas fa-arrow-up trend-arrow up"></i><span class="trend-change">+${formatNumber(change)}</span>`;
-        } else if (change < 0) {
-            element.innerHTML = `<i class="fas fa-arrow-down trend-arrow down"></i><span class="trend-change">${formatNumber(change)}</span>`;
-        } else {
-            element.innerHTML = `<span class="trend-change">0</span>`;
-        }
-    }
-
-    // Управление спрайтом персонажа
-    function updateCharacterSprite() {
-        let imageUrl = '';
-        switch (gameState.characterState) {
-            case 'idle':
-                imageUrl = 'assets/character_idle.png';
-                break;
-            case 'typing':
-                imageUrl = 'assets/character_typing.png';
-                break;
-            case 'happy':
-                imageUrl = 'assets/character_happy.png';
-                break;
-            case 'sleeping':
-                imageUrl = 'assets/character_sleeping.png';
-                break;
-            default:
-                imageUrl = 'assets/character_idle.png'; // Fallback
-        }
-        characterSpriteEl.src = imageUrl;
-
-        // Manage animation classes (assuming these are defined in CSS)
-        // Remove all state-related classes first
-        characterSpriteEl.classList.forEach(cls => {
-            if (cls.startsWith('char-state-') || cls.startsWith('char-anim-')) {
-                characterSpriteEl.classList.remove(cls);
-            }
+    function loadAsset(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                assetsLoaded++;
+                updatePreloader();
+                resolve();
+            };
+            img.onerror = () => {
+                console.error(`Ошибка загрузки: ${url}`);
+                assetsLoaded++; // Продолжаем даже при ошибке, чтобы не застопорить прелоадер
+                updatePreloader();
+                resolve(); // Разрешаем промис, чтобы приложение не зависло
+            };
+            img.src = url;
         });
-        // Add new state class
-        characterSpriteEl.classList.add(`char-state-${gameState.characterState}`);
+    }
 
-        // Add specific animation classes if needed for idle state
-        if (gameState.characterState === 'idle') {
-            characterSpriteEl.classList.add('char-anim-idle-blink');
+    function updatePreloader() {
+        const progress = (assetsLoaded / assetsToLoad.length) * 100;
+        preloaderProgressBarFill.style.width = `${progress}%`;
+        if (progress >= 100 && !gameState.initialLoadComplete) {
+            // Задержка перед скрытием прелоадера, чтобы анимация была видна
+            setTimeout(() => {
+                gameState.initialLoadComplete = true;
+                // Инициализация Telegram WebApp, если еще не сделана
+                tg.ready();
+                tg.expand();
+                showScreen('theme-selection-screen'); // Переходим к следующему экрану
+                tg.HapticFeedback.notificationOccurred('success');
+            }, 500); // 0.5 секунды задержки
         }
     }
 
+    async function initializeApp() {
+        // Проверяем, есть ли сохраненное состояние
+        const savedState = localStorage.getItem('socialMediaTycoonState');
+        if (savedState) {
+            gameState = JSON.parse(savedState);
+            // Восстанавливаем состояние элементов UI
+            updateUI();
+            // Сразу переходим к дашборду, если игра уже начата
+            showScreen('main-dashboard-screen');
+            // Перезапускаем игровые циклы
+            startGameLoop();
+            startSubWaveInterval();
+            console.log('Игра загружена из сохранения.');
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            console.log('Начинаем новую игру или загружаем ассеты.');
+            // Запускаем загрузку ассетов
+            Promise.all(assetsToLoad.map(loadAsset)).then(() => {
+                // Все ассеты загружены, прелоадер обновлен в updatePreloader
+                // Переход на следующий экран уже вызван в updatePreloader
+            }).catch(error => {
+                console.error('Ошибка при загрузке ассетов:', error);
+                // В случае серьезной ошибки, все равно пытаемся перейти дальше
+                updatePreloader();
+                showScreen('theme-selection-screen');
+                tg.HapticFeedback.notificationOccurred('error');
+            });
+        }
+    }
 
     // --- Screen Management ---
-    function showScreen(screenElementId) {
+    function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('visible');
-            screen.style.zIndex = '1';
+            // Сбрасываем прокрутку, если у экрана была собственная прокрутка
+            if (screen.id !== 'main-dashboard-screen') { // Дашборд всегда без прокрутки
+                screen.scrollTop = 0;
+            }
         });
-
-        const targetScreen = document.getElementById(screenElementId);
+        const targetScreen = document.getElementById(screenId);
         if (targetScreen) {
             targetScreen.classList.add('visible');
-            targetScreen.style.zIndex = '2';
-            gameState.currentScreen = screenElementId;
-            // Управление кнопкой "Назад" Telegram WebApp
-            // Кнопка "Назад" видна, если мы не на основном дашборде, прелоадере или выборе темы
-            if (screenElementId !== 'main-dashboard-screen' && screenElementId !== 'preloader-screen' && screenElementId !== 'theme-selection-screen') {
-                tg.BackButton.show();
-                // Убедимся, что обработчик onClick не добавляется повторно, если он уже есть
-                // Это упрощенный вариант, для более надежной работы используйте offClick перед onClick
-                if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
-                    tg.BackButton.offClick(goBackToDashboard);
-                }
-                tg.BackButton.onClick(goBackToDashboard);
-            } else {
+            gameState.currentScreen = screenId;
+            saveGameState(); // Сохраняем текущий экран
+            updateBackButton(); // Обновляем поведение кнопки "Назад"
+            updateActiveActionButton(); // Обновляем активную кнопку в нижнем меню
+        } else {
+            console.error(`Экран с ID "${screenId}" не найден.`);
+        }
+    }
+
+    function updateBackButton() {
+        if (tg && tg.BackButton) {
+            // Удаляем предыдущие слушатели, чтобы избежать дублирования
+            tg.BackButton.offClick(handleBackButtonClick);
+
+            if (gameState.currentScreen === 'main-dashboard-screen' || gameState.currentScreen === 'preloader-screen' || gameState.currentScreen === 'theme-selection-screen') {
                 tg.BackButton.hide();
-                if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
-                    tg.BackButton.offClick(goBackToDashboard); // Удаляем обработчик, чтобы избежать утечек
-                }
-            }
-        }
-        saveGame();
-    }
-
-    function goBackToDashboard() {
-        showScreen('main-dashboard-screen');
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    // --- Modal Management ---
-    function openModal(title, bodyHtml, actionsHtml = '', allowClose = true) {
-        modalTitleEl.textContent = title;
-        modalBodyEl.innerHTML = bodyHtml;
-        modalActionsEl.innerHTML = actionsHtml;
-
-        if (allowClose) {
-            closeModalButtonEl.style.display = 'block';
-            closeModalButtonEl.onclick = closeModal;
-        } else {
-            closeModalButtonEl.style.display = 'none'; // Скрыть кнопку закрытия
-        }
-
-        modalOverlayEl.classList.remove('hidden');
-        modalOverlayEl.classList.add('visible');
-        tg.HapticFeedback.impactOccurred('light');
-
-        // Управление кнопкой "Назад" Telegram WebApp для модалок
-        tg.BackButton.show(); // Показать кнопку "Назад" в Telegram WebApp
-        // Убедимся, что обработчик onClick не добавляется повторно
-        if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
-            tg.BackButton.offClick(closeModal);
-        }
-        tg.BackButton.onClick(closeModal); // При нажатии на "Назад" закрыть модалку
-    }
-
-    function closeModal() {
-        modalOverlayEl.classList.remove('visible');
-        modalOverlayEl.classList.add('hidden');
-        tg.HapticFeedback.impactOccurred('light');
-
-        // Восстановить поведение кнопки "Назад" в зависимости от текущего экрана
-        if (gameState.currentScreen !== 'main-dashboard-screen' && gameState.currentScreen !== 'preloader-screen' && gameState.currentScreen !== 'theme-selection-screen') {
-            if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
-                tg.BackButton.offClick(closeModal);
-            }
-            tg.BackButton.onClick(goBackToDashboard);
-        } else {
-            tg.BackButton.hide();
-            if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
-                tg.BackButton.offClick(closeModal);
+            } else {
+                tg.BackButton.show();
+                tg.BackButton.onClick(handleBackButtonClick);
             }
         }
     }
 
-    // --- Game Loop (Tick) ---
-    let gameLoopInterval;
-    let saveGameInterval;
-
-    function gameTick() {
-        const now = Date.now();
-        const deltaTime = (now - gameState.lastTickTime) / 1000; // Delta time in seconds
-        gameState.lastTickTime = now;
-
-        // --- Core Mechanics (Placeholder) ---
-        // 1. Energy Regeneration
-        if (gameState.energy < gameState.maxEnergy) {
-            gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + gameConfig.ENERGY_REGEN_RATE_PER_SEC * deltaTime);
-        }
-
-        // 2. Mood Decay
-        if (gameState.mood > 0 && !gameState.postProduction.inProgress) {
-            gameState.mood = Math.max(0, gameState.mood - gameConfig.MOOD_DECAY_RATE_PER_SEC * deltaTime);
-        }
-
-        // 3. Post Production Progress
-        if (gameState.postProduction.inProgress) {
-            gameState.postProduction.timeLeft -= deltaTime;
-            gameState.postProduction.progress = (1 - gameState.postProduction.timeLeft / gameState.postProduction.duration) * 100;
-
-            if (gameState.postProduction.timeLeft <= 0) {
-                completePostProduction();
-            }
-        }
-
-        // НОВОЕ: Обработка активных волн роста подписчиков/просмотров
-        let currentTickSubsChange = 0;
-        let currentTickViewsChange = 0;
-
-        gameState.activeGrowthEffects = gameState.activeGrowthEffects.filter(effect => {
-            if (effect.ticksLeft <= 0 || effect.totalAmount <= 0) {
-                return false; // Удаляем завершенные эффекты
-            }
-
-            const gain = Math.min(effect.amountPerTick, effect.totalAmount);
-            if (effect.type === 'subscribers') {
-                gameState.channel.subscribers += gain;
-                currentTickSubsChange += gain;
-            } else if (effect.type === 'views') {
-                gameState.channel.views += gain;
-                currentTickViewsChange += gain;
-            }
-
-            effect.totalAmount -= gain;
-            effect.ticksLeft--;
-            return true; // Сохраняем эффект, если он еще активен
-        });
-
-        gameState.channel.subscribersChange = currentTickSubsChange;
-        gameState.channel.viewsChange = currentTickViewsChange;
-
-
-        // 4. Trend Management (placeholder)
-        // checkAndActivateTrends(); // Функция для активации/смены трендов
-
-        // 5. Passive Growth (placeholder)
-        // Здесь должна быть более сложная логика роста подписчиков и просмотров
-        // gameState.channel.subscribers += Math.floor(Math.random() * 5 * deltaTime);
-        // gameState.channel.views += Math.floor(Math.random() * 20 * deltaTime);
-        // gameState.channel.balance += Math.floor(Math.random() * 0.1 * deltaTime);
-
-
-        // 6. Idea Refresh (placeholder)
-        if ((now - gameState.lastIdeaRefreshTime) / 1000 >= gameConfig.IDEA_REFRESH_INTERVAL_SEC) {
-            generateContentIdeas();
-        }
-
-
-        updateUI(); // Update UI at the end of each tick
-    }
-
-    function startMainGameLoop() {
-        if (gameLoopInterval) clearInterval(gameLoopInterval);
-        if (saveGameInterval) clearInterval(saveGameInterval);
-
-        gameLoopInterval = setInterval(gameTick, gameConfig.TICK_INTERVAL_MS);
-        saveGameInterval = setInterval(saveGame, gameConfig.SAVE_INTERVAL_MS);
-        addLog('Игровой цикл запущен.', 'info');
-    }
-
-
-    // --- Content Creation Logic (Placeholder) ---
-    function generateContentIdeas() {
-        if (!gameState.channelTheme) {
-            console.error('Тема канала не выбрана, невозможно сгенерировать идеи.');
-            contentIdeasListEl.innerHTML = '<p class="placeholder-text">Выберите тему канала, чтобы появились идеи.</p>';
-            return;
-        }
-
-        // Фильтруем идеи по теме и уровню качества
-        const relevantIdeas = allContentIdeas.filter(
-            idea => (idea.theme === gameState.channelTheme || idea.theme === 'general') && idea.minQuality <= gameState.contentQuality
-        );
-
-        gameState.availableContentIdeas = [];
-        // Добавляем до 3 случайных идей из релевантных
-        const numIdeasToShow = Math.min(relevantIdeas.length, 3);
-        const shuffledIdeas = [...relevantIdeas].sort(() => 0.5 - Math.random()); // Перемешиваем идеи
-        
-        for(let i = 0; i < numIdeasToShow; i++) {
-            if (shuffledIdeas[i]) { // Проверка на случай, если идей меньше чем numIdeasToShow
-                gameState.availableContentIdeas.push(shuffledIdeas[i]);
-            }
-        }
-
-        if (gameState.availableContentIdeas.length === 0 && relevantIdeas.length > 0) {
-            contentIdeasListEl.innerHTML = '<p class="placeholder-text">Пока нет новых идей, соответствующих вашей теме и уровню. Попробуйте сгенерировать через ИИ!</p>';
-        } else if (relevantIdeas.length === 0) {
-             contentIdeasListEl.innerHTML = '<p class="placeholder-text">Нет доступных идей контента в базе данных для вашей темы.</p>';
-        }
-
-
-        gameState.lastIdeaRefreshTime = Date.now();
-        displayContentIdeas();
-    }
-
-    function displayContentIdeas() {
-        contentIdeasListEl.innerHTML = '';
-        if (gameState.availableContentIdeas.length === 0) {
-            contentIdeasListEl.innerHTML = '<p class="placeholder-text">Пока нет новых идей. Попробуйте сгенерировать через ИИ!</p>';
-            return;
-        }
-
-        gameState.availableContentIdeas.forEach(idea => {
-            const button = document.createElement('button');
-            button.className = 'btn content-idea-button';
-            button.dataset.ideaId = idea.id;
-            button.innerHTML = `
-                <span class="idea-icon">${idea.icon || '📝'}</span>
-                <div class="idea-details">
-                    <h3>${idea.name}</h3>
-                    <p>${idea.description}</p>
-                    <span class="idea-cost">⚡ ${idea.energyCost} энергии</span>
-                    <span class="idea-duration">⏱️ ${idea.duration} сек</span>
-                </div>
-            `;
-            button.onclick = () => startPostProduction(idea);
-            button.disabled = gameState.energy < idea.energyCost || gameState.postProduction.inProgress;
-            contentIdeasListEl.appendChild(button);
-        });
-    }
-
-    function startPostProduction(idea) {
-        if (gameState.energy < idea.energyCost) {
-            openModal('Недостаточно Энергии', '<p>У вас недостаточно энергии для создания этого поста.</p>', '<button class="btn" onclick="closeModal()">ОК</button>');
-            tg.HapticFeedback.notificationOccurred('error');
-            return;
-        }
-        if (gameState.postProduction.inProgress) {
-            openModal('Внимание', '<p>Вы уже создаете другой пост. Дождитесь завершения!</p>', '<button class="btn" onclick="closeModal()">ОК</button>');
-            tg.HapticFeedback.notificationOccurred('warning');
-            return;
-        }
-
-        gameState.energy -= idea.energyCost;
-        gameState.postProduction.inProgress = true;
-        gameState.postProduction.type = idea.name;
-        gameState.postProduction.duration = idea.duration; // В реальной игре будет зависеть от апгрейдов/команды
-        gameState.postProduction.timeLeft = idea.duration;
-        gameState.postProduction.progress = 0;
-        
-        // Устанавливаем персонажа в состояние "печатает"
-        gameState.characterState = 'typing'; 
-        updateCharacterSprite(); 
-
-        addLog(`Начато создание контента: "${idea.name}".`, 'info');
-        tg.HapticFeedback.notificationOccurred('success');
-        updateUI();
-        showScreen('main-dashboard-screen'); // Возвращаемся на дашборд
-    }
-
-    function completePostProduction() {
-        const postIdea = allContentIdeas.find(idea => idea.name === gameState.postProduction.type);
-        if (!postIdea) {
-            console.error('Completed post idea not found:', gameState.postProduction.type);
-            addLog('Ошибка при завершении поста: идея не найдена.', 'error');
-            resetPostProduction();
-            return;
-        }
-
-        // НОВОЕ: Расчет фактического прироста с учетом настроения и качества
-        const actualSubsGained = Math.round(postIdea.baseSubs * gameState.contentQuality * (gameState.mood / 100));
-        const actualViewsGained = Math.round(postIdea.baseViews * gameState.contentQuality * (gameState.mood / 100));
-        const actualBalanceGained = Math.round(postIdea.baseBalance * gameState.contentQuality * (gameState.mood / 100));
-
-        // НОВОЕ: Создаем эффекты волн для подписчиков и просмотров
-        if (actualSubsGained > 0) {
-            const subsPerTick = Math.ceil(actualSubsGained / gameConfig.POST_SUBS_WAVE_DURATION_TICKS);
-            gameState.activeGrowthEffects.push({
-                type: 'subscribers',
-                totalAmount: actualSubsGained,
-                amountPerTick: subsPerTick,
-                ticksLeft: gameConfig.POST_SUBS_WAVE_DURATION_TICKS
-            });
-        }
-        if (actualViewsGained > 0) {
-            const viewsPerTick = Math.ceil(actualViewsGained / gameConfig.POST_VIEWS_WAVE_DURATION_TICKS);
-            gameState.activeGrowthEffects.push({
-                type: 'views',
-                totalAmount: actualViewsGained,
-                amountPerTick: viewsPerTick,
-                ticksLeft: gameConfig.POST_VIEWS_WAVE_DURATION_TICKS
-            });
-        }
-
-        // Доход начисляется мгновенно
-        gameState.channel.balance += actualBalanceGained;
-
-        // Повышаем настроение после успешного поста
-        gameState.mood = Math.min(gameState.maxMood, gameState.mood + gameConfig.MOOD_GAIN_ON_POST); 
-
-        addLog(`Пост "${postIdea.name}" завершен! Прирост подписчиков и просмотров начался волнами.`, 'success');
-        tg.HapticFeedback.notificationOccurred('success');
-
-        resetPostProduction();
-        generateContentIdeas(); // Генерируем новые идеи
-        updateUI();
-
-        openModal(
-            'Контент Готов!',
-            `<p>Вы выпустили "${postIdea.name}"!</p>
-            <p>Прирост подписчиков и просмотров начнется волнами!</p>
-            <p>+${formatNumber(actualBalanceGained)} ₽ дохода</p>`,
-            `<button class="btn" onclick="closeModal()">Отлично!</button>`
-        );
-    }
-
-    function resetPostProduction() {
-        gameState.postProduction.inProgress = false;
-        gameState.postProduction.type = '';
-        gameState.postProduction.duration = 0;
-        gameState.postProduction.timeLeft = 0;
-        gameState.postProduction.progress = 0;
-        characterSpriteEl.classList.remove('char-state-typing'); // Сброс анимации
-        gameState.characterState = 'idle'; // Возвращаем в idle
-        updateCharacterSprite(); // Обновляем спрайт
-    }
-
-    // --- Handlers for main action buttons ---
-    function handleCreatePostClick() {
-        showScreen('create-content-screen');
-        generateContentIdeas(); // Генерируем идеи при открытии
+    function handleBackButtonClick() {
         tg.HapticFeedback.impactOccurred('light');
+        if (gameState.currentScreen === 'create-content-screen' ||
+            gameState.currentScreen === 'analytics-screen' ||
+            gameState.currentScreen === 'team-screen' ||
+            gameState.currentScreen === 'monetization-screen') {
+            showScreen('main-dashboard-screen');
+        } else if (gameState.currentScreen === 'modal-overlay') {
+            hideModal(); // Если открыто модальное окно, сначала закрываем его
+        }
+        // Добавьте логику для других экранов, если они появятся
     }
 
-    function handleAnalyticsClick() {
-        showScreen('analytics-screen');
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function handleTeamClick() {
-        showScreen('team-screen');
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function handleMonetizationClick() {
-        showScreen('monetization-screen');
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function handleGenerateIdeaClick() {
-        // В будущем здесь можно будет использовать LLM для генерации идей
-        openModal(
-            'Генерация Идей ИИ',
-            '<p>ИИ анализирует последние тренды... (Эта функция пока в разработке)</p>',
-            '<button class="btn" onclick="closeModal()">ОК</button>'
-        );
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function handleContentTypeClick(event) {
-        contentTypeBtns.forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        // В будущем здесь можно будет фильтровать идеи по типу контента
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-
-    // --- Theme Selection Logic ---
-    let selectedThemeCard = null;
+    // --- Theme Selection ---
     themeCards.forEach(card => {
         card.addEventListener('click', () => {
-            if (selectedThemeCard) {
-                selectedThemeCard.classList.remove('selected');
-            }
-            card.classList.add('selected');
-            selectedThemeCard = card;
-            gameState.channelTheme = card.dataset.theme;
-            selectThemeButton.disabled = false;
             tg.HapticFeedback.impactOccurred('light');
+            themeCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            gameState.selectedTheme = card.dataset.theme;
+            selectThemeButton.disabled = false;
         });
     });
 
     selectThemeButton.addEventListener('click', () => {
-        if (gameState.channelTheme) {
-            // Устанавливаем имя канала по умолчанию на основе темы
-            // Если выбрана общая тема, то будет "Мой Канал"
-            gameState.channel.name = themesData[gameState.channelTheme]?.name.toUpperCase() || 'МОЙ КАНАЛ';
-            addLog(`Выбрана тема канала: "${themesData[gameState.channelTheme]?.name || 'Общая'}".`, 'info');
-            // В реальной игре будет приветственный экран/катсцена
-            showScreen('main-dashboard-screen');
-            startMainGameLoop();
-            generateContentIdeas(); // Генерируем идеи после выбора темы
+        if (gameState.selectedTheme) {
             tg.HapticFeedback.notificationOccurred('success');
-            // Обновляем данные пользователя из Telegram (если доступны)
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                gameState.userName = tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username || 'Игрок';
-                // userPhotoEl.src = tg.initDataUnsafe.user.photo_url || 'placeholder-avatar.png'; // если есть аватар
+            // Устанавливаем имя канала на основе выбранной темы
+            const themeInfo = gameData.themes[gameState.selectedTheme];
+            if (themeInfo && themeInfo.channelNames && themeInfo.channelNames.length > 0) {
+                gameState.channelName = themeInfo.channelNames[Math.floor(Math.random() * themeInfo.channelNames.length)];
+            } else {
+                gameState.channelName = "Мой Канал"; // Запасное имя
             }
+            updateUI(); // Обновляем UI с новым именем канала
+            showScreen('main-dashboard-screen');
+            startGameLoop(); // Запускаем основной игровой цикл
+            startSubWaveInterval(); // Запускаем интервал волн подписчиков
         }
     });
 
+    // --- Game Loop and Stats Update ---
+    function updateUI() {
+        energyValueEl.textContent = gameState.energy;
+        energyMaxEl.textContent = gameState.maxEnergy;
+        moodValueEl.textContent = gameState.mood;
+        moodMaxEl.textContent = gameState.maxMood;
+        channelNameEl.textContent = gameState.channelName;
+        subscribersValueEl.textContent = formatNumber(gameState.subscribers);
+        viewsValueEl.textContent = formatNumber(gameState.views);
+        balanceValueEl.textContent = formatNumber(gameState.balance);
 
-    // --- Event Listeners ---
-    createPostBtn.addEventListener('click', handleCreatePostClick);
-    analyticsBtn.addEventListener('click', handleAnalyticsClick);
-    teamBtn.addEventListener('click', handleTeamClick);
-    monetizationBtn.addEventListener('click', handleMonetizationClick);
-    generateIdeaBtn.addEventListener('click', handleGenerateIdeaClick);
+        // Обновление изменения подписчиков и просмотров (пока заглушка)
+        // В реальной игре эти значения будут меняться динамически
+        const subChange = 0; // Например, рассчитывайте из активности
+        const viewChange = 0; // Например, рассчитывайте из активности
+        subscribersChangeEl.textContent = (subChange >= 0 ? '+' : '') + formatNumber(subChange);
+        viewsChangeEl.textContent = (viewChange >= 0 ? '+' : '') + formatNumber(viewChange);
+        subscribersChangeEl.classList.toggle('up', subChange >= 0);
+        subscribersChangeEl.classList.toggle('down', subChange < 0);
+        viewsChangeEl.classList.toggle('up', viewChange >= 0);
+        viewsChangeEl.classList.toggle('down', viewChange < 0);
+
+        // Обновление персонажа и статуса производства
+        updateCharacterSprite();
+        updatePostProductionStatus();
+    }
+
+    function formatNumber(num) {
+        if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+
+    function gameTick() {
+        const now = Date.now();
+        const deltaTime = (now - gameState.lastUpdateTime) / 1000; // Дельта времени в секундах
+        gameState.lastUpdateTime = now;
+
+        // Обновление энергии и настроения
+        // Пример: настроение медленно падает, если нет активности
+        gameState.mood = Math.max(0, gameState.mood - (0.1 * deltaTime)); // Падает на 0.1 в секунду
+        gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + (0.5 * deltaTime)); // Восстанавливается на 0.5 в секунду
+
+        // Проверка производства поста
+        if (gameState.postInProduction) {
+            gameState.postInProduction.timeLeft -= deltaTime;
+            if (gameState.postInProduction.timeLeft <= 0) {
+                completePostProduction();
+            }
+        }
+
+        updateUI(); // Обновляем UI каждый тик
+        saveGameState(); // Сохраняем состояние игры
+    }
+
+    function startGameLoop() {
+        if (gameState.gameInterval) {
+            clearInterval(gameState.gameInterval);
+        }
+        gameState.gameInterval = setInterval(gameTick, 1000 / 30); // 30 тиков в секунду для плавности
+    }
+
+    // --- Subscriber Wave Logic ---
+    function generateSubscribersWave() {
+        const now = Date.now();
+        // Генерируем новую волну подписчиков каждые 10-30 секунд
+        if (now - gameState.lastSubWaveTime >= (gameState.debugMode ? 5000 : 10000 + Math.random() * 20000)) {
+            const minSubs = 1 + Math.floor(gameState.subscribers / 1000); // Больше подписчиков = больше прирост
+            const maxSubs = 10 + Math.floor(gameState.subscribers / 500);
+            const newSubs = Math.floor(Math.random() * (maxSubs - minSubs + 1)) + minSubs;
+            const newViews = newSubs * (5 + Math.random() * 10); // Просмотры в 5-15 раз больше подписчиков
+
+            const oldSubscribers = gameState.subscribers;
+            const oldViews = gameState.views;
+
+            gameState.subscribers += newSubs;
+            gameState.views += newViews;
+
+            // Расчет дохода (простая модель: 1 рубль за 1000 просмотров)
+            const income = Math.floor(newViews / 1000);
+            gameState.balance += income;
+
+            // Обновляем тренд изменения
+            const subsDelta = gameState.subscribers - oldSubscribers;
+            const viewsDelta = gameState.views - oldViews;
+
+            subscribersChangeEl.textContent = (subsDelta >= 0 ? '+' : '') + formatNumber(subsDelta);
+            subscribersChangeEl.classList.toggle('up', subsDelta >= 0);
+            subscribersChangeEl.classList.toggle('down', subsDelta < 0);
+
+            viewsChangeEl.textContent = (viewsDelta >= 0 ? '+' : '') + formatNumber(viewsDelta);
+            viewsChangeEl.classList.toggle('up', viewsDelta >= 0);
+            viewsChangeEl.classList.toggle('down', viewsDelta < 0);
+
+            // Визуальное изменение стрелок
+            subscribersChangeEl.previousElementSibling.classList.toggle('up', subsDelta >= 0);
+            subscribersChangeEl.previousElementSibling.classList.toggle('down', subsDelta < 0);
+            viewsChangeEl.previousElementSibling.classList.toggle('up', viewsDelta >= 0);
+            viewsChangeEl.previousElementSibling.classList.toggle('down', viewsDelta < 0);
+
+            if (subsDelta > 0) tg.HapticFeedback.notificationOccurred('success');
+            if (income > 0) tg.HapticFeedback.notificationOccurred('success');
+
+            gameState.lastSubWaveTime = now;
+            updateUI();
+        }
+    }
+
+    function startSubWaveInterval() {
+        if (gameState.subWaveInterval) {
+            clearInterval(gameState.subWaveInterval);
+        }
+        gameState.subWaveInterval = setInterval(generateSubscribersWave, 1000); // Проверяем каждую секунду
+    }
+
+    // --- Character & Production Status ---
+    function updateCharacterSprite() {
+        // Логика смены спрайтов персонажа в зависимости от состояния
+        // По умолчанию персонаж бездействует
+        characterSprite.src = 'assets/character_idle.png';
+        characterSprite.className = 'character-sprite char-state-idle char-anim-idle-blink';
+
+        if (gameState.postInProduction) {
+            characterSprite.src = 'assets/character_typing.png';
+            characterSprite.className = 'character-sprite char-state-typing';
+        } else if (gameState.mood < 30) {
+            // Если настроение очень низкое
+            characterSprite.src = 'assets/character_sleeping.png'; // Или другой спрайт для плохого настроения
+            characterSprite.className = 'character-sprite char-state-sleeping';
+        } else if (gameState.subscribers > 0 && gameState.subscribers % 100 < 50 && (Date.now() % 5000 < 1000)) {
+            // Простая логика для "счастливого" состояния, когда подписчики растут
+            characterSprite.src = 'assets/character_happy.png';
+            characterSprite.className = 'character-sprite char-state-happy';
+        }
+        // Если никаких активных состояний нет, возвращаемся к idle.
+        // Перерисовывать src и class лучше только при изменении состояния для производительности.
+    }
+
+    function updatePostProductionStatus() {
+        if (gameState.postInProduction) {
+            postProductionStatus.classList.remove('hidden');
+            postInProductionType.textContent = gameState.contentTypes[gameState.postInProduction.type].name;
+            const progress = (1 - (gameState.postInProduction.timeLeft / gameState.postInProduction.duration)) * 100;
+            postProductionProgressFill.style.width = `${Math.min(100, progress)}%`;
+            postProductionTimeLeft.textContent = Math.max(0, Math.ceil(gameState.postInProduction.timeLeft));
+        } else {
+            postProductionStatus.classList.add('hidden');
+        }
+    }
+
+    function completePostProduction() {
+        if (!gameState.postInProduction) return;
+
+        const producedContent = gameState.postInProduction.idea;
+        const contentType = gameState.postInProduction.type;
+        const contentInfo = gameData.contentIdeas[gameState.selectedTheme].find(idea => idea.id === producedContent.id);
+
+        if (contentInfo) {
+            // Рассчитываем прирост подписчиков и просмотров
+            // В будущем здесь будет более сложная логика, учитывающая качество контента, тренды и т.д.
+            const subsGained = contentInfo.baseSubs * (1 + Math.random() * 0.5);
+            const viewsGained = contentInfo.baseViews * (1 + Math.random() * 0.5);
+
+            gameState.subscribers += Math.round(subsGained);
+            gameState.views += Math.round(viewsGained);
+            gameState.mood = Math.min(gameState.maxMood, gameState.mood + 10); // Улучшаем настроение после публикации
+
+            // Показываем сообщение о результате
+            showModal('Контент Опубликован!', `Пост "${contentInfo.name}" принес ${Math.round(subsGained)} подписчиков и ${Math.round(viewsGained)} просмотров!`, [
+                { text: 'Отлично!', action: () => hideModal() }
+            ]);
+            tg.HapticFeedback.notificationOccurred('success');
+
+        } else {
+            console.error('Ошибка: Контент идея не найдена для завершенного поста:', producedContent);
+            showModal('Ошибка', 'Что-то пошло не так при публикации контента.', [
+                { text: 'ОК', action: () => hideModal() }
+            ]);
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+
+        gameState.postInProduction = null;
+        updateUI();
+        saveGameState();
+    }
+
+    // --- Create Content Screen Logic ---
+    createPostBtn.addEventListener('click', () => {
+        tg.HapticFeedback.impactOccurred('light');
+        showScreen('create-content-screen');
+        generateContentIdeas();
+    });
 
     contentTypeBtns.forEach(btn => {
-        btn.addEventListener('click', handleContentTypeClick);
+        btn.addEventListener('click', () => {
+            tg.HapticFeedback.impactOccurred('light');
+            contentTypeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            generateContentIdeas();
+        });
     });
 
-    closeModalButtonEl.addEventListener('click', closeModal);
-    modalOverlayEl.addEventListener('click', (e) => {
-        // Закрыть модальное окно, если клик по оверлею И если модалка видима
-        if (e.target === modalOverlayEl && modalOverlayEl.classList.contains('visible')) { 
-            closeModal();
+    function generateContentIdeas() {
+        contentIdeasList.innerHTML = ''; // Очищаем старые идеи
+        const activeContentType = document.querySelector('.content-type-btn.active').dataset.type;
+        const ideas = gameData.contentIdeas[gameState.selectedTheme]
+            .filter(idea => idea.type === activeContentType);
+
+        if (ideas.length === 0) {
+            contentIdeasList.innerHTML = '<p class="placeholder-text">Нет доступных идей для данного типа контента.</p>';
+            return;
         }
-    });
 
-    // --- Utility Functions ---
-    function formatNumber(num) {
-        if (num >= 1000000000) {
-            return (num / 1000000000).toFixed(1) + 'B';
-        }
-        if (num >= 1000000) {
-            return (num / 1000000).toFixed(1) + 'M';
-        }
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
-        }
-        return num.toFixed(0);
-    }
+        ideas.forEach(idea => {
+            const contentType = gameData.contentTypes[idea.type];
+            const finalEnergyCost = idea.energyCost || contentType.baseEnergy;
+            const finalTimeCost = idea.timeCost || contentType.baseDuration;
 
-    // --- Initialization ---
-    function initializeApp() {
-        loadGame(); // Try to load saved game
-        updateUI(); // Initial UI update
+            const button = document.createElement('button');
+            button.className = 'btn content-idea-button';
+            button.dataset.ideaId = idea.id;
+            button.dataset.type = idea.type;
+            button.disabled = gameState.energy < finalEnergyCost || gameState.postInProduction !== null; // Отключаем, если нет энергии или пост уже делается
 
-        // Preloader animation
-        let preloaderProgress = 0;
-        const preloaderDuration = 1500; // Total duration for preloader animation
-        const intervalTime = 50; // Update every 50ms
-        const increment = (100 / (preloaderDuration / intervalTime));
-
-        const preloaderInterval = setInterval(() => {
-            preloaderProgress += increment;
-            if (preloaderProgress >= 100) {
-                preloaderProgress = 100;
-                clearInterval(preloaderInterval);
-                preloaderProgressBarFill.style.width = '100%';
-
-                setTimeout(() => {
-                    preloaderScreen.classList.add('hidden');
-                    // Decide which screen to show after preloader
-                    if (!gameState.channelTheme) { // If theme not selected, go to theme selection
-                        showScreen('theme-selection-screen');
-                    } else { // Otherwise, go to dashboard
-                        showScreen('main-dashboard-screen');
-                        startMainGameLoop();
-                        generateContentIdeas(); // Генерируем идеи, если уже на дашборде
-                    }
-                }, 300); // Small delay to allow fade out
+            let iconClass;
+            switch(idea.type) {
+                case 'post': iconClass = 'fas fa-pencil-alt'; break;
+                case 'video': iconClass = 'fas fa-video'; break;
+                case 'story': iconClass = 'fas fa-camera'; break;
+                case 'podcast': iconClass = 'fas fa-microphone-alt'; break;
+                default: iconClass = 'fas fa-star'; // Запасная иконка
             }
-            preloaderProgressBarFill.style.width = `${preloaderProgress}%`;
-        }, intervalTime);
+
+            button.innerHTML = `
+                <i class="${iconClass} idea-icon"></i>
+                <div class="idea-details">
+                    <h3>${idea.name}</h3>
+                    <p>${idea.description}</p>
+                    <div>
+                        <span class="idea-cost">Энергия: ${finalEnergyCost} <i class="fas fa-bolt"></i></span>
+                        <span class="idea-duration">Время: ${finalTimeCost} сек <i class="fas fa-clock"></i></span>
+                    </div>
+                </div>
+            `;
+            button.addEventListener('click', () => {
+                if (!button.disabled) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                    startContentProduction(idea, finalEnergyCost, finalTimeCost);
+                }
+            });
+            contentIdeasList.appendChild(button);
+        });
+
+        // Обновляем состояние всех кнопок после перерисовки
+        updateContentIdeaButtonsState();
     }
 
+    function updateContentIdeaButtonsState() {
+        document.querySelectorAll('.content-idea-button').forEach(button => {
+            const ideaId = button.dataset.ideaId;
+            const ideaType = button.dataset.type;
+            const idea = gameData.contentIdeas[gameState.selectedTheme].find(i => i.id === ideaId && i.type === ideaType);
+
+            if (idea) {
+                const contentType = gameData.contentTypes[idea.type];
+                const finalEnergyCost = idea.energyCost || contentType.baseEnergy;
+
+                button.disabled = gameState.energy < finalEnergyCost || gameState.postInProduction !== null;
+            }
+        });
+    }
+
+    function startContentProduction(idea, energyCost, timeCost) {
+        if (gameState.energy >= energyCost && !gameState.postInProduction) {
+            gameState.energy -= energyCost;
+            gameState.postInProduction = {
+                type: idea.type,
+                idea: idea,
+                duration: timeCost,
+                timeLeft: timeCost,
+                startTime: Date.now()
+            };
+            showScreen('main-dashboard-screen'); // Возвращаемся на дашборд
+            updateUI(); // Обновляем UI, чтобы показать статус производства
+            saveGameState();
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            if (gameState.postInProduction) {
+                showModal('Внимание', 'Вы уже создаете контент. Подождите завершения текущего производства.', [
+                    { text: 'Понятно', action: () => hideModal() }
+                ]);
+                tg.HapticFeedback.notificationOccurred('error');
+            } else {
+                showModal('Недостаточно энергии', `Для создания "${idea.name}" требуется ${energyCost} энергии. У вас ${gameState.energy}.`, [
+                    { text: 'ОК', action: () => hideModal() }
+                ]);
+                tg.HapticFeedback.notificationOccurred('error');
+            }
+        }
+    }
+
+    // --- Other Dashboard Buttons (Placeholder) ---
+    analyticsBtn.addEventListener('click', () => {
+        tg.HapticFeedback.impactOccurred('light');
+        showScreen('analytics-screen');
+    });
+
+    teamBtn.addEventListener('click', () => {
+        tg.HapticFeedback.impactOccurred('light');
+        showScreen('team-screen');
+    });
+
+    monetizationBtn.addEventListener('click', () => {
+        tg.HapticFeedback.impactOccurred('light');
+        showScreen('monetization-screen');
+    });
+
+    function updateActiveActionButton() {
+        // Убираем active со всех кнопок
+        document.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('active'));
+
+        // Добавляем active к текущей кнопке
+        let currentBtn;
+        switch (gameState.currentScreen) {
+            case 'main-dashboard-screen':
+                // На дашборде ни одна кнопка не активна по умолчанию, или можно сделать "Создать Контент" активной
+                break;
+            case 'create-content-screen':
+                currentBtn = createPostBtn;
+                break;
+            case 'analytics-screen':
+                currentBtn = analyticsBtn;
+                break;
+            case 'team-screen':
+                currentBtn = teamBtn;
+                break;
+            case 'monetization-screen':
+                currentBtn = monetizationBtn;
+                break;
+        }
+        if (currentBtn) {
+            currentBtn.classList.add('active');
+        }
+    }
+
+    // --- AI Idea Generation (Placeholder) ---
+    generateIdeaBtn.addEventListener('click', () => {
+        tg.HapticFeedback.impactOccurred('light');
+        showModal('Генерация Идеи (ИИ)', 'Искусственный Интеллект генерирует уникальную идею для вашего контента. Это займет некоторое время и будет стоить X энергии.', [
+            { text: 'Сгенерировать (X энергии)', action: () => {
+                // Здесь будет логика генерации и списания энергии
+                hideModal();
+                showModal('Идея сгенерирована!', 'ИИ предложил: "Создать интерактивный VR-тур по историческим местам!" (пока заглушка).', [
+                    { text: 'Отлично!', action: () => hideModal() }
+                ]);
+                tg.HapticFeedback.notificationOccurred('success');
+            }},
+            { text: 'Отмена', action: () => hideModal(), isCancel: true }
+        ]);
+    });
+
+    // --- Modal Logic ---
+    function showModal(title, bodyHtml, actions) {
+        modalTitle.textContent = title;
+        modalBody.innerHTML = bodyHtml;
+        modalActions.innerHTML = ''; // Очищаем старые кнопки
+
+        actions.forEach(action => {
+            const button = document.createElement('button');
+            button.classList.add('btn');
+            button.textContent = action.text;
+            button.addEventListener('click', () => {
+                tg.HapticFeedback.impactOccurred('light');
+                action.action();
+            });
+            if (action.isCancel) {
+                // Добавляем стили для кнопки "Отмена", если это необходимо
+                button.style.backgroundColor = '#666';
+                button.style.boxShadow = 'none';
+            }
+            modalActions.appendChild(button);
+        });
+
+        modalOverlay.classList.add('visible');
+        gameState.currentScreen = 'modal-overlay'; // Устанавливаем текущий экран как модальное окно
+        updateBackButton(); // Обновляем кнопку "Назад" для модального окна
+    }
+
+    function hideModal() {
+        modalOverlay.classList.remove('visible');
+        // Возвращаем на предыдущий экран
+        if (gameState.currentScreen === 'modal-overlay') {
+            const previousScreenId = localStorage.getItem('socialMediaTycoonLastScreen') || 'main-dashboard-screen';
+            showScreen(previousScreenId); // Возвращаемся на дашборд или предыдущий экран
+        }
+        updateBackButton();
+    }
+
+    closeModalButton.addEventListener('click', hideModal);
+
+    // Закрытие модального окна по клику вне его контента (но не по самому контенту)
+    modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+            hideModal();
+        }
+    });
+
+    // --- Save/Load Game State ---
+    function saveGameState() {
+        localStorage.setItem('socialMediaTycoonState', JSON.stringify(gameState));
+        localStorage.setItem('socialMediaTycoonLastScreen', gameState.currentScreen); // Сохраняем последний активный экран
+    }
+
+    function loadGameState() {
+        const savedState = localStorage.getItem('socialMediaTycoonState');
+        if (savedState) {
+            gameState = JSON.parse(savedState);
+            console.log('Состояние игры загружено:', gameState);
+        } else {
+            console.log('Сохраненное состояние игры не найдено. Начинаем новую игру.');
+        }
+    }
+
+    // --- Initial App Load ---
+    // Вызываем инициализацию, которая теперь управляет прелоадером и загрузкой
     initializeApp();
 
-    // --- App Lifecycle Events (for Telegram Web App) ---
-    tg.onEvent('mainButtonClicked', () => {
-        saveGame();
-        // Можно добавить логику для закрытия WebApp, если Main Button используется для этого
-        // tg.close();
-    });
-
-    // Handle page visibility for pausing/resuming game
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            clearInterval(gameLoopInterval);
-            clearInterval(saveGameInterval);
-            saveGame(); // Save before pausing
-            addLog('Игра приостановлена.', 'info');
-        } else {
-            loadGame(); // Load last state
-            if (gameState.currentScreen === 'main-dashboard-screen') {
-                startMainGameLoop();
-            }
-            addLog('Игра возобновлена.', 'info');
-        }
-    });
-
-    window.addEventListener('beforeunload', () => {
-        saveGame();
-    });
-
+    // Debug: кнопка для сброса состояния (только для отладки)
+    // Добавьте эту кнопку в HTML, если хотите: <button id="reset-game-btn">Сбросить игру</button>
+    // const resetGameBtn = document.getElementById('reset-game-btn');
+    // if (resetGameBtn) {
+    //     resetGameBtn.addEventListener('click', () => {
+    //         if (confirm('Вы уверены, что хотите сбросить игру? Все данные будут потеряны.')) {
+    //             localStorage.removeItem('socialMediaTycoonState');
+    //             localStorage.removeItem('socialMediaTycoonLastScreen');
+    //             location.reload(); // Перезагружаем страницу
+    //         }
+    //     });
+    // }
 });
-```

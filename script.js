@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
         channel: {
             name: 'Мой Канал',
             subscribers: 0,
-            subscribersChange: 0,
+            subscribersChange: 0, // Изменение за последний тик
             views: 0,
-            viewsChange: 0,
+            viewsChange: 0, // Изменение за последний тик
             balance: 0,
             level: 1, // Уровень канала
             reputation: 100 // Влияет на виральность и приход рекламодателей
@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             timeLeft: 0, // Оставшееся время
             progress: 0 // Прогресс в процентах
         },
+        activeGrowthEffects: [], // НОВОЕ: Массив для отслеживания активных волн роста подписчиков/просмотров
         log: [], // Журнал событий
         lastTickTime: Date.now(),
         lastIdeaRefreshTime: Date.now(),
@@ -138,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ENERGY_REGEN_RATE_PER_SEC: 1,
         MOOD_DECAY_RATE_PER_SEC: 0.1,
         IDEA_REFRESH_INTERVAL_SEC: 60, // Обновление идей каждую минуту для теста
+        POST_SUBS_WAVE_DURATION_TICKS: 10, // НОВОЕ: Длительность волны прироста подписчиков в тиках
+        POST_VIEWS_WAVE_DURATION_TICKS: 10, // НОВОЕ: Длительность волны прироста просмотров в тиках
+        MOOD_GAIN_ON_POST: 10, // НОВОЕ: Настроение, получаемое после поста
         // ... другие конфиги (роста, трендов, апгрейдов)
     };
 
@@ -149,13 +153,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Пример идей контента (реальные данные будут в data/content_ideas_data.js)
     const allContentIdeas = [
+        // Добавлен icon: '📖' для 'Пост' и другие уточнения
         { id: 'gaming_review', theme: 'gaming', name: 'Обзор новой игры', description: 'Подробный обзор свежего релиза.', energyCost: 20, duration: 15, baseSubs: 100, baseViews: 500, baseBalance: 50, icon: '🎮', formats: ['Видео', 'Текст'], minQuality: 1 },
-        { id: 'gaming_memes', theme: 'gaming', name: 'Свежие игровые мемы', description: 'Сборник лучших мемов недели.', energyCost: 10, duration: 8, baseSubs: 50, baseViews: 300, baseBalance: 20, icon: '😂', formats: ['Изображение', 'Текст'], minQuality: 1 },
+        { id: 'gaming_memes', theme: 'gaming', name: 'Свежие игровые мемы', description: 'Сборник лучших мемов недели.', energyCost: 10, duration: 8, baseSubs: 250, baseViews: 800, baseBalance: 20, icon: '😂', formats: ['Изображение', 'Текст'], minQuality: 1 }, // Увеличил baseSubs/Views для мемов
         { id: 'tech_review_gadget', theme: 'tech', name: 'Обзор нового гаджета', description: 'Подробный анализ смартфона/ноутбука.', energyCost: 25, duration: 20, baseSubs: 150, baseViews: 800, baseBalance: 70, icon: '📱', formats: ['Видео', 'Текст'], minQuality: 1 },
         { id: 'tech_lifehacks', theme: 'tech', name: '5 лайфхаков для ПК', description: 'Ускоряем работу компьютера.', energyCost: 15, duration: 12, baseSubs: 80, baseViews: 400, baseBalance: 30, icon: '💡', formats: ['Текст', 'Видео'], minQuality: 1 },
         { id: 'lifestyle_vlog_day', theme: 'lifestyle', name: 'Мой день влог', description: 'Покажите свой день в городе.', energyCost: 20, duration: 18, baseSubs: 120, baseViews: 600, baseBalance: 60, icon: '🚶‍♀️', formats: ['Видео'], minQuality: 1 },
         { id: 'lifestyle_food_recipe', theme: 'lifestyle', name: 'Простой рецепт ужина', description: 'Вкусное и быстрое блюдо.', energyCost: 15, duration: 10, baseSubs: 70, baseViews: 350, baseBalance: 25, icon: '🍳', formats: ['Текст', 'Видео'], minQuality: 1 },
-        // ... другие идеи
+        { id: 'general_qa', theme: 'general', name: 'Вопрос-ответ со зрителями', description: 'Отвечаем на вопросы подписчиков.', energyCost: 18, duration: 14, baseSubs: 90, baseViews: 450, baseBalance: 40, icon: '💬', formats: ['Видео', 'Текст'], minQuality: 1 },
+        { id: 'general_challenge', theme: 'general', name: 'Вызов от подписчиков', description: 'Выполняем интересные задания.', energyCost: 22, duration: 17, baseSubs: 130, baseViews: 700, baseBalance: 55, icon: '🏆', formats: ['Видео'], minQuality: 1 },
+        // ... другие идеи, можно добавить больше
     ];
 
 
@@ -401,6 +408,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // НОВОЕ: Обработка активных волн роста подписчиков/просмотров
+        let currentTickSubsChange = 0;
+        let currentTickViewsChange = 0;
+
+        gameState.activeGrowthEffects = gameState.activeGrowthEffects.filter(effect => {
+            if (effect.ticksLeft <= 0 || effect.totalAmount <= 0) {
+                return false; // Удаляем завершенные эффекты
+            }
+
+            const gain = Math.min(effect.amountPerTick, effect.totalAmount);
+            if (effect.type === 'subscribers') {
+                gameState.channel.subscribers += gain;
+                currentTickSubsChange += gain;
+            } else if (effect.type === 'views') {
+                gameState.channel.views += gain;
+                currentTickViewsChange += gain;
+            }
+
+            effect.totalAmount -= gain;
+            effect.ticksLeft--;
+            return true; // Сохраняем эффект, если он еще активен
+        });
+
+        gameState.channel.subscribersChange = currentTickSubsChange;
+        gameState.channel.viewsChange = currentTickViewsChange;
+
+
         // 4. Trend Management (placeholder)
         // checkAndActivateTrends(); // Функция для активации/смены трендов
 
@@ -440,23 +474,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Фильтруем идеи по теме и уровню качества
         const relevantIdeas = allContentIdeas.filter(
-            idea => idea.theme === gameState.channelTheme && idea.minQuality <= gameState.contentQuality
+            idea => (idea.theme === gameState.channelTheme || idea.theme === 'general') && idea.minQuality <= gameState.contentQuality
         );
 
         gameState.availableContentIdeas = [];
         // Добавляем до 3 случайных идей из релевантных
         const numIdeasToShow = Math.min(relevantIdeas.length, 3);
+        const shuffledIdeas = [...relevantIdeas].sort(() => 0.5 - Math.random()); // Перемешиваем идеи
+        
         for(let i = 0; i < numIdeasToShow; i++) {
-            const randomIndex = Math.floor(Math.random() * relevantIdeas.length);
-            const idea = relevantIdeas.splice(randomIndex, 1)[0]; // Удаляем, чтобы не повторялись
-            gameState.availableContentIdeas.push(idea);
+            if (shuffledIdeas[i]) { // Проверка на случай, если идей меньше чем numIdeasToShow
+                gameState.availableContentIdeas.push(shuffledIdeas[i]);
+            }
         }
 
-        if (gameState.availableContentIdeas.length === 0 && allContentIdeas.length > 0) {
-            // Если идей не осталось, но база не пуста, возможно, все идеи уже показаны или не соответствуют теме/качеству
+        if (gameState.availableContentIdeas.length === 0 && relevantIdeas.length > 0) {
             contentIdeasListEl.innerHTML = '<p class="placeholder-text">Пока нет новых идей, соответствующих вашей теме и уровню. Попробуйте сгенерировать через ИИ!</p>';
-        } else if (allContentIdeas.length === 0) {
-             contentIdeasListEl.innerHTML = '<p class="placeholder-text">Нет доступных идей контента в базе данных.</p>';
+        } else if (relevantIdeas.length === 0) {
+             contentIdeasListEl.innerHTML = '<p class="placeholder-text">Нет доступных идей контента в базе данных для вашей темы.</p>';
         }
 
 
@@ -528,26 +563,38 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Пример расчета результатов (нужно расширить реальной механикой)
-        let subsGained = postIdea.baseSubs * gameState.contentQuality;
-        let viewsGained = postIdea.baseViews * gameState.contentQuality;
-        let balanceGained = postIdea.baseBalance * gameState.contentQuality;
+        // НОВОЕ: Расчет фактического прироста с учетом настроения и качества
+        const actualSubsGained = Math.round(postIdea.baseSubs * gameState.contentQuality * (gameState.mood / 100));
+        const actualViewsGained = Math.round(postIdea.baseViews * gameState.contentQuality * (gameState.mood / 100));
+        const actualBalanceGained = Math.round(postIdea.baseBalance * gameState.contentQuality * (gameState.mood / 100));
 
-        // Влияние настроения, трендов, репутации, команды и т.д.
-        subsGained *= (gameState.mood / 100);
-        viewsGained *= (gameState.mood / 100);
-        balanceGained *= (gameState.mood / 100);
+        // НОВОЕ: Создаем эффекты волн для подписчиков и просмотров
+        if (actualSubsGained > 0) {
+            const subsPerTick = Math.ceil(actualSubsGained / gameConfig.POST_SUBS_WAVE_DURATION_TICKS);
+            gameState.activeGrowthEffects.push({
+                type: 'subscribers',
+                totalAmount: actualSubsGained,
+                amountPerTick: subsPerTick,
+                ticksLeft: gameConfig.POST_SUBS_WAVE_DURATION_TICKS
+            });
+        }
+        if (actualViewsGained > 0) {
+            const viewsPerTick = Math.ceil(actualViewsGained / gameConfig.POST_VIEWS_WAVE_DURATION_TICKS);
+            gameState.activeGrowthEffects.push({
+                type: 'views',
+                totalAmount: actualViewsGained,
+                amountPerTick: viewsPerTick,
+                ticksLeft: gameConfig.POST_VIEWS_WAVE_DURATION_TICKS
+            });
+        }
 
-        gameState.channel.subscribers += Math.round(subsGained);
-        gameState.channel.views += Math.round(viewsGained);
-        gameState.channel.balance += Math.round(balanceGained);
-        gameState.channel.subscribersChange = Math.round(subsGained); // Пример изменения за "период"
-        gameState.channel.viewsChange = Math.round(viewsGained);
+        // Доход начисляется мгновенно
+        gameState.channel.balance += actualBalanceGained;
 
+        // Повышаем настроение после успешного поста
+        gameState.mood = Math.min(gameState.maxMood, gameState.mood + gameConfig.MOOD_GAIN_ON_POST); 
 
-        gameState.mood = Math.min(gameState.maxMood, gameState.mood + 10); // Повышаем настроение аудитории
-
-        addLog(`Пост "${postIdea.name}" завершен! +${formatNumber(Math.round(subsGained))} подписчиков, +$${formatNumber(Math.round(balanceGained))}`, 'success');
+        addLog(`Пост "${postIdea.name}" завершен! Прирост подписчиков и просмотров начался волнами.`, 'success');
         tg.HapticFeedback.notificationOccurred('success');
 
         resetPostProduction();
@@ -557,9 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal(
             'Контент Готов!',
             `<p>Вы выпустили "${postIdea.name}"!</p>
-            <p>+${formatNumber(Math.round(subsGained))} подписчиков</p>
-            <p>+${formatNumber(Math.round(viewsGained))} просмотров</p>
-            <p>+${formatNumber(Math.round(balanceGained))} ₽ дохода</p>`,
+            <p>Прирост подписчиков и просмотров начнется волнами!</p>
+            <p>+${formatNumber(actualBalanceGained)} ₽ дохода</p>`,
             `<button class="btn" onclick="closeModal()">Отлично!</button>`
         );
     }
@@ -633,8 +679,9 @@ document.addEventListener('DOMContentLoaded', () => {
     selectThemeButton.addEventListener('click', () => {
         if (gameState.channelTheme) {
             // Устанавливаем имя канала по умолчанию на основе темы
-            gameState.channel.name = themesData[gameState.channelTheme].name.toUpperCase();
-            addLog(`Выбрана тема канала: "${themesData[gameState.channelTheme].name}".`, 'info');
+            // Если выбрана общая тема, то будет "Мой Канал"
+            gameState.channel.name = themesData[gameState.channelTheme]?.name.toUpperCase() || 'МОЙ КАНАЛ';
+            addLog(`Выбрана тема канала: "${themesData[gameState.channelTheme]?.name || 'Общая'}".`, 'info');
             // В реальной игре будет приветственный экран/катсцена
             showScreen('main-dashboard-screen');
             startMainGameLoop();
@@ -746,3 +793,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+```

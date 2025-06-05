@@ -2,85 +2,121 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Telegram Channel Sim</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Tycoon</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f12;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .dashboard {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            padding: 20px;
+            background: #1a1a23;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .channel-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a7eff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #252530;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #6a7eff;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .stat-change.up {
+            color: #4caf50;
+        }
+        .stat-change.down {
+            color: #f44336;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .action-btn {
+            background: #2a2a35;
+            border: none;
+            color: #e0e0e0;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .action-btn:hover {
+            background: #6a7eff;
+            color: #0f0f12;
+        }
+        .notification {
+            background: #2a2a35;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border-left: 3px solid #ff9800;
+        }
+    </style>
 </head>
 <body>
-
-    <div class="preloader">
-        <div class="preloader-content">
-            <img src="assets/preloader_logo.png" alt="Logo" class="preloader-logo">
-            <div class="preloader-progress-bar">
-                <div class="preloader-progress-bar-fill"></div>
+    <div class="dashboard">
+        <div class="header">
+            <div class="channel-name">TechTrends 2025</div>
+            <div class="level">Уровень: 3</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div>Подписчики</div>
+                <div class="stat-value">12.3K</div>
+                <div class="stat-change up">▲ 542 за неделю</div>
             </div>
-            <p class="preloader-version">v0.1</p>
+            <div class="stat-card">
+                <div>Просмотры</div>
+                <div class="stat-value">45.7K</div>
+                <div class="stat-change down">▼ 12%</div>
+            </div>
+            <div class="stat-card">
+                <div>Доход</div>
+                <div class="stat-value">8.4K ₽</div>
+                <div class="stat-change up">▲ 15%</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="action-btn">Создать пост</button>
+            <button class="action-btn">Аналитика</button>
+            <button class="action-btn">Реклама</button>
+            <button class="action-btn">Команда</button>
+        </div>
+        
+        <div class="notification">
+            ⚠️ <strong>Тренд:</strong> Контент про VR набирает +25% охвата. Используйте это!
         </div>
     </div>
-
-    <div id="studio-screen" class="screen studio-screen visible">
-        <div class="top-stats-panel">
-            <div class="stat-item">
-                <i class="fas fa-bolt stat-icon"></i> <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-smile stat-icon"></i> <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
-            </div>
-        </div>
-
-        <div class="channel-info-block">
-            <div class="channel-header">
-                <h2 id="channel-name">ВАШ КАНАЛ</h2>
-                <div class="live-trends">LIVE-ТРЕНДЫ</div>
-            </div>
-            <div class="channel-stats">
-                <p>Подписчики: <span id="subscribers-value">1,234,567</span></p>
-                <p>Баланс: <span id="balance-value">123,456</span> <span class="currency-icon">₽</span></p>
-            </div>
-            </div>
-
-        <img id="character-img" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
-
-        <div id="post-production-status" class="post-production-status hidden">
-            <p>Создание поста...</p>
-            <div class="post-production-progress-bar">
-                <div class="post-production-progress-fill"></div>
-            </div>
-        </div>
-
-        <div class="action-buttons">
-            <button class="action-button" id="create-post-btn">
-                <i class="fas fa-edit action-icon"></i>
-                <span>Создать Пост</span>
-            </button>
-            <button class="action-button" id="upgrades-btn">
-                <i class="fas fa-star action-icon"></i>
-                <span>Улучшения</span>
-            </button>
-            <button class="action-button" id="journal-btn">
-                <i class="fas fa-book action-icon"></i>
-                <span>Журнал</span>
-            </button>
-            <button class="action-button" id="settings-btn">
-                <i class="fas fa-cog action-icon"></i>
-                <span>Настройки</span>
-            </button>
-        </div>
-    </div>
-
-    <div id="modal-overlay" class="modal-overlay">
-        <div id="modal-content" class="modal-content">
-            <span class="close-modal-button">&times;</span>
-            <h2 id="modal-title">Модальное окно</h2>
-            <div id="modal-body">
-                </div>
-            <div id="modal-actions" class="modal-actions">
-                </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

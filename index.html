@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Social Media Tycoon</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Для иконок Font Awesome (используется версия 6.0.0-beta3 для неоновых эффектов) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Для шрифтов - 'Poppins' (основной) и 'Press Start 2P' (для пиксельных/акцентных заголовков) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Прелоадер -->
     <div id="preloader-screen" class="screen visible">
         <div class="preloader-content">
             <img src="assets/logo.png" alt="Logo" class="preloader-logo">
@@ -23,7 +20,6 @@
         </div>
     </div>
 
-    <!-- Экран выбора темы (пока простой) -->
     <div id="theme-selection-screen" class="screen">
         <div class="screen-content">
             <h1 class="screen-title">Выберите Тему Канала</h1>
@@ -48,23 +44,17 @@
         </div>
     </div>
 
-    <!-- Главное меню (Dashboard) -->
     <div id="main-dashboard-screen" class="screen">
-        <!-- Верхняя панель со статистикой -->
         <div class="top-stats-panel">
             <div class="stat-item">
-                <i class="fas fa-bolt stat-icon"></i> <!-- Иконка энергии -->
-                <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
+                <i class="fas fa-bolt stat-icon"></i> <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
             </div>
             <div class="stat-item">
-                <i class="fas fa-smile stat-icon"></i> <!-- Иконка настроения -->
-                <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
+                <i class="fas fa-smile stat-icon"></i> <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
             </div>
         </div>
 
-        <!-- НОВЫЙ: Обертка для основного содержимого, чтобы оно заполняло доступное место -->
         <div class="middle-content-wrapper">
-            <!-- Центральный блок информации о канале -->
             <div class="channel-info-block">
                 <div class="channel-header">
                     <h2 id="channel-name">TECHTRENDS 2025</h2>
@@ -81,10 +71,8 @@
                 </div>
             </div>
 
-            <!-- Персонаж (позиционируется абсолютно внутри middle-content-wrapper) -->
             <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
 
-            <!-- Статус производства поста (позиционируется абсолютно внутри middle-content-wrapper) -->
             <div id="post-production-status" class="post-production-status hidden">
                 <p>Создание поста: <span id="post-in-production-type"></span></p>
                 <div class="post-production-progress-bar">
@@ -94,7 +82,6 @@
             </div>
         </div>
 
-        <!-- Нижняя панель с кнопками действий -->
         <div class="action-buttons">
             <button class="action-button" id="create-post-btn">
                 <i class="fas fa-edit action-icon"></i>
@@ -115,7 +102,6 @@
         </div>
     </div>
 
-    <!-- Экран создания контента (пример) -->
     <div id="create-content-screen" class="screen">
         <h1 class="screen-title">Создание Контента</h1>
         <div class="content-creation-panel">
@@ -129,14 +115,12 @@
 
             <h3>Выберите тему:</h3>
             <div id="content-ideas-list" class="content-ideas-list">
-                <!-- Идеи будут генерироваться JS -->
                 <p class="placeholder-text">Загрузка идей...</p>
             </div>
             <button id="generate-idea-btn" class="btn full-width-btn mt-4">Сгенерировать Идею через ИИ</button>
         </div>
     </div>
 
-    <!-- Экраны-заглушки для будущего расширения -->
     <div id="analytics-screen" class="screen">
         <h1 class="screen-title">Аналитика Канала</h1>
         <p class="placeholder-text">Здесь будут графики и аналитика по росту, охвату и доходу.</p>
@@ -153,17 +137,14 @@
         <button class="btn" onclick="showScreen('main-dashboard-screen')">Назад</button>
     </div>
 
-    <!-- Общий оверлей для модальных окон -->
     <div id="modal-overlay" class="modal-overlay hidden">
         <div id="modal-content" class="modal-content">
             <span class="close-modal-button">&times;</span>
             <h2 id="modal-title">Модальное окно</h2>
             <div id="modal-body">
-                <!-- Здесь будет динамический контент модальных окон -->
-            </div>
+                </div>
             <div id="modal-actions" class="modal-actions">
-                <!-- Здесь будут кнопки модальных окон -->
-            </div>
+                </div>
         </div>
     </div>
 

@@ -49,14 +49,14 @@ body {
 
 /* Global Container for screens */
 .screen {
-    width: 100%;
-    max-width: 500px;
+    width: 100%; /* ИЗМЕНЕНО: Занимает всю доступную ширину */
+    /* max-width: 500px; /* УДАЛЕНО: Больше не ограничиваем ширину для мобильных */
     min-height: 100vh;
     background-color: var(--color-background); /* Чтобы экраны тоже были черными */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; /* Начинаем сверху */
-    align-items: center;
+    align-items: center; /* Центрирует содержимое внутри себя */
     padding: var(--padding-md);
     box-sizing: border-box;
     position: absolute; /* Позволяет наслаивать и анимировать */
@@ -132,7 +132,7 @@ body {
 .screen-content {
     text-align: center;
     width: 100%;
-    max-width: 400px;
+    max-width: 400px; /* Сохраняем max-width для контента внутри экранов, где это уместно */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -155,7 +155,8 @@ body {
     grid-template-columns: 1fr; /* Single column for mobile */
     gap: var(--gap-md);
     margin-bottom: var(--padding-md);
-    width: 100%;
+    width: 90%; /* ИЗМЕНЕНО: Ширина для сетки тем */
+    max-width: 400px; /* Ограничиваем максимальную ширину сетки */
 }
 
 @media (min-width: 400px) {
@@ -267,7 +268,7 @@ body {
 
 /* Верхняя панель статистики (Энергия, Настроение) */
 .top-stats-panel {
-    width: 100%;
+    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -304,8 +305,8 @@ body {
 
 /* Центральный блок информации о канале */
 .channel-info-block {
-    width: 90%;
-    max-width: 400px;
+    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
+    /* max-width: 400px; /* УДАЛЕНО */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
     padding: var(--padding-md);
@@ -473,7 +474,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 350px;
+    max-width: 350px; /* Сохраняем max-width для этого блока, чтобы он не был слишком широким */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-md);
     padding: var(--padding-sm);
@@ -512,8 +513,8 @@ body {
 
 /* Нижняя панель с кнопками действий */
 .action-buttons {
-    width: 90%;
-    max-width: 450px;
+    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
+    /* max-width: 450px; /* УДАЛЕНО */
     display: flex;
     justify-content: space-around;
     gap: 5px; /* ИЗМЕНЕНО: Уменьшен отступ между кнопками */
@@ -603,8 +604,8 @@ body {
 
 /* Content Creation Screen */
 .content-creation-panel {
-    width: 100%;
-    max-width: 400px;
+    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
+    /* max-width: 400px; /* УДАЛЕНО */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
     padding: var(--padding-md);

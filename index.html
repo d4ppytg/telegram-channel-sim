@@ -3,127 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Tycoon</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>TechTrends Analytics</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f0f12;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .analytics-table {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #1a1a23;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .analytics-table thead {
+            background-color: #6a7eff;
+            color: #0f0f12;
+        }
+        
+        .analytics-table th {
+            padding: 15px;
+            text-align: left;
+            font-size: 18px;
+        }
+        
+        .analytics-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2a2a35;
+        }
+        
+        .analytics-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .analytics-table tr:hover {
+            background-color: #252530;
+        }
+        
+        .value-high {
+            color: #4caf50;
+        }
+        
+        .value-low {
+            color: #f44336;
+        }
+        
+        .footnote {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-top: 10px;
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Главная панель -->
-        <div class="dashboard" id="dashboard">
-            <div class="header">
-                <div class="channel-info">
-                    <div class="channel-name" id="channel-name">TechTrends 2025</div>
-                    <div class="channel-level">Уровень: <span id="level">3</span></div>
-                </div>
-                <div class="balance">Баланс: <span id="balance">8,400</span> ₽</div>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Подписчики</div>
-                    <div class="stat-value" id="subscribers">12,345</div>
-                    <div class="stat-change up">▲ 542 за неделю</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Просмотры</div>
-                    <div class="stat-value" id="views">45,789</div>
-                    <div class="stat-change down">▼ 12%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Вовлечённость</div>
-                    <div class="stat-value" id="engagement">7.8%</div>
-                    <div class="stat-change up">▲ 1.2%</div>
-                </div>
-            </div>
-            
-            <div class="action-buttons">
-                <button class="action-btn" id="create-post-btn">Создать пост</button>
-                <button class="action-btn" id="analytics-btn">Аналитика</button>
-                <button class="action-btn" id="team-btn">Команда</button>
-                <button class="action-btn" id="ads-btn">Реклама</button>
-            </div>
-            
-            <div class="notification" id="notification">
-                ⚠️ <strong>Тренд:</strong> Контент про VR набирает +25% охвата. Используйте это!
-            </div>
-        </div>
-        
-        <!-- Создание поста -->
-        <div class="post-creator" id="post-creator" style="display: none;">
-            <div class="creator-header">
-                <h2>Создание поста</h2>
-                <button class="close-btn" id="close-post-creator">×</button>
-            </div>
-            
-            <div class="content-type-selector">
-                <button class="type-btn active" data-type="post">📝 Пост</button>
-                <button class="type-btn" data-type="video">🎥 Видео</button>
-                <button class="type-btn" data-type="story">📸 Сторис</button>
-            </div>
-            
-            <div class="topic-selection">
-                <label for="topic">Тема:</label>
-                <select id="topic">
-                    <option value="crypto" data-bonus="15">Криптовалюта (+15%)</option>
-                    <option value="tech" data-bonus="10">Новые технологии (+10%)</option>
-                    <option value="gadgets" data-bonus="7">Гаджеты (+7%)</option>
-                    <option value="memes" data-bonus="20" data-reputation="-3">Мемы (+20%, -3% репутация)</option>
-                </select>
-            </div>
-            
-            <div class="headline-game">
-                <h3>Выберите заголовок:</h3>
-                <div class="headline-options">
-                    <button class="headline-option" data-reach="120" data-trust="-10">
-                        «10 токенов, которые ВЗОРВУТСЯ в 2025!»
-                        <span class="option-stats">Охват: +120%, Доверие: -10%</span>
-                    </button>
-                    <button class="headline-option" data-reach="80" data-trust="5">
-                        «Анализ рынка криптовалют: реалистичный прогноз»
-                        <span class="option-stats">Охват: +80%, Доверие: +5%</span>
-                    </button>
-                    <button class="headline-option" data-reach="60" data-trust="10">
-                        «Криптовалюты в 2025: экспертный обзор»
-                        <span class="option-stats">Охват: +60%, Доверие: +10%</span>
-                    </button>
-                </div>
-            </div>
-            
-            <button class="publish-btn" id="publish-btn">Опубликовать</button>
-        </div>
-        
-        <!-- Аналитика -->
-        <div class="analytics" id="analytics" style="display: none;">
-            <div class="analytics-header">
-                <h2>Аналитика канала</h2>
-                <button class="close-btn" id="close-analytics">×</button>
-            </div>
-            
-            <div class="chart-container">
-                <canvas id="growthChart"></canvas>
-            </div>
-            
-            <div class="competitor-analysis">
-                <h3>Сравнение с конкурентами</h3>
-                <div class="competitor">
-                    <span class="competitor-name">TechToday</span>
-                    <span class="competitor-stats">Подписчики: 24.5K (+15%)</span>
-                    <div class="comparison">
-                        <span>Вы отстаете на 23%</span>
-                    </div>
-                </div>
-                <div class="competitor">
-                    <span class="competitor-name">FutureTech</span>
-                    <span class="competitor-stats">Подписчики: 18.1K (+8%)</span>
-                    <div class="comparison">
-                        <span>Вы отстаете на 12%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <table class="analytics-table">
+        <thead>
+            <tr>
+                <th colspan="2">TechTrends 2025 Analytics</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Systems Online</td>
+                <td class="value-high">3 active</td>
+            </tr>
+            <tr>
+                <td>Data Basins</td>
+                <td>6-60 petaflops</td>
+            </tr>
+            <tr>
+                <td>Transgroups</td>
+                <td>12-19 channels</td>
+            </tr>
+            <tr>
+                <td>Core Nodes</td>
+                <td class="value-high">≥ 242 in nucleus</td>
+            </tr>
+            <tr>
+                <td>Hypocampus Index</td>
+                <td>789 units</td>
+            </tr>
+            <tr>
+                <td>Efficiency</td>
+                <td class="value-high">≥ 12%</td>
+            </tr>
+            <tr>
+                <td>Bacteriomotors</td>
+                <td class="value-low">8.9% capacity</td>
+            </tr>
+            <tr>
+                <td>Error Rate</td>
+                <td class="value-low">≥ 2.1%</td>
+            </tr>
+            <tr>
+                <td>Gestalt Protocols</td>
+                <td>User | Assurance | Nominal | Persona</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="footnote">
+        <i>Source: 75% census. Humanityfire zoo!</i>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

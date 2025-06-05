@@ -31,32 +31,31 @@
 }
 
 /* Base Styles */
-body {
-    font-family: 'Poppins', sans-serif; /* Более современный шрифт */
+html, body {
+    height: 100vh; /* Убедимся, что HTML и body занимают всю высоту вьюпорта */
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    overflow: hidden; /* ИЗМЕНЕНО: Полностью отключаем прокрутку на уровне HTML/Body */
+}
+body {
+    font-family: 'Poppins', sans-serif; /* Более современный шрифт */
     background-color: var(--color-background); /* Чисто черный фон */
     color: var(--color-text-primary);
-    overflow-x: hidden;
+    overflow-x: hidden; /* Скрываем горизонтальный скролл */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    touch-action: pan-y; /* Оптимизация для вертикального скроллинга */
+    /* touch-action: pan-y; */ /* Удаляем, так как стремимся к отсутствию скролла */
 }
 
 /* Global Container for screens */
 .screen {
-    width: 100%; /* ИЗМЕНЕНО: Занимает всю доступную ширину */
-    /* max-width: 500px; /* УДАЛЕНО: Больше не ограничиваем ширину для мобильных */
-    min-height: 100vh;
-    background-color: var(--color-background); /* Чтобы экраны тоже были черными */
+    width: 100%; /* Занимает всю доступную ширину */
+    height: 100vh; /* Фиксированная высота вьюпорта для отсутствия скролла */
+    background-color: var(--color-background);
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Начинаем сверху */
-    align-items: center; /* Центрирует содержимое внутри себя */
+    justify-content: space-between; /* Распределяет элементы сверху и снизу */
+    align-items: center; /* Центрирует содержимое по горизонтали */
     padding: var(--padding-md);
     box-sizing: border-box;
     position: absolute; /* Позволяет наслаивать и анимировать */
@@ -66,8 +65,7 @@ body {
     transform: translateX(100%);
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
     z-index: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden; /* Отключаем все прокрутки на уровне экрана */
 }
 
 .screen.visible {
@@ -88,8 +86,8 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 100;
-    transition: opacity 0.5s ease-out;
     opacity: 1;
+    transition: opacity 0.5s ease-out;
 }
 .preloader.hidden {
     opacity: 0;
@@ -155,7 +153,7 @@ body {
     grid-template-columns: 1fr; /* Single column for mobile */
     gap: var(--gap-md);
     margin-bottom: var(--padding-md);
-    width: 90%; /* ИЗМЕНЕНО: Ширина для сетки тем */
+    width: 90%; /* Ширина для сетки тем */
     max-width: 400px; /* Ограничиваем максимальную ширину сетки */
 }
 
@@ -256,7 +254,6 @@ body {
 /* Studio Screen - Основной экран игры */
 .studio-screen {
     background-color: var(--color-background); /* Черный фон */
-    justify-content: space-between; /* Распределяем элементы по вертикали */
     padding: var(--padding-md);
     padding-top: calc(var(--padding-md) + env(safe-area-inset-top, 0));
     padding-bottom: calc(var(--padding-md) + env(safe-area-inset-bottom, 0));
@@ -268,7 +265,7 @@ body {
 
 /* Верхняя панель статистики (Энергия, Настроение) */
 .top-stats-panel {
-    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
+    width: 90%; /* Занимает 90% ширины */
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -303,10 +300,23 @@ body {
     text-shadow: 0 0 8px var(--color-accent-pink);
 }
 
+/* НОВЫЙ: Обертка для центральной части, которая займет оставшееся место */
+.middle-content-wrapper {
+    flex-grow: 1; /* Занимает все доступное вертикальное пространство */
+    width: 100%; /* Занимает всю ширину родителя */
+    display: flex;
+    flex-direction: column; /* Элементы внутри будут располагаться вертикально */
+    justify-content: center; /* Центрирует содержимое (channel-info-block) по вертикали */
+    align-items: center; /* Центрирует содержимое по горизонтали */
+    position: relative; /* Создает контекст для абсолютного позиционирования персонажа/статуса */
+    padding-top: 15px; /* Небольшой отступ сверху */
+    padding-bottom: 15px; /* Небольшой отступ снизу */
+}
+
 /* Центральный блок информации о канале */
 .channel-info-block {
-    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
-    /* max-width: 400px; /* УДАЛЕНО */
+    width: 90%; /* Занимает 90% ширины */
+    max-width: 400px; /* Ограничиваем максимальную ширину */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
     padding: var(--padding-md);
@@ -316,8 +326,6 @@ body {
     z-index: 3;
     border: 2px solid;
     border-image: var(--gradient-border-light) 1;
-    margin-top: auto;
-    margin-bottom: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -411,19 +419,19 @@ body {
     display: none;
 }
 
-/* Персонаж (позиционируем относительно центра экрана) */
+/* Персонаж (позиционируем абсолютно внутри middle-content-wrapper) */
 .character-sprite {
     position: absolute;
-    bottom: 0; /* ИЗМЕНЕНО: Прижимаем к самому низу */
+    bottom: 0; /* Прижимаем к низу middle-content-wrapper */
     left: 50%;
     transform: translateX(-50%);
     width: auto;
-    height: 400px; /* ИЗМЕНЕНО: Увеличен размер персонажа */
+    height: 350px; /* ФИКСИРОВАННАЯ ВЫСОТА для лучшего контроля на разных экранах */
     object-fit: contain;
     z-index: 2;
     transition: all 0.3s ease-out;
-    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8)); /* Более сильная тень */
-    pointer-events: none; /* Чтобы не мешал взаимодействовать с элементами под ним */
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
+    pointer-events: none;
 }
 
 /* Character States - только анимации, src меняется через JS */
@@ -467,14 +475,14 @@ body {
     animation: idle-blink 5s infinite;
 }
 
-/* Статус производства поста */
+/* Статус производства поста (позиционируется абсолютно внутри middle-content-wrapper) */
 .post-production-status {
     position: absolute;
-    bottom: calc(var(--padding-md) + 120px); /* Над action-buttons, под персонажем */
+    top: 15px; /* Позиционируем от верха middle-content-wrapper */
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 350px; /* Сохраняем max-width для этого блока, чтобы он не был слишком широким */
+    max-width: 350px; /* Сохраняем max-width для этого блока */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-md);
     padding: var(--padding-sm);
@@ -513,11 +521,11 @@ body {
 
 /* Нижняя панель с кнопками действий */
 .action-buttons {
-    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
-    /* max-width: 450px; /* УДАЛЕНО */
+    width: 90%; /* Занимает 90% ширины */
+    max-width: 450px; /* Ограничиваем максимальную ширину */
     display: flex;
     justify-content: space-around;
-    gap: 5px; /* ИЗМЕНЕНО: Уменьшен отступ между кнопками */
+    gap: 5px; /* Уменьшен отступ между кнопками */
     position: relative;
     z-index: 5;
     background-color: var(--color-secondary);
@@ -525,7 +533,7 @@ body {
     border-radius: var(--border-radius-lg);
     box-shadow: 0 0 15px rgba(0, 224, 255, 0.2), 0 0 10px rgba(224, 0, 255, 0.2);
     border: 1px solid rgba(0,224,255,0.3);
-    margin-top: auto;
+    /* margin-top: auto; /* УДАЛЕНО: теперь управляется flex-контейнером .screen */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
@@ -536,12 +544,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 3px; /* ИЗМЕНЕНО: Уменьшен padding */
+    padding: 8px 3px; /* Уменьшен padding */
     background-color: var(--color-primary);
     color: var(--color-text-primary);
     border: none; /* Убираем стандартный бордер */
     border-radius: var(--border-radius-md);
-    font-size: 0.75em; /* ИЗМЕНЕНО: Уменьшен шрифт */
+    font-size: 0.75em; /* Уменьшен шрифт */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -604,8 +612,8 @@ body {
 
 /* Content Creation Screen */
 .content-creation-panel {
-    width: 90%; /* ИЗМЕНЕНО: Занимает 90% ширины */
-    /* max-width: 400px; /* УДАЛЕНО */
+    width: 90%; /* Занимает 90% ширины */
+    max-width: 400px; /* Ограничиваем максимальную ширину */
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
     padding: var(--padding-md);
@@ -656,6 +664,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--gap-sm);
+    max-height: 200px; /* ИЗМЕНЕНО: Ограничиваем высоту списка идей */
+    overflow-y: auto; /* ИЗМЕНЕНО: Позволяем прокручивать ТОЛЬКО этот список */
+    width: 100%; /* Убедимся, что он занимает всю ширину внутри панели */
+    padding-right: 5px; /* Чтобы не было наложения контента на скроллбар */
+    box-sizing: border-box; /* Для корректного подсчета ширины с padding */
 }
 
 /* Modals */

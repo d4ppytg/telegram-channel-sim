@@ -2,159 +2,85 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Channel Control SIM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Telegram Channel Sim</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@404&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="preloader" class="preloader">
+    <div class="preloader">
         <div class="preloader-content">
-            <img src="assets/logo.png" alt="Logo" class="preloader-logo">
+            <img src="assets/preloader_logo.png" alt="Logo" class="preloader-logo">
             <div class="preloader-progress-bar">
                 <div class="preloader-progress-bar-fill"></div>
             </div>
-            <p id="game-version" class="preloader-version">v0.8.0</p>
+            <p class="preloader-version">v0.1</p>
         </div>
     </div>
 
-    <div id="theme-selection-screen" class="screen">
-        <div class="screen-content">
-            <h1 class="screen-title">Выберите Тему Вашего Канала</h1>
-            <div class="theme-selection-grid">
-                <div class="theme-card" data-theme="gaming">
-                    <img src="assets/theme_gaming.png" alt="Игровой Канал">
-                    <h3>Игровой Канал</h3>
-                    <p>Обзоры игр, прохождения, летсплеи. Для настоящих геймеров!</p>
-                </div>
-                <div class="theme-card" data-theme="lifestyle">
-                    <img src="assets/theme_lifestyle.png" alt="Лайфстайл Блог">
-                    <h3>Лайфстайл Блог</h3>
-                    <p>Путешествия, мода, кулинария, личные влоги. Жизнь на полную!</p>
-                </div>
-                <div class="theme-card" data-theme="tech">
-                    <img src="assets/theme_tech.png" alt="Техноблог">
-                    <h3>Техноблог</h3>
-                    <p>Обзоры гаджетов, новости технологий, гайды и лайфхаки.</p>
-                </div>
-            </div>
-            <button id="select-theme-button" class="btn" disabled>Выбрать тему</button>
-        </div>
-    </div>
-
-    <div id="welcome-screen" class="screen">
-        <div class="screen-content">
-            <img id="user-photo" src="placeholder-avatar.png" alt="User Avatar" class="user-avatar">
-            <h1 class="screen-title">Добро пожаловать, <span id="telegram-username-display">Дорогой Игрок</span>!</h1>
-            <p class="welcome-text">Вы готовы начать свою карьеру в мире контента и построить медиа-империю?</p>
-            <button id="start-game-button" class="btn">Начать игру</button>
-        </div>
-    </div>
-
-    <div id="cutscene-screen" class="screen cutscene-screen">
-        <div class="cutscene-slide active">
-            <img src="assets/cutscene_1.png" alt="Idea" class="cutscene-image">
-            <p class="cutscene-text">У каждого великого канала начинается с **идеи**.<br>Что вы хотите донести миру?</p>
-        </div>
-        <div class="cutscene-slide">
-            <img src="assets/cutscene_2.png" alt="Creation" class="cutscene-image">
-            <p class="cutscene-text">Затем приходит **создание**.<br>Каждый пост, каждое видео — это часть вашей мечты.</p>
-        </div>
-        <div class="cutscene-slide">
-            <img src="assets/cutscene_3.png" alt="Growth" class="cutscene-image">
-            <p class="cutscene-text">Терпение и упорство приводят к **росту**.<br>Ваша аудитория ждет вашего контента.</p>
-        </div>
-        <div class="cutscene-slide">
-            <img src="assets/cutscene_4.png" alt="Monetization" class="cutscene-image">
-            <p class="cutscene-text">И наконец, **монетизация**.<br>Превратите страсть в успешный бизнес!</p>
-        </div>
-        <button id="continue-to-studio-button" class="btn cutscene-continue-button">Вперед, к Студии!</button>
-    </div>
-
-    <div class="studio-container" id="studio-container">
-        <div class="studio-background">
-            <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
-            <div class="monitor-screen">
-                <h2 id="channel-name-on-monitor">Ваш Канал</h2>
-                <div class="monitor-stats">
-                    <p>Подписчики: <span id="subscribers-count">0</span></p>
-                    <p>Баланс: $<span id="balance-count">0</span></p>
-                </div>
-                <div class="trend-display-monitor" id="current-trend-display-monitor" style="display: none;">
-                    <p>В тренде: <span id="trend-description-monitor">Нет</span></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-stats">
+    <div id="studio-screen" class="screen studio-screen visible">
+        <div class="top-stats-panel">
             <div class="stat-item">
-                <img src="assets/icon_mood.png" alt="Настроение" class="stat-icon">
-                <span id="audience-mood-display">Отличное</span>
+                <i class="fas fa-bolt stat-icon"></i> <span id="energy-value" class="stat-value">100</span>/<span id="energy-max">100</span>
             </div>
             <div class="stat-item">
-                <img src="assets/icon_energy.png" alt="Энергия" class="stat-icon">
-                <span id="energy-count">100</span> / 100
+                <i class="fas fa-smile stat-icon"></i> <span id="mood-value" class="stat-value">100</span>/<span id="mood-max">100</span>
+            </div>
+        </div>
+
+        <div class="channel-info-block">
+            <div class="channel-header">
+                <h2 id="channel-name">ВАШ КАНАЛ</h2>
+                <div class="live-trends">LIVE-ТРЕНДЫ</div>
+            </div>
+            <div class="channel-stats">
+                <p>Подписчики: <span id="subscribers-value">1,234,567</span></p>
+                <p>Баланс: <span id="balance-value">123,456</span> <span class="currency-icon">₽</span></p>
+            </div>
+            </div>
+
+        <img id="character-img" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
+
+        <div id="post-production-status" class="post-production-status hidden">
+            <p>Создание поста...</p>
+            <div class="post-production-progress-bar">
+                <div class="post-production-progress-fill"></div>
             </div>
         </div>
 
         <div class="action-buttons">
-            <button id="create-post-button" class="btn action-button">
-                <img src="assets/icon_create_post.png" alt="Создать Пост">
-                Создать Пост
+            <button class="action-button" id="create-post-btn">
+                <i class="fas fa-edit action-icon"></i>
+                <span>Создать Пост</span>
             </button>
-            <button id="upgrades-button" class="btn action-button">
-                <img src="assets/icon_upgrades.png" alt="Улучшения">
-                Улучшения
+            <button class="action-button" id="upgrades-btn">
+                <i class="fas fa-star action-icon"></i>
+                <span>Улучшения</span>
             </button>
-            <button id="log-button" class="btn action-button">
-                <img src="assets/icon_log.png" alt="Журнал">
-                Журнал
+            <button class="action-button" id="journal-btn">
+                <i class="fas fa-book action-icon"></i>
+                <span>Журнал</span>
             </button>
-        </div>
-
-        <div id="post-production-status" class="post-production-status" style="display: none;">
-            <p>Производство: <span id="post-type-in-production"></span></p>
-            <div class="post-production-progress-bar">
-                <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
-            </div>
-            <p>Осталось: <span id="post-production-time-remaining"></span> сек</p>
+            <button class="action-button" id="settings-btn">
+                <i class="fas fa-cog action-icon"></i>
+                <span>Настройки</span>
+            </button>
         </div>
     </div>
 
-    <div id="create-post-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="create-post-modal">×</span>
-            <h2>Выберите Идею для Поста</h2>
-            <div id="content-ideas-list" class="modal-actions">
-                <p class="placeholder-text">Загрузка идей...</p>
-            </div>
-             <p class="hint-text">Идеи зависят от темы вашего канала и текущего уровня.</p>
-        </div>
-    </div>
-
-    <div id="upgrades-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="upgrades-modal">×</span>
-            <h2>Улучшения</h2>
-            <div class="modal-actions">
-                <button id="upgrade-content-quality" class="btn">Улучшить качество контента (Стоимость: $50)</button>
+    <div id="modal-overlay" class="modal-overlay">
+        <div id="modal-content" class="modal-content">
+            <span class="close-modal-button">&times;</span>
+            <h2 id="modal-title">Модальное окно</h2>
+            <div id="modal-body">
+                </div>
+            <div id="modal-actions" class="modal-actions">
                 </div>
         </div>
     </div>
 
-    <div id="log-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-button" data-modal-id="log-modal">×</span>
-            <h2>Журнал Событий</h2>
-            <ul id="event-log">
-                </ul>
-        </div>
-    </div>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

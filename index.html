@@ -62,33 +62,36 @@
             </div>
         </div>
 
-        <!-- Центральный блок информации о канале -->
-        <div class="channel-info-block">
-            <div class="channel-header">
-                <h2 id="channel-name">TECHTRENDS 2025</h2>
-                <div class="live-trends">LIVE-ТРЕНДЫ</div>
+        <!-- НОВЫЙ: Обертка для основного содержимого, чтобы оно заполняло доступное место -->
+        <div class="middle-content-wrapper">
+            <!-- Центральный блок информации о канале -->
+            <div class="channel-info-block">
+                <div class="channel-header">
+                    <h2 id="channel-name">TECHTRENDS 2025</h2>
+                    <div class="live-trends">LIVE-ТРЕНДЫ</div>
+                </div>
+                <div class="channel-stats">
+                    <p>Подписчики: <span id="subscribers-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="subscribers-change" class="trend-change">+0</span></p>
+                    <p>Просмотры: <span id="views-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="views-change" class="trend-change">+0</span></p>
+                    <p>Доход: <span id="balance-value">0</span> <span class="currency-icon">₽</span></p>
+                </div>
+                <div id="warning-message" class="warning-message hidden">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="warning-text">Предупреждение: Конкуренты запустили VR-серию!</span>
+                </div>
             </div>
-            <div class="channel-stats">
-                <p>Подписчики: <span id="subscribers-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="subscribers-change" class="trend-change">+0</span></p>
-                <p>Просмотры: <span id="views-value">0</span> <i class="fas fa-arrow-up trend-arrow up"></i><span id="views-change" class="trend-change">+0</span></p>
-                <p>Доход: <span id="balance-value">0</span> <span class="currency-icon">₽</span></p>
-            </div>
-            <div id="warning-message" class="warning-message hidden">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span id="warning-text">Предупреждение: Конкуренты запустили VR-серию!</span>
-            </div>
-        </div>
 
-        <!-- Персонаж (позиционируется абсолютно внутри .screen) -->
-        <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
+            <!-- Персонаж (позиционируется абсолютно внутри middle-content-wrapper) -->
+            <img id="character-sprite" src="assets/character_idle.png" alt="Character" class="character-sprite char-state-idle">
 
-        <!-- Статус производства поста -->
-        <div id="post-production-status" class="post-production-status hidden">
-            <p>Создание поста: <span id="post-in-production-type"></span></p>
-            <div class="post-production-progress-bar">
-                <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
+            <!-- Статус производства поста (позиционируется абсолютно внутри middle-content-wrapper) -->
+            <div id="post-production-status" class="post-production-status hidden">
+                <p>Создание поста: <span id="post-in-production-type"></span></p>
+                <div class="post-production-progress-bar">
+                    <div id="post-production-progress-fill" class="post-production-progress-fill"></div>
+                </div>
+                <p>Осталось: <span id="post-production-time-left"></span> сек</p>
             </div>
-            <p>Осталось: <span id="post-production-time-left"></span> сек</p>
         </div>
 
         <!-- Нижняя панель с кнопками действий -->

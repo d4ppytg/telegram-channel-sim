@@ -56,9 +56,11 @@ body {
     flex-direction: column;
     justify-content: space-between; /* Распределяет элементы сверху и снизу */
     align-items: center; /* Центрирует содержимое по горизонтали */
-    padding: var(--padding-md);
+    padding: 0; /* ИЗМЕНЕНО: Общий padding убран */
+    padding-top: env(safe-area-inset-top, 0); /* Только для безопасной области сверху */
+    padding-bottom: env(safe-area-inset-bottom, 0); /* Только для безопасной области снизу */
     box-sizing: border-box;
-    position: absolute; /* Позволяет наслаивать и анимировать */
+    position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
@@ -254,9 +256,9 @@ body {
 /* Studio Screen - Основной экран игры */
 .studio-screen {
     background-color: var(--color-background); /* Черный фон */
-    padding: var(--padding-md);
-    padding-top: calc(var(--padding-md) + env(safe-area-inset-top, 0));
-    padding-bottom: calc(var(--padding-md) + env(safe-area-inset-bottom, 0));
+    /* padding: var(--padding-md); */ /* УДАЛЕНО: теперь padding на .screen управляется безопасными областями */
+    /* padding-top: calc(var(--padding-md) + env(safe-area-inset-top, 0)); */ /* УДАЛЕНО */
+    /* padding-bottom: calc(var(--padding-md) + env(safe-area-inset-bottom, 0)); */ /* УДАЛЕНО */
     background-image: url('assets/background_studio.png'); /* Опциональный футуристичный фон */
     background-size: cover;
     background-position: center;
@@ -273,7 +275,8 @@ body {
     background-color: rgba(0,0,0,0.5); /* Полупрозрачный фон */
     border-radius: var(--border-radius-md);
     box-shadow: 0 0 15px rgba(0, 224, 255, 0.2), 0 0 10px rgba(224, 0, 255, 0.2); /* Неоновое свечение */
-    margin-bottom: var(--padding-md);
+    margin-top: var(--padding-md); /* ИЗМЕНЕНО: Добавляем отступ сверху */
+    margin-bottom: var(--padding-md); /* Сохраняем отступ снизу */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid rgba(0,224,255,0.3); /* Легкий неоновый бордер */
@@ -309,8 +312,8 @@ body {
     justify-content: center; /* Центрирует содержимое (channel-info-block) по вертикали */
     align-items: center; /* Центрирует содержимое по горизонтали */
     position: relative; /* Создает контекст для абсолютного позиционирования персонажа/статуса */
-    padding-top: 15px; /* Небольшой отступ сверху */
-    padding-bottom: 15px; /* Небольшой отступ снизу */
+    /* padding-top: 15px; */ /* УДАЛЕНО: Отступы теперь на элементах */
+    /* padding-bottom: 15px; */ /* УДАЛЕНО */
 }
 
 /* Центральный блок информации о канале */
@@ -426,7 +429,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: auto;
-    height: 350px; /* ФИКСИРОВАННАЯ ВЫСОТА для лучшего контроля на разных экранах */
+    height: 300px; /* ИЗМЕНЕНО: чуть уменьшена высота персонажа */
     object-fit: contain;
     z-index: 2;
     transition: all 0.3s ease-out;
@@ -533,7 +536,7 @@ body {
     border-radius: var(--border-radius-lg);
     box-shadow: 0 0 15px rgba(0, 224, 255, 0.2), 0 0 10px rgba(224, 0, 255, 0.2);
     border: 1px solid rgba(0,224,255,0.3);
-    /* margin-top: auto; /* УДАЛЕНО: теперь управляется flex-контейнером .screen */
+    margin-bottom: var(--padding-md); /* ИЗМЕНЕНО: Добавляем отступ снизу */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
@@ -664,8 +667,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--gap-sm);
-    max-height: 200px; /* ИЗМЕНЕНО: Ограничиваем высоту списка идей */
-    overflow-y: auto; /* ИЗМЕНЕНО: Позволяем прокручивать ТОЛЬКО этот список */
+    max-height: 200px; /* Ограничиваем высоту списка идей */
+    overflow-y: auto; /* Позволяем прокручивать ТОЛЬКО этот список */
     width: 100%; /* Убедимся, что он занимает всю ширину внутри панели */
     padding-right: 5px; /* Чтобы не было наложения контента на скроллбар */
     box-sizing: border-box; /* Для корректного подсчета ширины с padding */

@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             postProductionTimeLeftEl.textContent = Math.ceil(gameState.postProduction.timeLeft);
         } else {
             postProductionStatusEl.classList.add('hidden');
+            postProductionProgressFillEl.style.width = `0%`; // Сброс прогресса, когда не в работе
         }
 
         // Обновление доступности кнопок (пример)
@@ -301,12 +302,20 @@ document.addEventListener('DOMContentLoaded', () => {
             targetScreen.style.zIndex = '2';
             gameState.currentScreen = screenElementId;
             // Управление кнопкой "Назад" Telegram WebApp
+            // Кнопка "Назад" видна, если мы не на основном дашборде, прелоадере или выборе темы
             if (screenElementId !== 'main-dashboard-screen' && screenElementId !== 'preloader-screen' && screenElementId !== 'theme-selection-screen') {
                 tg.BackButton.show();
+                // Убедимся, что обработчик onClick не добавляется повторно, если он уже есть
+                // Это упрощенный вариант, для более надежной работы используйте offClick перед onClick
+                if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
+                    tg.BackButton.offClick(goBackToDashboard);
+                }
                 tg.BackButton.onClick(goBackToDashboard);
             } else {
                 tg.BackButton.hide();
-                tg.BackButton.offClick(goBackToDashboard); // Удаляем обработчик, чтобы избежать утечек
+                if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
+                    tg.BackButton.offClick(goBackToDashboard); // Удаляем обработчик, чтобы избежать утечек
+                }
             }
         }
         saveGame();
@@ -336,6 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Управление кнопкой "Назад" Telegram WebApp для модалок
         tg.BackButton.show(); // Показать кнопку "Назад" в Telegram WebApp
+        // Убедимся, что обработчик onClick не добавляется повторно
+        if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
+            tg.BackButton.offClick(closeModal);
+        }
         tg.BackButton.onClick(closeModal); // При нажатии на "Назад" закрыть модалку
     }
 
@@ -346,9 +359,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Восстановить поведение кнопки "Назад" в зависимости от текущего экрана
         if (gameState.currentScreen !== 'main-dashboard-screen' && gameState.currentScreen !== 'preloader-screen' && gameState.currentScreen !== 'theme-selection-screen') {
+            if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
+                tg.BackButton.offClick(closeModal);
+            }
             tg.BackButton.onClick(goBackToDashboard);
         } else {
             tg.BackButton.hide();
+            if (typeof tg.BackButton.offClick === 'function') { // Проверка для заглушки
+                tg.BackButton.offClick(closeModal);
+            }
         }
     }
 
@@ -643,7 +662,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModalButtonEl.addEventListener('click', closeModal);
     modalOverlayEl.addEventListener('click', (e) => {
-        if (e.target === modalOverlayEl && modalOverlayEl.classList.contains('visible')) { // Закрыть модальное окно, если клик по оверлею
+        // Закрыть модальное окно, если клик по оверлею И если модалка видима
+        if (e.target === modalOverlayEl && modalOverlayEl.classList.contains('visible')) { 
             closeModal();
         }
     });

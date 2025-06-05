@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Заглушка Telegram WebApp API для отладки ---
+    // --- Заглушка Telegram WebApp API для отладки ---\
     let tg;
     if (typeof window.Telegram === 'undefined' || typeof window.Telegram.WebApp === 'undefined') {
         console.warn('Telegram WebApp API не загружен или недоступен. Запуск в режиме отладки с заглушкой.');
@@ -24,691 +24,490 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('BackButton onClick (заглушка)');
                     // В реальном приложении Telegram сам вызывает callback при нажатии
                 },
-                offClick: (callback) => console.log('BackButton offClick (заглушка)') // Добавлено для совместимости
-            },
-            close: () => console.log('Telegram.WebApp.close() (заглушка)')
+                offClick: (callback) => console.log('BackButton offClick (заглушка)')
+            }
         };
-        window.Telegram = { WebApp: tg };
     } else {
         tg = window.Telegram.WebApp;
-        console.log('Telegram WebApp API detected.');
+        tg.ready();
+        tg.expand(); // Расширяем приложение на весь экран
+        tg.BackButton.onClick(() => {
+            // В зависимости от текущего экрана, можно вернуться назад или закрыть приложение
+            if (gameState.currentScreen !== 'main-dashboard-screen') {
+                showScreen('main-dashboard-screen');
+                tg.BackButton.hide();
+            } else {
+                tg.close();
+            }
+        });
+        tg.BackButton.hide(); // Скрываем кнопку назад по умолчанию
     }
 
-    tg.ready();
-    tg.expand(); // Расширяем WebApp на весь экран
+    // --- Глобальное состояние игры ---\
+    let gameState = {
+        currentScreen: 'preloader-screen',
+        user: {
+            username: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.username : 'Unknown',
+            firstName: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : 'Пользователь',
+            photoUrl: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.photo_url : 'assets/placeholder-avatar.png'
+        },
+        stats: {
+            subscribers: 0,
+            money: 0,
+            incomePerClick: 1, // Доход за клик
+            incomePerSecond: 0, // Доход в секунду (от пассивных источников)
+            energy: 100, // Энергия для кликов
+            maxEnergy: 100,
+            energyRechargeRate: 1, // Скорость восстановления энергии в секунду
+            views: 0,
+            likes: 0,
+            reposts: 0,
+            comments: 0
+        },
+        channel: {
+            theme: '',
+            level: 1,
+            experience: 0,
+            experienceToNextLevel: 100,
+            prestigeLevel: 0
+        },
+        upgrades: {}, // Здесь будут храниться купленные апгрейды
+        items: {}, // Купленные предметы
+        achievements: {} // Достижения
+    };
 
-    // --- DOM Elements ---
+    // --- Элементы UI ---
     const preloaderScreen = document.getElementById('preloader-screen');
     const preloaderProgressBarFill = document.querySelector('.preloader-progress-bar-fill');
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const mainDashboardScreen = document.getElementById('main-dashboard-screen');
-    const createContentScreen = document.getElementById('create-content-screen');
-    const analyticsScreen = document.getElementById('analytics-screen');
-    const teamScreen = document.getElementById('team-screen');
-    const monetizationScreen = document.getElementById('monetization-screen');
-
-    // Кнопки
-    const themeCards = document.querySelectorAll('.theme-card');
-    const selectThemeButton = document.getElementById('select-theme-button');
-    const createPostBtn = document.getElementById('create-post-btn');
-    const analyticsBtn = document.getElementById('analytics-btn');
-    const teamBtn = document.getElementById('team-btn');
-    const monetizationBtn = document.getElementById('monetization-btn');
-    const generateIdeaBtn = document.getElementById('generate-idea-btn');
-    const contentTypeBtns = document.querySelectorAll('.content-type-btn');
-
-
-    // Статистика на дашборде
-    const energyValueEl = document.getElementById('energy-value');
-    const energyMaxEl = document.getElementById('energy-max');
-    const moodValueEl = document.getElementById('mood-value');
-    const moodMaxEl = document.getElementById('mood-max');
-    const channelNameEl = document.getElementById('channel-name');
-    const subscribersValueEl = document.getElementById('subscribers-value');
-    const subscribersChangeEl = document.getElementById('subscribers-change');
-    const viewsValueEl = document.getElementById('views-value');
-    const viewsChangeEl = document.getElementById('views-change');
-    const balanceValueEl = document.getElementById('balance-value');
-    const characterSprite = document.getElementById('character-sprite');
-    const warningMessage = document.getElementById('warning-message');
-    const warningText = document.getElementById('warning-text');
-
-    // Статус производства поста
-    const postProductionStatus = document.getElementById('post-production-status');
-    const postInProductionType = document.getElementById('post-in-production-type');
-    const postProductionProgressFill = document.getElementById('post-production-progress-fill');
-    const postProductionTimeLeft = document.getElementById('post-production-time-left');
-    const contentIdeasList = document.getElementById('content-ideas-list');
+    const clickerScreen = document.getElementById('clicker-screen');
+    const subscribersDisplay = document.getElementById('subscribers-display');
+    const moneyDisplay = document.getElementById('money-display');
+    const incomePerSecondDisplay = document.getElementById('income-per-second-display');
+    const incomePerClickDisplay = document.getElementById('income-per-click-display');
+    const energyDisplay = document.getElementById('energy-display');
+    const levelDisplay = document.getElementById('level-display');
+    const xpDisplay = document.getElementById('xp-display');
+    const xpProgressBarFill = document.getElementById('xp-progress-bar-fill');
+    const clickerButton = document.getElementById('clicker-button');
+    const userNameDisplay = document.getElementById('user-name');
+    const userAvatarDisplay = document.getElementById('user-avatar');
 
     // Модальное окно
     const modalOverlay = document.getElementById('modal-overlay');
+    const modalContent = document.getElementById('modal-content');
+    const closeModalButton = document.querySelector('.close-modal-button');
     const modalTitle = document.getElementById('modal-title');
     const modalBody = document.getElementById('modal-body');
     const modalActions = document.getElementById('modal-actions');
-    const closeModalButton = document.querySelector('.close-modal-button');
 
-    // --- Game State ---
-    let gameState = {
-        currentScreen: 'preloader-screen',
-        selectedTheme: null,
-        energy: 100,
-        maxEnergy: 100,
-        mood: 100,
-        maxMood: 100,
-        subscribers: 0,
-        views: 0,
-        balance: 0,
-        channelName: "Мой Канал",
-        postInProduction: null, // { type: 'post', idea: 'Gaming News', duration: 10, timeLeft: 10, startTime: Date.now() }
-        gameInterval: null,
-        subWaveInterval: null,
-        lastSubWaveTime: Date.now(),
-        initialLoadComplete: false,
-        lastUpdateTime: Date.now(),
-        debugMode: true // Включите для более удобной отладки
-    };
-
-    // --- Game Data (могут быть загружены с сервера) ---
-    const gameData = {
-        themes: {
-            gaming: { name: 'Игровой Канал', channelNames: ['PixelPlay', 'GameVerse', 'LevelUp Hub'] },
-            lifestyle: { name: 'Лайфстайл Блог', channelNames: ['LifeVlog', 'DailyFlow', 'UrbanVibes'] },
-            tech: { name: 'Техноблог', channelNames: ['TechTrends', 'FutureGadgets', 'Digital Pulse'] }
-        },
-        contentTypes: {
-            post: { name: 'Пост', baseDuration: 10, baseCost: 5, baseEnergy: 10 },
-            video: { name: 'Видео', baseDuration: 30, baseCost: 20, baseEnergy: 30 },
-            story: { name: 'Сторис', baseDuration: 5, baseCost: 2, baseEnergy: 5 },
-            podcast: { name: 'Подкаст', baseDuration: 20, baseCost: 15, baseEnergy: 25 }
-        },
-        contentIdeas: {
-            gaming: [
-                { id: 'gaming-news', name: 'Игровые Новости', description: 'Обзор последних новостей в мире гейминга.', type: 'post', difficulty: 1, baseSubs: 10, baseViews: 50, energyCost: 5, timeCost: 5 },
-                { id: 'game-review', name: 'Обзор новой игры', description: 'Подробный обзор популярной игры.', type: 'video', difficulty: 2, baseSubs: 50, baseViews: 200, energyCost: 20, timeCost: 20 },
-                { id: 'stream-highlights', name: 'Нарезка со стрима', description: 'Лучшие моменты с недавних трансляций.', type: 'story', difficulty: 1, baseSubs: 5, baseViews: 30, energyCost: 3, timeCost: 3 },
-                { id: 'esports-analysis', name: 'Анализ киберспорта', description: 'Разбор текущих турниров и команд.', type: 'podcast', difficulty: 3, baseSubs: 30, baseViews: 150, energyCost: 15, timeCost: 15 }
-            ],
-            lifestyle: [
-                { id: 'travel-vlog', name: 'Влог о путешествии', description: 'Приключения в новом городе.', type: 'video', difficulty: 2, baseSubs: 60, baseViews: 250, energyCost: 25, timeCost: 25 },
-                { id: 'fashion-haul', name: 'Обзор покупок одежды', description: 'Демонстрация последних приобретений.', type: 'post', difficulty: 1, baseSubs: 12, baseViews: 60, energyCost: 7, timeCost: 6 },
-                { id: 'cooking-recipe', name: 'Рецепт дня', description: 'Простой и вкусный рецепт для дома.', type: 'story', difficulty: 1, baseSubs: 7, baseViews: 40, energyCost: 4, timeCost: 4 },
-                { id: 'daily-routine', name: 'Мой день', description: 'Один день из жизни блогера.', type: 'podcast', difficulty: 2, baseSubs: 25, baseViews: 100, energyCost: 12, timeCost: 12 }
-            ],
-            tech: [
-                { id: 'gadget-review', name: 'Обзор нового гаджета', description: 'Тест и мнение о популярном устройстве.', type: 'video', difficulty: 3, baseSubs: 70, baseViews: 300, energyCost: 30, timeCost: 30 },
-                { id: 'tech-news-digest', name: 'Дайджест тех. новостей', description: 'Коротко о главном в мире технологий.', type: 'post', difficulty: 1, baseSubs: 15, baseViews: 70, energyCost: 8, timeCost: 7 },
-                { id: 'quick-tips', name: 'Быстрые советы по ПО', description: 'Лайфхаки для программ.', type: 'story', difficulty: 1, baseSubs: 8, baseViews: 45, energyCost: 5, timeCost: 5 },
-                { id: 'future-tech-talk', name: 'Разговор о будущем технологий', description: 'Обсуждение трендов и инноваций.', type: 'podcast', difficulty: 2, baseSubs: 35, baseViews: 180, energyCost: 18, timeCost: 18 }
-            ]
-        }
-    };
-
-    // --- Preloader Logic ---
-    const assetsToLoad = [
-        'assets/logo.png',
-        'assets/theme_gaming.png',
-        'assets/theme_lifestyle.png',
-        'assets/theme_tech.png',
-        'assets/character_idle.png',
-        'assets/character_happy.png',
-        'assets/character_typing.png',
-        'assets/character_sleeping.png',
-        // Добавьте другие важные изображения, которые должны быть загружены до старта игры
-        // Например, иконки, фоны, если они не в CSS
-    ];
-
-    let assetsLoaded = 0;
-
-    function loadAsset(url) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                assetsLoaded++;
-                updatePreloader();
-                resolve();
-            };
-            img.onerror = () => {
-                console.error(`Ошибка загрузки: ${url}`);
-                assetsLoaded++; // Продолжаем даже при ошибке, чтобы не застопорить прелоадер
-                updatePreloader();
-                resolve(); // Разрешаем промис, чтобы приложение не зависло
-            };
-            img.src = url;
-        });
-    }
-
-    function updatePreloader() {
-        const progress = (assetsLoaded / assetsToLoad.length) * 100;
-        preloaderProgressBarFill.style.width = `${progress}%`;
-        if (progress >= 100 && !gameState.initialLoadComplete) {
-            // Задержка перед скрытием прелоадера, чтобы анимация была видна
-            setTimeout(() => {
-                gameState.initialLoadComplete = true;
-                // Инициализация Telegram WebApp, если еще не сделана
-                tg.ready();
-                tg.expand();
-                showScreen('theme-selection-screen'); // Переходим к следующему экрану
-                tg.HapticFeedback.notificationOccurred('success');
-            }, 500); // 0.5 секунды задержки
-        }
-    }
-
-    async function initializeApp() {
-        // Проверяем, есть ли сохраненное состояние
-        const savedState = localStorage.getItem('socialMediaTycoonState');
-        if (savedState) {
-            gameState = JSON.parse(savedState);
-            // Восстанавливаем состояние элементов UI
-            updateUI();
-            // Сразу переходим к дашборду, если игра уже начата
-            showScreen('main-dashboard-screen');
-            // Перезапускаем игровые циклы
-            startGameLoop();
-            startSubWaveInterval();
-            console.log('Игра загружена из сохранения.');
-            tg.HapticFeedback.notificationOccurred('success');
-        } else {
-            console.log('Начинаем новую игру или загружаем ассеты.');
-            // Запускаем загрузку ассетов
-            Promise.all(assetsToLoad.map(loadAsset)).then(() => {
-                // Все ассеты загружены, прелоадер обновлен в updatePreloader
-                // Переход на следующий экран уже вызван в updatePreloader
-            }).catch(error => {
-                console.error('Ошибка при загрузке ассетов:', error);
-                // В случае серьезной ошибки, все равно пытаемся перейти дальше
-                updatePreloader();
-                showScreen('theme-selection-screen');
-                tg.HapticFeedback.notificationOccurred('error');
-            });
-        }
-    }
-
-    // --- Screen Management ---
-    function showScreen(screenId) {
+    // --- Функции UI ---\
+    function showScreen(screenId, hideBackButton = false) {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('visible');
-            // Сбрасываем прокрутку, если у экрана была собственная прокрутка
-            if (screen.id !== 'main-dashboard-screen') { // Дашборд всегда без прокрутки
-                screen.scrollTop = 0;
-            }
         });
-        const targetScreen = document.getElementById(screenId);
-        if (targetScreen) {
-            targetScreen.classList.add('visible');
-            gameState.currentScreen = screenId;
-            saveGameState(); // Сохраняем текущий экран
-            updateBackButton(); // Обновляем поведение кнопки "Назад"
-            updateActiveActionButton(); // Обновляем активную кнопку в нижнем меню
-        } else {
-            console.error(`Экран с ID "${screenId}" не найден.`);
-        }
-    }
+        document.getElementById(screenId).classList.add('visible');
+        gameState.currentScreen = screenId;
+        saveGameState(); // Сохраняем текущий экран при смене
 
-    function updateBackButton() {
-        if (tg && tg.BackButton) {
-            // Удаляем предыдущие слушатели, чтобы избежать дублирования
-            tg.BackButton.offClick(handleBackButtonClick);
-
-            if (gameState.currentScreen === 'main-dashboard-screen' || gameState.currentScreen === 'preloader-screen' || gameState.currentScreen === 'theme-selection-screen') {
-                tg.BackButton.hide();
-            } else {
+        if (tg.BackButton) {
+            if (screenId !== 'main-dashboard-screen' && !hideBackButton) {
                 tg.BackButton.show();
-                tg.BackButton.onClick(handleBackButtonClick);
-            }
-        }
-    }
-
-    function handleBackButtonClick() {
-        tg.HapticFeedback.impactOccurred('light');
-        if (gameState.currentScreen === 'create-content-screen' ||
-            gameState.currentScreen === 'analytics-screen' ||
-            gameState.currentScreen === 'team-screen' ||
-            gameState.currentScreen === 'monetization-screen') {
-            showScreen('main-dashboard-screen');
-        } else if (gameState.currentScreen === 'modal-overlay') {
-            hideModal(); // Если открыто модальное окно, сначала закрываем его
-        }
-        // Добавьте логику для других экранов, если они появятся
-    }
-
-    // --- Theme Selection ---
-    themeCards.forEach(card => {
-        card.addEventListener('click', () => {
-            tg.HapticFeedback.impactOccurred('light');
-            themeCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            gameState.selectedTheme = card.dataset.theme;
-            selectThemeButton.disabled = false;
-        });
-    });
-
-    selectThemeButton.addEventListener('click', () => {
-        if (gameState.selectedTheme) {
-            tg.HapticFeedback.notificationOccurred('success');
-            // Устанавливаем имя канала на основе выбранной темы
-            const themeInfo = gameData.themes[gameState.selectedTheme];
-            if (themeInfo && themeInfo.channelNames && themeInfo.channelNames.length > 0) {
-                gameState.channelName = themeInfo.channelNames[Math.floor(Math.random() * themeInfo.channelNames.length)];
             } else {
-                gameState.channelName = "Мой Канал"; // Запасное имя
+                tg.BackButton.hide();
             }
-            updateUI(); // Обновляем UI с новым именем канала
-            showScreen('main-dashboard-screen');
-            startGameLoop(); // Запускаем основной игровой цикл
-            startSubWaveInterval(); // Запускаем интервал волн подписчиков
         }
-    });
+    }
 
-    // --- Game Loop and Stats Update ---
     function updateUI() {
-        energyValueEl.textContent = gameState.energy;
-        energyMaxEl.textContent = gameState.maxEnergy;
-        moodValueEl.textContent = gameState.mood;
-        moodMaxEl.textContent = gameState.maxMood;
-        channelNameEl.textContent = gameState.channelName;
-        subscribersValueEl.textContent = formatNumber(gameState.subscribers);
-        viewsValueEl.textContent = formatNumber(gameState.views);
-        balanceValueEl.textContent = formatNumber(gameState.balance);
+        // Убедитесь, что все числовые значения корректно отображаются
+        subscribersDisplay.textContent = formatNumber(gameState.stats.subscribers);
+        moneyDisplay.textContent = formatMoney(gameState.stats.money);
+        incomePerSecondDisplay.textContent = formatMoney(gameState.stats.incomePerSecond);
+        incomePerClickDisplay.textContent = formatMoney(gameState.stats.incomePerClick);
+        energyDisplay.textContent = `${Math.floor(gameState.stats.energy)} / ${gameState.stats.maxEnergy}`; // Энергия может быть дробной, но отображаем целую
+        levelDisplay.textContent = gameState.channel.level;
+        xpDisplay.textContent = `${Math.floor(gameState.channel.experience)} / ${gameState.channel.experienceToNextLevel} XP`; // Опыт тоже округляем
+        xpProgressBarFill.style.width = `${(gameState.channel.experience / gameState.channel.experienceToNextLevel) * 100}%`;
 
-        // Обновление изменения подписчиков и просмотров (пока заглушка)
-        // В реальной игре эти значения будут меняться динамически
-        const subChange = 0; // Например, рассчитывайте из активности
-        const viewChange = 0; // Например, рассчитывайте из активности
-        subscribersChangeEl.textContent = (subChange >= 0 ? '+' : '') + formatNumber(subChange);
-        viewsChangeEl.textContent = (viewChange >= 0 ? '+' : '') + formatNumber(viewChange);
-        subscribersChangeEl.classList.toggle('up', subChange >= 0);
-        subscribersChangeEl.classList.toggle('down', subChange < 0);
-        viewsChangeEl.classList.toggle('up', viewChange >= 0);
-        viewsChangeEl.classList.toggle('down', viewChange < 0);
+        userNameDisplay.textContent = gameState.user.firstName;
+        userAvatarDisplay.src = gameState.user.photoUrl;
 
-        // Обновление персонажа и статуса производства
-        updateCharacterSprite();
-        updatePostProductionStatus();
+        // Обновление состояния кнопки кликера
+        if (gameState.stats.energy <= 0) {
+            clickerButton.classList.add('disabled');
+            clickerButton.disabled = true;
+        } else {
+            clickerButton.classList.remove('disabled');
+            clickerButton.disabled = false;
+        }
     }
 
     function formatNumber(num) {
-        if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-        return num.toString();
+        if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+        if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+        return num.toFixed(0); // Целые числа для подписчиков
     }
 
-    function gameTick() {
-        const now = Date.now();
-        const deltaTime = (now - gameState.lastUpdateTime) / 1000; // Дельта времени в секундах
-        gameState.lastUpdateTime = now;
-
-        // Обновление энергии и настроения
-        // Пример: настроение медленно падает, если нет активности
-        gameState.mood = Math.max(0, gameState.mood - (0.1 * deltaTime)); // Падает на 0.1 в секунду
-        gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + (0.5 * deltaTime)); // Восстанавливается на 0.5 в секунду
-
-        // Проверка производства поста
-        if (gameState.postInProduction) {
-            gameState.postInProduction.timeLeft -= deltaTime;
-            if (gameState.postInProduction.timeLeft <= 0) {
-                completePostProduction();
-            }
-        }
-
-        updateUI(); // Обновляем UI каждый тик
-        saveGameState(); // Сохраняем состояние игры
+    function formatMoney(num) {
+        // Округляем до 2 знаков после запятой для денег
+        return num.toFixed(2) + ' ₽';
     }
 
-    function startGameLoop() {
-        if (gameState.gameInterval) {
-            clearInterval(gameState.gameInterval);
-        }
-        gameState.gameInterval = setInterval(gameTick, 1000 / 30); // 30 тиков в секунду для плавности
-    }
 
-    // --- Subscriber Wave Logic ---
-    function generateSubscribersWave() {
-        const now = Date.now();
-        // Генерируем новую волну подписчиков каждые 10-30 секунд
-        if (now - gameState.lastSubWaveTime >= (gameState.debugMode ? 5000 : 10000 + Math.random() * 20000)) {
-            const minSubs = 1 + Math.floor(gameState.subscribers / 1000); // Больше подписчиков = больше прирост
-            const maxSubs = 10 + Math.floor(gameState.subscribers / 500);
-            const newSubs = Math.floor(Math.random() * (maxSubs - minSubs + 1)) + minSubs;
-            const newViews = newSubs * (5 + Math.random() * 10); // Просмотры в 5-15 раз больше подписчиков
-
-            const oldSubscribers = gameState.subscribers;
-            const oldViews = gameState.views;
-
-            gameState.subscribers += newSubs;
-            gameState.views += newViews;
-
-            // Расчет дохода (простая модель: 1 рубль за 1000 просмотров)
-            const income = Math.floor(newViews / 1000);
-            gameState.balance += income;
-
-            // Обновляем тренд изменения
-            const subsDelta = gameState.subscribers - oldSubscribers;
-            const viewsDelta = gameState.views - oldViews;
-
-            subscribersChangeEl.textContent = (subsDelta >= 0 ? '+' : '') + formatNumber(subsDelta);
-            subscribersChangeEl.classList.toggle('up', subsDelta >= 0);
-            subscribersChangeEl.classList.toggle('down', subsDelta < 0);
-
-            viewsChangeEl.textContent = (viewsDelta >= 0 ? '+' : '') + formatNumber(viewsDelta);
-            viewsChangeEl.classList.toggle('up', viewsDelta >= 0);
-            viewsChangeEl.classList.toggle('down', viewsDelta < 0);
-
-            // Визуальное изменение стрелок
-            subscribersChangeEl.previousElementSibling.classList.toggle('up', subsDelta >= 0);
-            subscribersChangeEl.previousElementSibling.classList.toggle('down', subsDelta < 0);
-            viewsChangeEl.previousElementSibling.classList.toggle('up', viewsDelta >= 0);
-            viewsChangeEl.previousElementSibling.classList.toggle('down', viewsDelta < 0);
-
-            if (subsDelta > 0) tg.HapticFeedback.notificationOccurred('success');
-            if (income > 0) tg.HapticFeedback.notificationOccurred('success');
-
-            gameState.lastSubWaveTime = now;
-            updateUI();
-        }
-    }
-
-    function startSubWaveInterval() {
-        if (gameState.subWaveInterval) {
-            clearInterval(gameState.subWaveInterval);
-        }
-        gameState.subWaveInterval = setInterval(generateSubscribersWave, 1000); // Проверяем каждую секунду
-    }
-
-    // --- Character & Production Status ---
-    function updateCharacterSprite() {
-        // Логика смены спрайтов персонажа в зависимости от состояния
-        // По умолчанию персонаж бездействует
-        characterSprite.src = 'assets/character_idle.png';
-        characterSprite.className = 'character-sprite char-state-idle char-anim-idle-blink';
-
-        if (gameState.postInProduction) {
-            characterSprite.src = 'assets/character_typing.png';
-            characterSprite.className = 'character-sprite char-state-typing';
-        } else if (gameState.mood < 30) {
-            // Если настроение очень низкое
-            characterSprite.src = 'assets/character_sleeping.png'; // Или другой спрайт для плохого настроения
-            characterSprite.className = 'character-sprite char-state-sleeping';
-        } else if (gameState.subscribers > 0 && gameState.subscribers % 100 < 50 && (Date.now() % 5000 < 1000)) {
-            // Простая логика для "счастливого" состояния, когда подписчики растут
-            characterSprite.src = 'assets/character_happy.png';
-            characterSprite.className = 'character-sprite char-state-happy';
-        }
-        // Если никаких активных состояний нет, возвращаемся к idle.
-        // Перерисовывать src и class лучше только при изменении состояния для производительности.
-    }
-
-    function updatePostProductionStatus() {
-        if (gameState.postInProduction) {
-            postProductionStatus.classList.remove('hidden');
-            postInProductionType.textContent = gameState.contentTypes[gameState.postInProduction.type].name;
-            const progress = (1 - (gameState.postInProduction.timeLeft / gameState.postInProduction.duration)) * 100;
-            postProductionProgressFill.style.width = `${Math.min(100, progress)}%`;
-            postProductionTimeLeft.textContent = Math.max(0, Math.ceil(gameState.postInProduction.timeLeft));
-        } else {
-            postProductionStatus.classList.add('hidden');
-        }
-    }
-
-    function completePostProduction() {
-        if (!gameState.postInProduction) return;
-
-        const producedContent = gameState.postInProduction.idea;
-        const contentType = gameState.postInProduction.type;
-        const contentInfo = gameData.contentIdeas[gameState.selectedTheme].find(idea => idea.id === producedContent.id);
-
-        if (contentInfo) {
-            // Рассчитываем прирост подписчиков и просмотров
-            // В будущем здесь будет более сложная логика, учитывающая качество контента, тренды и т.д.
-            const subsGained = contentInfo.baseSubs * (1 + Math.random() * 0.5);
-            const viewsGained = contentInfo.baseViews * (1 + Math.random() * 0.5);
-
-            gameState.subscribers += Math.round(subsGained);
-            gameState.views += Math.round(viewsGained);
-            gameState.mood = Math.min(gameState.maxMood, gameState.mood + 10); // Улучшаем настроение после публикации
-
-            // Показываем сообщение о результате
-            showModal('Контент Опубликован!', `Пост "${contentInfo.name}" принес ${Math.round(subsGained)} подписчиков и ${Math.round(viewsGained)} просмотров!`, [
-                { text: 'Отлично!', action: () => hideModal() }
-            ]);
-            tg.HapticFeedback.notificationOccurred('success');
-
-        } else {
-            console.error('Ошибка: Контент идея не найдена для завершенного поста:', producedContent);
-            showModal('Ошибка', 'Что-то пошло не так при публикации контента.', [
-                { text: 'ОК', action: () => hideModal() }
-            ]);
-            tg.HapticFeedback.notificationOccurred('error');
-        }
-
-        gameState.postInProduction = null;
-        updateUI();
-        saveGameState();
-    }
-
-    // --- Create Content Screen Logic ---
-    createPostBtn.addEventListener('click', () => {
-        tg.HapticFeedback.impactOccurred('light');
-        showScreen('create-content-screen');
-        generateContentIdeas();
-    });
-
-    contentTypeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tg.HapticFeedback.impactOccurred('light');
-            contentTypeBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            generateContentIdeas();
-        });
-    });
-
-    function generateContentIdeas() {
-        contentIdeasList.innerHTML = ''; // Очищаем старые идеи
-        const activeContentType = document.querySelector('.content-type-btn.active').dataset.type;
-        const ideas = gameData.contentIdeas[gameState.selectedTheme]
-            .filter(idea => idea.type === activeContentType);
-
-        if (ideas.length === 0) {
-            contentIdeasList.innerHTML = '<p class="placeholder-text">Нет доступных идей для данного типа контента.</p>';
-            return;
-        }
-
-        ideas.forEach(idea => {
-            const contentType = gameData.contentTypes[idea.type];
-            const finalEnergyCost = idea.energyCost || contentType.baseEnergy;
-            const finalTimeCost = idea.timeCost || contentType.baseDuration;
-
-            const button = document.createElement('button');
-            button.className = 'btn content-idea-button';
-            button.dataset.ideaId = idea.id;
-            button.dataset.type = idea.type;
-            button.disabled = gameState.energy < finalEnergyCost || gameState.postInProduction !== null; // Отключаем, если нет энергии или пост уже делается
-
-            let iconClass;
-            switch(idea.type) {
-                case 'post': iconClass = 'fas fa-pencil-alt'; break;
-                case 'video': iconClass = 'fas fa-video'; break;
-                case 'story': iconClass = 'fas fa-camera'; break;
-                case 'podcast': iconClass = 'fas fa-microphone-alt'; break;
-                default: iconClass = 'fas fa-star'; // Запасная иконка
-            }
-
-            button.innerHTML = `
-                <i class="${iconClass} idea-icon"></i>
-                <div class="idea-details">
-                    <h3>${idea.name}</h3>
-                    <p>${idea.description}</p>
-                    <div>
-                        <span class="idea-cost">Энергия: ${finalEnergyCost} <i class="fas fa-bolt"></i></span>
-                        <span class="idea-duration">Время: ${finalTimeCost} сек <i class="fas fa-clock"></i></span>
-                    </div>
-                </div>
-            `;
-            button.addEventListener('click', () => {
-                if (!button.disabled) {
-                    tg.HapticFeedback.impactOccurred('medium');
-                    startContentProduction(idea, finalEnergyCost, finalTimeCost);
-                }
-            });
-            contentIdeasList.appendChild(button);
-        });
-
-        // Обновляем состояние всех кнопок после перерисовки
-        updateContentIdeaButtonsState();
-    }
-
-    function updateContentIdeaButtonsState() {
-        document.querySelectorAll('.content-idea-button').forEach(button => {
-            const ideaId = button.dataset.ideaId;
-            const ideaType = button.dataset.type;
-            const idea = gameData.contentIdeas[gameState.selectedTheme].find(i => i.id === ideaId && i.type === ideaType);
-
-            if (idea) {
-                const contentType = gameData.contentTypes[idea.type];
-                const finalEnergyCost = idea.energyCost || contentType.baseEnergy;
-
-                button.disabled = gameState.energy < finalEnergyCost || gameState.postInProduction !== null;
-            }
-        });
-    }
-
-    function startContentProduction(idea, energyCost, timeCost) {
-        if (gameState.energy >= energyCost && !gameState.postInProduction) {
-            gameState.energy -= energyCost;
-            gameState.postInProduction = {
-                type: idea.type,
-                idea: idea,
-                duration: timeCost,
-                timeLeft: timeCost,
-                startTime: Date.now()
-            };
-            showScreen('main-dashboard-screen'); // Возвращаемся на дашборд
-            updateUI(); // Обновляем UI, чтобы показать статус производства
-            saveGameState();
-            tg.HapticFeedback.notificationOccurred('success');
-        } else {
-            if (gameState.postInProduction) {
-                showModal('Внимание', 'Вы уже создаете контент. Подождите завершения текущего производства.', [
-                    { text: 'Понятно', action: () => hideModal() }
-                ]);
-                tg.HapticFeedback.notificationOccurred('error');
-            } else {
-                showModal('Недостаточно энергии', `Для создания "${idea.name}" требуется ${energyCost} энергии. У вас ${gameState.energy}.`, [
-                    { text: 'ОК', action: () => hideModal() }
-                ]);
-                tg.HapticFeedback.notificationOccurred('error');
-            }
-        }
-    }
-
-    // --- Other Dashboard Buttons (Placeholder) ---
-    analyticsBtn.addEventListener('click', () => {
-        tg.HapticFeedback.impactOccurred('light');
-        showScreen('analytics-screen');
-    });
-
-    teamBtn.addEventListener('click', () => {
-        tg.HapticFeedback.impactOccurred('light');
-        showScreen('team-screen');
-    });
-
-    monetizationBtn.addEventListener('click', () => {
-        tg.HapticFeedback.impactOccurred('light');
-        showScreen('monetization-screen');
-    });
-
-    function updateActiveActionButton() {
-        // Убираем active со всех кнопок
-        document.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('active'));
-
-        // Добавляем active к текущей кнопке
-        let currentBtn;
-        switch (gameState.currentScreen) {
-            case 'main-dashboard-screen':
-                // На дашборде ни одна кнопка не активна по умолчанию, или можно сделать "Создать Контент" активной
-                break;
-            case 'create-content-screen':
-                currentBtn = createPostBtn;
-                break;
-            case 'analytics-screen':
-                currentBtn = analyticsBtn;
-                break;
-            case 'team-screen':
-                currentBtn = teamBtn;
-                break;
-            case 'monetization-screen':
-                currentBtn = monetizationBtn;
-                break;
-        }
-        if (currentBtn) {
-            currentBtn.classList.add('active');
-        }
-    }
-
-    // --- AI Idea Generation (Placeholder) ---
-    generateIdeaBtn.addEventListener('click', () => {
-        tg.HapticFeedback.impactOccurred('light');
-        showModal('Генерация Идеи (ИИ)', 'Искусственный Интеллект генерирует уникальную идею для вашего контента. Это займет некоторое время и будет стоить X энергии.', [
-            { text: 'Сгенерировать (X энергии)', action: () => {
-                // Здесь будет логика генерации и списания энергии
-                hideModal();
-                showModal('Идея сгенерирована!', 'ИИ предложил: "Создать интерактивный VR-тур по историческим местам!" (пока заглушка).', [
-                    { text: 'Отлично!', action: () => hideModal() }
-                ]);
-                tg.HapticFeedback.notificationOccurred('success');
-            }},
-            { text: 'Отмена', action: () => hideModal(), isCancel: true }
-        ]);
-    });
-
-    // --- Modal Logic ---
-    function showModal(title, bodyHtml, actions) {
+    function showModal(title, contentHtml, actions = []) {
         modalTitle.textContent = title;
-        modalBody.innerHTML = bodyHtml;
-        modalActions.innerHTML = ''; // Очищаем старые кнопки
+        modalBody.innerHTML = contentHtml;
+        modalActions.innerHTML = ''; // Очищаем предыдущие кнопки
 
         actions.forEach(action => {
             const button = document.createElement('button');
-            button.classList.add('btn');
+            button.className = `btn ${action.className || ''}`;
             button.textContent = action.text;
-            button.addEventListener('click', () => {
-                tg.HapticFeedback.impactOccurred('light');
-                action.action();
-            });
-            if (action.isCancel) {
-                // Добавляем стили для кнопки "Отмена", если это необходимо
-                button.style.backgroundColor = '#666';
-                button.style.boxShadow = 'none';
-            }
+            button.onclick = action.onClick;
             modalActions.appendChild(button);
         });
 
-        modalOverlay.classList.add('visible');
-        gameState.currentScreen = 'modal-overlay'; // Устанавливаем текущий экран как модальное окно
-        updateBackButton(); // Обновляем кнопку "Назад" для модального окна
+        modalOverlay.classList.remove('hidden');
+        // Добавляем эффект пульсации на кнопки модального окна
+        modalActions.querySelectorAll('.btn').forEach(btn => {
+            btn.style.animation = 'pulse-pink 0.8s infinite alternate';
+        });
+
+        // Добавляем обработчик для закрытия по клику вне модального окна
+        modalOverlay.onclick = (e) => {
+            if (e.target === modalOverlay) {
+                hideModal();
+            }
+        };
     }
 
     function hideModal() {
-        modalOverlay.classList.remove('visible');
-        // Возвращаем на предыдущий экран
-        if (gameState.currentScreen === 'modal-overlay') {
-            const previousScreenId = localStorage.getItem('socialMediaTycoonLastScreen') || 'main-dashboard-screen';
-            showScreen(previousScreenId); // Возвращаемся на дашборд или предыдущий экран
-        }
-        updateBackButton();
+        modalOverlay.classList.add('hidden');
+        modalOverlay.onclick = null; // Удаляем обработчик
+        // Удаляем анимацию пульсации
+        modalActions.querySelectorAll('.btn').forEach(btn => {
+            btn.style.animation = '';
+        });
     }
 
     closeModalButton.addEventListener('click', hideModal);
 
-    // Закрытие модального окна по клику вне его контента (но не по самому контенту)
-    modalOverlay.addEventListener('click', (event) => {
-        if (event.target === modalOverlay) {
-            hideModal();
+    // --- Игровая логика ---\
+
+    // Функция для получения случайного числа в заданном диапазоне
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Клик по кнопке "Снимать видео"
+    clickerButton.addEventListener('click', () => {
+        if (gameState.stats.energy <= 0) {
+            tg.HapticFeedback.notificationOccurred('error');
+            showModal('Нет энергии', 'У вас недостаточно энергии, чтобы снять видео. Подождите, пока энергия восстановится, или используйте бустеры.', [
+                { text: 'ОК', onClick: hideModal }
+            ]);
+            return;
+        }
+
+        // Уменьшаем энергию, гарантируя, что она не станет отрицательной
+        gameState.stats.energy = Math.max(0, gameState.stats.energy - 1);
+        tg.HapticFeedback.impactOccurred('light');
+
+        // Увеличиваем деньги и подписчиков на основе incomePerClick
+        gameState.stats.money += gameState.stats.incomePerClick;
+        // Добавляем случайное количество подписчиков за клик
+        gameState.stats.subscribers += getRandomInt(1, 5); // Пример: от 1 до 5 подписчиков за клик
+
+        // Добавляем опыт за клик (например, 1 XP за клик)
+        gainExperience(1);
+
+        updateUI();
+        saveGameState();
+    });
+
+    // Пассивный доход и восстановление энергии (каждую секунду)
+    setInterval(() => {
+        // Восстановление энергии
+        if (gameState.stats.energy < gameState.stats.maxEnergy) {
+            gameState.stats.energy = Math.min(gameState.stats.maxEnergy, gameState.stats.energy + gameState.stats.energyRechargeRate);
+        }
+
+        // Пассивный доход
+        gameState.stats.money += gameState.stats.incomePerSecond;
+
+        updateUI();
+        saveGameState(); // Сохраняем состояние каждую секунду
+    }, 1000);
+
+    // Система опыта и уровней
+    function gainExperience(amount) {
+        gameState.channel.experience += amount;
+        if (gameState.channel.experience >= gameState.channel.experienceToNextLevel) {
+            levelUp();
+        }
+    }
+
+    function levelUp() {
+        gameState.channel.level++;
+        gameState.channel.experience = gameState.channel.experience - gameState.channel.experienceToNextLevel; // Оставшийся опыт
+        gameState.channel.experienceToNextLevel = Math.floor(gameState.channel.experienceToNextLevel * 1.5); // Увеличиваем требуемый опыт
+        // При повышении уровня можно давать бонусы, например, увеличить доход за клик
+        gameState.stats.incomePerClick = parseFloat((gameState.stats.incomePerClick * 1.1).toFixed(2)); // Увеличиваем доход за клик на 10%
+        gameState.stats.maxEnergy += 10; // Увеличиваем максимальную энергию
+        gameState.stats.energy = gameState.stats.maxEnergy; // Полное восстановление энергии при уровне
+        tg.HapticFeedback.notificationOccurred('success');
+        showModal('Повышение уровня!', `Поздравляем! Ваш канал достиг уровня ${gameState.channel.level}!`, [
+            { text: 'Отлично!', onClick: hideModal }
+        ]);
+        updateUI();
+        saveGameState();
+    }
+
+
+    // --- Выбор темы канала ---\
+    document.querySelectorAll('.theme-card').forEach(card => {
+        card.addEventListener('click', () => {
+            // Удаляем активный класс со всех карточек
+            document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+            // Добавляем активный класс к выбранной карточке
+            card.classList.add('active');
+            // Сохраняем выбранную тему
+            gameState.channel.theme = card.dataset.theme;
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+
+    // Кнопка "Начать игру" после выбора темы
+    document.getElementById('start-game-button').addEventListener('click', () => {
+        if (gameState.channel.theme) {
+            showScreen('main-dashboard-screen');
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI(); // Обновляем UI после выбора темы
+            saveGameState(); // Сохраняем выбранную тему
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+            showModal('Ошибка', 'Пожалуйста, выберите тему канала перед началом игры.', [
+                { text: 'Понятно', onClick: hideModal }
+            ]);
         }
     });
 
-    // --- Save/Load Game State ---
+
+    // --- Переходы между экранами ---\
+    document.getElementById('go-to-clicker').addEventListener('click', () => {
+        showScreen('clicker-screen');
+        tg.HapticFeedback.impactOccurred('light');
+    });
+    document.getElementById('go-to-upgrades').addEventListener('click', () => {
+        showScreen('upgrades-screen');
+        tg.HapticFeedback.impactOccurred('light');
+        renderUpgrades(); // Отображаем апгрейды при переходе
+    });
+    document.getElementById('go-to-analytics').addEventListener('click', () => {
+        showScreen('analytics-screen');
+        tg.HapticFeedback.impactOccurred('light');
+    });
+    document.getElementById('go-to-team').addEventListener('click', () => {
+        showScreen('team-screen');
+        tg.HapticFeedback.impactOccurred('light');
+    });
+    document.getElementById('go-to-monetization').addEventListener('click', () => {
+        showScreen('monetization-screen');
+        tg.HapticFeedback.impactOccurred('light');
+    });
+    document.getElementById('go-to-main-dashboard-from-clicker').addEventListener('click', () => {
+        showScreen('main-dashboard-screen');
+        tg.HapticFeedback.impactOccurred('light');
+    });
+    // Добавляем обработчики для кнопок "Назад" на других экранах
+    document.querySelectorAll('.screen .btn').forEach(button => {
+        if (button.textContent === 'Назад' && button.onclick === null) { // Проверяем, что нет onclick, чтобы не дублировать
+            button.addEventListener('click', () => {
+                showScreen('main-dashboard-screen');
+                tg.HapticFeedback.impactOccurred('light');
+            });
+        }
+    });
+
+    // --- Система апгрейдов ---\
+    const upgradesData = [
+        {
+            id: 'auto-clicker-1',
+            name: 'Нанять помощника',
+            description: 'Получайте 100 подписчиков в секунду и 10 ₽ в секунду.',
+            cost: 1000,
+            type: 'passive_income',
+            subscribersPerSecond: 100,
+            moneyPerSecond: 10,
+            level: 1, // Уровень апгрейда
+            maxLevel: 1, // Максимальный уровень
+            image: 'assets/upgrades/auto-clicker.png' // Путь к изображению
+        },
+        {
+            id: 'energy-booster-1',
+            name: 'Энергетический напиток',
+            description: 'Увеличивает максимальную энергию на 50 единиц.',
+            cost: 500,
+            type: 'energy_boost',
+            energyBoost: 50,
+            level: 1,
+            maxLevel: 1,
+            image: 'assets/upgrades/energy-booster.png'
+        },
+        {
+            id: 'income-booster-1',
+            name: 'Курсы по монтажу',
+            description: 'Увеличивает доход за клик на 50%.',
+            cost: 2000,
+            type: 'click_income_multiplier',
+            multiplier: 0.5, // 50%
+            level: 1,
+            maxLevel: 1,
+            image: 'assets/upgrades/income-booster.png'
+        },
+        {
+            id: 'recharge-booster-1',
+            name: 'Кофемашина',
+            description: 'Увеличивает скорость восстановления энергии на 2 в секунду.',
+            cost: 750,
+            type: 'energy_recharge_boost',
+            rechargeRateBoost: 2,
+            level: 1,
+            maxLevel: 1,
+            image: 'assets/upgrades/recharge-booster.png'
+        }
+        // Добавьте больше апгрейдов здесь
+    ];
+
+    function renderUpgrades() {
+        const upgradesGrid = document.getElementById('upgrades-grid');
+        if (!upgradesGrid) return;
+        upgradesGrid.innerHTML = ''; // Очищаем сетку апгрейдов
+
+        upgradesData.forEach(upgrade => {
+            const hasUpgrade = gameState.upgrades[upgrade.id] && gameState.upgrades[upgrade.id].level >= upgrade.maxLevel;
+            const card = document.createElement('div');
+            card.className = `upgrade-card ${hasUpgrade ? 'purchased' : ''}`;
+            card.innerHTML = `
+                <img src="${upgrade.image}" alt="${upgrade.name}" class="upgrade-icon">
+                <h3>${upgrade.name}</h3>
+                <p>${upgrade.description}</p>
+                <p>Цена: ${formatMoney(upgrade.cost)}</p>
+                ${hasUpgrade ? '<button class="btn btn-purchased" disabled>Куплено</button>' : '<button class="btn buy-upgrade-btn" data-upgrade-id="' + upgrade.id + '">Купить</button>'}
+            `;
+            upgradesGrid.appendChild(card);
+        });
+
+        // Добавляем обработчики событий для кнопок "Купить"
+        document.querySelectorAll('.buy-upgrade-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const upgradeId = event.target.dataset.upgradeId;
+                buyUpgrade(upgradeId);
+            });
+        });
+    }
+
+    function buyUpgrade(upgradeId) {
+        const upgrade = upgradesData.find(u => u.id === upgradeId);
+        if (!upgrade) return;
+
+        if (gameState.stats.money >= upgrade.cost) {
+            // Проверяем, был ли уже куплен этот апгрейд (если maxLevel = 1)
+            if (gameState.upgrades[upgradeId] && gameState.upgrades[upgradeId].level >= upgrade.maxLevel) {
+                tg.HapticFeedback.notificationOccurred('error');
+                showModal('Уже куплено', `Вы уже купили ${upgrade.name}.`, [
+                    { text: 'ОК', onClick: hideModal }
+                ]);
+                return;
+            }
+
+            // Уменьшаем деньги
+            gameState.stats.money -= upgrade.cost;
+            tg.HapticFeedback.notificationOccurred('success');
+
+            // Применяем эффект апгрейда
+            if (upgrade.type === 'passive_income') {
+                gameState.stats.subscribers += upgrade.subscribersPerSecond; // Добавляем сразу подписчиков
+                gameState.stats.incomePerSecond += upgrade.moneyPerSecond;
+            } else if (upgrade.type === 'energy_boost') {
+                gameState.stats.maxEnergy += upgrade.energyBoost;
+                gameState.stats.energy = gameState.stats.maxEnergy; // Восстанавливаем энергию до максимума
+            } else if (upgrade.type === 'click_income_multiplier') {
+                gameState.stats.incomePerClick = parseFloat((gameState.stats.incomePerClick * (1 + upgrade.multiplier)).toFixed(2));
+            } else if (upgrade.type === 'energy_recharge_boost') {
+                gameState.stats.energyRechargeRate += upgrade.rechargeRateBoost;
+            }
+
+            // Записываем информацию о купленном апгрейде в gameState
+            if (!gameState.upgrades[upgradeId]) {
+                gameState.upgrades[upgradeId] = { level: 0 };
+            }
+            gameState.upgrades[upgradeId].level++;
+
+
+            showModal('Покупка совершена!', `Вы успешно купили: ${upgrade.name}!`, [
+                { text: 'Отлично!', onClick: hideModal, className: 'btn-confirm' }
+            ]);
+
+            updateUI();
+            saveGameState();
+            renderUpgrades(); // Перерисовываем апгрейды, чтобы обновить кнопки
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+            showModal('Недостаточно средств', `У вас недостаточно средств для покупки ${upgrade.name}. Необходимо: ${formatMoney(upgrade.cost)}.`, [
+                { text: 'ОК', onClick: hideModal, className: 'btn-cancel' }
+            ]);
+        }
+    }
+
+
+    // --- Preloader Logic ---\
+    function initializeApp() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += getRandomInt(5, 15); // Имитация загрузки
+            if (progress > 100) progress = 100;
+            preloaderProgressBarFill.style.width = `${progress}%`;
+
+            if (progress === 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    loadGameState(); // Загружаем состояние после завершения прелоадера
+
+                    // Проверяем, если пользователь впервые, показываем выбор темы
+                    if (!gameState.channel.theme) {
+                        showScreen('theme-selection-screen', true); // hideBackButton = true для первого экрана
+                    } else {
+                        // Если игра уже начата, переходим на последний сохраненный экран или на дашборд
+                        const lastScreen = localStorage.getItem('socialMediaTycoonLastScreen');
+                        if (lastScreen && lastScreen !== 'preloader-screen' && lastScreen !== 'theme-selection-screen') {
+                            showScreen(lastScreen);
+                        } else {
+                            showScreen('main-dashboard-screen');
+                        }
+                    }
+                    updateUI(); // Обновляем UI после загрузки состояния
+                }, 500); // Небольшая задержка перед скрытием прелоадера
+            }
+        }, 150); // Интервал обновления прогресса
+    }
+
+    // --- Save/Load Game State ---\
     function saveGameState() {
+        // Убедитесь, что все числовые значения сохраняются как числа
+        gameState.stats.subscribers = parseFloat(gameState.stats.subscribers.toFixed(2));
+        gameState.stats.money = parseFloat(gameState.stats.money.toFixed(2));
+        gameState.stats.incomePerClick = parseFloat(gameState.stats.incomePerClick.toFixed(2));
+        gameState.stats.incomePerSecond = parseFloat(gameState.stats.incomePerSecond.toFixed(2));
+        gameState.stats.energy = parseFloat(gameState.stats.energy.toFixed(2));
+        gameState.stats.maxEnergy = parseFloat(gameState.stats.maxEnergy.toFixed(2));
+        gameState.stats.energyRechargeRate = parseFloat(gameState.stats.energyRechargeRate.toFixed(2));
+        gameState.channel.experience = parseFloat(gameState.channel.experience.toFixed(2));
+        gameState.channel.experienceToNextLevel = parseFloat(gameState.channel.experienceToNextLevel.toFixed(2));
+
         localStorage.setItem('socialMediaTycoonState', JSON.stringify(gameState));
         localStorage.setItem('socialMediaTycoonLastScreen', gameState.currentScreen); // Сохраняем последний активный экран
     }
@@ -716,14 +515,36 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadGameState() {
         const savedState = localStorage.getItem('socialMediaTycoonState');
         if (savedState) {
-            gameState = JSON.parse(savedState);
+            const loadedState = JSON.parse(savedState);
+            // Преобразование всех числовых полей обратно в числа, если они были сохранены как строки
+            // Это может быть избыточно, если `toFixed` и `parseFloat` используются корректно при сохранении
+            // Но для надежности можно пройтись по всем числовым полям.
+            // Например:
+            loadedState.stats.subscribers = parseFloat(loadedState.stats.subscribers) || 0;
+            loadedState.stats.money = parseFloat(loadedState.stats.money) || 0;
+            loadedState.stats.incomePerClick = parseFloat(loadedState.stats.incomePerClick) || 1;
+            loadedState.stats.incomePerSecond = parseFloat(loadedState.stats.incomePerSecond) || 0;
+            loadedState.stats.energy = parseFloat(loadedState.stats.energy) || 100;
+            loadedState.stats.maxEnergy = parseFloat(loadedState.stats.maxEnergy) || 100;
+            loadedState.stats.energyRechargeRate = parseFloat(loadedState.stats.energyRechargeRate) || 1;
+            loadedState.channel.level = parseFloat(loadedState.channel.level) || 1;
+            loadedState.channel.experience = parseFloat(loadedState.channel.experience) || 0;
+            loadedState.channel.experienceToNextLevel = parseFloat(loadedState.channel.experienceToNextLevel) || 100;
+
+            gameState = loadedState;
             console.log('Состояние игры загружено:', gameState);
         } else {
             console.log('Сохраненное состояние игры не найдено. Начинаем новую игру.');
+            // Инициализируем user данные, так как они могли не быть установлены при первом запуске
+            gameState.user = {
+                username: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.username : 'Unknown',
+                firstName: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : 'Пользователь',
+                photoUrl: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.photo_url : 'assets/placeholder-avatar.png'
+            };
         }
     }
 
-    // --- Initial App Load ---
+    // --- Initial App Load ---\
     // Вызываем инициализацию, которая теперь управляет прелоадером и загрузкой
     initializeApp();
 
@@ -735,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //         if (confirm('Вы уверены, что хотите сбросить игру? Все данные будут потеряны.')) {
     //             localStorage.removeItem('socialMediaTycoonState');
     //             localStorage.removeItem('socialMediaTycoonLastScreen');
-    //             location.reload(); // Перезагружаем страницу
+    //             window.location.reload(); // Перезагружаем страницу
     //         }
     //     });
     // }
